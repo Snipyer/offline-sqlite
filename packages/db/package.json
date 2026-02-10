@@ -17,11 +17,9 @@
 		"db:migrate": "drizzle-kit migrate"
 	},
 	"dependencies": {
-		"@libsql/client": "catalog:",
 		"@offline-sqlite/env": "workspace:*",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
-		"libsql": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
