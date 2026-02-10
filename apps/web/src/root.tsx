@@ -1,15 +1,14 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
+import { useEffect } from "react";
 import "./index.css";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
-
 import type { Route } from "./+types/root";
-
 import Header from "./components/header";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 import { queryClient } from "./utils/trpc";
+import { getLanguageDirection, i18n, I18nextProvider, useTranslation } from "@offline-sqlite/i18n";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -17,6 +16,10 @@ export const links: Route.LinksFunction = () => [
 	{
 		rel: "stylesheet",
 		href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+	},
+	{
+		rel: "stylesheet",
+		href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap",
 	},
 ];
 
@@ -38,34 +41,51 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	);
 }
 
+function DocumentLanguageSync() {
+	const { i18n: instance } = useTranslation();
+	const currentLanguage = instance.resolvedLanguage ?? instance.language;
+
+	useEffect(() => {
+		if (typeof document === "undefined") {
+			return;
+		}
+		document.documentElement.lang = currentLanguage;
+		document.documentElement.dir = getLanguageDirection(currentLanguage);
+	}, [currentLanguage]);
+
+	return null;
+}
+
 export default function App() {
 	return (
-		<QueryClientProvider client={queryClient}>
-			<ThemeProvider
-				attribute="class"
-				defaultTheme="dark"
-				disableTransitionOnChange
-				storageKey="vite-ui-theme"
-			>
-				<div className="grid h-svh grid-rows-[auto_1fr]">
-					<Header />
-					<Outlet />
-				</div>
-				<Toaster richColors />
-			</ThemeProvider>
-			<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
-		</QueryClientProvider>
+		<I18nextProvider i18n={i18n}>
+			<DocumentLanguageSync />
+			<QueryClientProvider client={queryClient}>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="dark"
+					disableTransitionOnChange
+					storageKey="vite-ui-theme"
+				>
+					<div className="grid h-svh grid-rows-[auto_1fr]">
+						<Header />
+						<Outlet />
+					</div>
+					<Toaster richColors />
+				</ThemeProvider>
+				<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+			</QueryClientProvider>
+		</I18nextProvider>
 	);
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-	let message = "Oops!";
-	let details = "An unexpected error occurred.";
+	let message = i18n.t("errors.oops");
+	let details = i18n.t("errors.unexpected");
 	let stack: string | undefined;
 	if (isRouteErrorResponse(error)) {
-		message = error.status === 404 ? "404" : "Error";
-		details =
-			error.status === 404 ? "The requested page could not be found." : error.statusText || details;
+		message = error.status === 404 ? "404" : i18n.t("errors.error");
+		details = error.status === 404 ? i18n.t("errors.notFound") : error.statusText || details;
 	} else if (import.meta.env.DEV && error && error instanceof Error) {
 		details = error.message;
 		stack = error.stack;

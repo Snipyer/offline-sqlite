@@ -7,9 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/utils/trpc";
+import { useTranslation } from "@offline-sqlite/i18n";
 
 export default function Todos() {
 	const [newTodoText, setNewTodoText] = useState("");
+	const { t } = useTranslation();
 
 	const todos = useQuery(trpc.todo.getAll.queryOptions());
 	const createMutation = useMutation(
@@ -54,19 +56,23 @@ export default function Todos() {
 		<div className="mx-auto w-full max-w-md py-10">
 			<Card>
 				<CardHeader>
-					<CardTitle>Todo List</CardTitle>
-					<CardDescription>Manage your tasks efficiently</CardDescription>
+					<CardTitle>{t("todos.title")}</CardTitle>
+					<CardDescription>{t("todos.description")}</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleAddTodo} className="mb-6 flex items-center space-x-2">
+					<form onSubmit={handleAddTodo} className="mb-6 flex items-center gap-2">
 						<Input
 							value={newTodoText}
 							onChange={(e) => setNewTodoText(e.target.value)}
-							placeholder="Add a new task..."
+							placeholder={t("todos.placeholder")}
 							disabled={createMutation.isPending}
 						/>
 						<Button type="submit" disabled={createMutation.isPending || !newTodoText.trim()}>
-							{createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+							{createMutation.isPending ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								t("todos.add")
+							)}
 						</Button>
 					</form>
 
@@ -75,7 +81,7 @@ export default function Todos() {
 							<Loader2 className="h-6 w-6 animate-spin" />
 						</div>
 					) : todos.data?.length === 0 ? (
-						<p className="py-4 text-center">No todos yet. Add one above!</p>
+						<p className="py-4 text-center">{t("todos.empty")}</p>
 					) : (
 						<ul className="space-y-2">
 							{todos.data?.map((todo) => (
@@ -83,7 +89,7 @@ export default function Todos() {
 									key={todo.id}
 									className="flex items-center justify-between rounded-md border p-2"
 								>
-									<div className="flex items-center space-x-2">
+									<div className="flex items-center gap-2">
 										<Checkbox
 											checked={todo.completed}
 											onCheckedChange={() => handleToggleTodo(todo.id, todo.completed)}
@@ -100,7 +106,7 @@ export default function Todos() {
 										variant="ghost"
 										size="icon"
 										onClick={() => handleDeleteTodo(todo.id)}
-										aria-label="Delete todo"
+										aria-label={t("todos.deleteAria")}
 									>
 										<Trash2 className="h-4 w-4" />
 									</Button>

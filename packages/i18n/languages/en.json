@@ -1,0 +1,75 @@
+{
+	"meta": {
+		"title": "offline-sqlite",
+		"description": "offline-sqlite is a web application"
+	},
+	"home": {
+		"titleAscii": "\n ██████╗ ███████╗████████╗████████╗███████╗██████╗\n ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗\n ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝\n ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗\n ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║\n ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝\n\n ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗\n ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝\n    ██║       ███████╗   ██║   ███████║██║     █████╔╝\n    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗\n    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗\n    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝\n "
+	},
+	"nav": {
+		"home": "Home",
+		"dashboard": "Dashboard",
+		"todos": "Todos"
+	},
+	"status": {
+		"apiTitle": "API Status",
+		"checking": "Checking...",
+		"connected": "Connected",
+		"disconnected": "Disconnected"
+	},
+	"dashboard": {
+		"loading": "Loading...",
+		"title": "Dashboard",
+		"welcome": "Welcome {{name}}",
+		"api": "API: {{message}}"
+	},
+	"todos": {
+		"title": "Todo List",
+		"description": "Manage your tasks efficiently",
+		"placeholder": "Add a new task...",
+		"add": "Add",
+		"empty": "No todos yet. Add one above!",
+		"deleteAria": "Delete todo"
+	},
+	"auth": {
+		"signIn": "Sign In",
+		"signUp": "Sign Up",
+		"signOut": "Sign Out",
+		"welcomeBack": "Welcome Back",
+		"createAccount": "Create Account",
+		"needAccount": "Need an account? Sign Up",
+		"haveAccount": "Already have an account? Sign In",
+		"name": "Name",
+		"email": "Email",
+		"password": "Password",
+		"submitting": "Submitting...",
+		"successSignIn": "Sign in successful",
+		"successSignUp": "Sign up successful"
+	},
+	"validation": {
+		"invalidEmail": "Invalid email address",
+		"passwordMin": "Password must be at least 8 characters",
+		"nameMin": "Name must be at least 2 characters"
+	},
+	"theme": {
+		"toggle": "Toggle theme",
+		"light": "Light",
+		"dark": "Dark",
+		"system": "System"
+	},
+	"user": {
+		"myAccount": "My Account"
+	},
+	"errors": {
+		"oops": "Oops!",
+		"unexpected": "An unexpected error occurred.",
+		"error": "Error",
+		"notFound": "The requested page could not be found."
+	},
+	"language": {
+		"label": "Language",
+		"english": "English",
+		"arabic": "العربية",
+		"french": "Français"
+	}
+}

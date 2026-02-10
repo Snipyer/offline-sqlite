@@ -1,13 +1,15 @@
 import { NavLink } from "react-router";
 
+import { LanguageSwitcher, useTranslation } from "@offline-sqlite/i18n";
 import { ModeToggle } from "./mode-toggle";
 import UserMenu from "./user-menu";
 
 export default function Header() {
+	const { t } = useTranslation();
 	const links = [
-		{ to: "/", label: "Home" },
-		{ to: "/dashboard", label: "Dashboard" },
-		{ to: "/todos", label: "Todos" },
+		{ to: "/", label: t("nav.home") },
+		{ to: "/dashboard", label: t("nav.dashboard") },
+		{ to: "/todos", label: t("nav.todos") },
 	] as const;
 
 	return (
@@ -28,6 +30,7 @@ export default function Header() {
 					})}
 				</nav>
 				<div className="flex items-center gap-2">
+					<LanguageSwitcher />
 					<ModeToggle />
 					<UserMenu />
 				</div>

@@ -10,6 +10,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { useTranslation } from "@offline-sqlite/i18n";
 
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
@@ -17,6 +18,7 @@ import { Skeleton } from "./ui/skeleton";
 export default function UserMenu() {
 	const navigate = useNavigate();
 	const { data: session, isPending } = authClient.useSession();
+	const { t, i18n } = useTranslation();
 
 	if (isPending) {
 		return <Skeleton className="h-9 w-24" />;
@@ -25,7 +27,7 @@ export default function UserMenu() {
 	if (!session) {
 		return (
 			<Link to="/login">
-				<Button variant="outline">Sign In</Button>
+				<Button variant="outline">{t("auth.signIn")}</Button>
 			</Link>
 		);
 	}
@@ -37,7 +39,7 @@ export default function UserMenu() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-card">
 				<DropdownMenuGroup>
-					<DropdownMenuLabel>My Account</DropdownMenuLabel>
+					<DropdownMenuLabel>{t("user.myAccount")}</DropdownMenuLabel>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
 					<DropdownMenuItem
@@ -45,6 +47,9 @@ export default function UserMenu() {
 						onClick={() => {
 							authClient.signOut({
 								fetchOptions: {
+									headers: {
+										"x-locale": i18n.resolvedLanguage ?? i18n.language,
+									},
 									onSuccess: () => {
 										navigate("/");
 									},
@@ -52,7 +57,7 @@ export default function UserMenu() {
 							});
 						}}
 					>
-						Sign Out
+						{t("auth.signOut")}
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>

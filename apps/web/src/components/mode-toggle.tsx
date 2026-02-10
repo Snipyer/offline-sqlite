@@ -8,9 +8,11 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "@offline-sqlite/i18n";
 
 export function ModeToggle() {
 	const { setTheme } = useTheme();
+	const { t } = useTranslation();
 
 	return (
 		<DropdownMenu>
@@ -23,12 +25,12 @@ export function ModeToggle() {
 					className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100
 						dark:rotate-0"
 				/>
-				<span className="sr-only">Toggle theme</span>
+				<span className="sr-only">{t("theme.toggle")}</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				<DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => setTheme("light")}>{t("theme.light")}</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => setTheme("dark")}>{t("theme.dark")}</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => setTheme("system")}>{t("theme.system")}</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

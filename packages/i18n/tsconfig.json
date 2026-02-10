@@ -1,0 +1,14 @@
+{
+	"extends": "@offline-sqlite/config/tsconfig.base.json",
+	"include": ["src/**/*", "languages/**/*", "languages/**/*.json"],
+	"compilerOptions": {
+		"jsx": "react-jsx",
+		"types": ["bun", "react"],
+		"lib": ["ESNext", "DOM"],
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"outDir": "dist",
+		"composite": true
+	}
+}

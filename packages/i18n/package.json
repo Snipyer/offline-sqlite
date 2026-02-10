@@ -1,5 +1,5 @@
 {
-	"name": "@offline-sqlite/auth",
+	"name": "@offline-sqlite/i18n",
 	"type": "module",
 	"exports": {
 		".": {
@@ -11,15 +11,14 @@
 	},
 	"scripts": {},
 	"dependencies": {
-		"@offline-sqlite/db": "workspace:*",
-		"@offline-sqlite/env": "workspace:*",
-		"better-auth": "catalog:",
-		"better-auth-localization": "^2.2.3",
-		"dotenv": "catalog:",
-		"zod": "catalog:"
+		"i18next": "^23.11.5",
+		"i18next-browser-languagedetector": "^8.0.1",
+		"react": "^19.2.3",
+		"react-i18next": "^14.1.3"
 	},
 	"devDependencies": {
 		"@offline-sqlite/config": "workspace:*",
+		"@types/react": "^19.2.7",
 		"typescript": "^5"
 	}
 }

@@ -1,0 +1,75 @@
+{
+	"meta": {
+		"title": "offline-sqlite",
+		"description": "offline-sqlite est une application web"
+	},
+	"home": {
+		"titleAscii": "\n ██████╗ ███████╗████████╗████████╗███████╗██████╗\n ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗\n ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝\n ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗\n ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║\n ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝\n\n ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗\n ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝\n    ██║       ███████╗   ██║   ███████║██║     █████╔╝\n    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗\n    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗\n    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝\n "
+	},
+	"nav": {
+		"home": "Accueil",
+		"dashboard": "Tableau de bord",
+		"todos": "Taches"
+	},
+	"status": {
+		"apiTitle": "Statut API",
+		"checking": "Verification...",
+		"connected": "Connecte",
+		"disconnected": "Deconnecte"
+	},
+	"dashboard": {
+		"loading": "Chargement...",
+		"title": "Tableau de bord",
+		"welcome": "Bienvenue {{name}}",
+		"api": "API : {{message}}"
+	},
+	"todos": {
+		"title": "Liste de taches",
+		"description": "Gerez vos taches efficacement",
+		"placeholder": "Ajouter une nouvelle tache...",
+		"add": "Ajouter",
+		"empty": "Aucune tache pour l'instant. Ajoutez-en une ci-dessus !",
+		"deleteAria": "Supprimer la tache"
+	},
+	"auth": {
+		"signIn": "Se connecter",
+		"signUp": "S'inscrire",
+		"signOut": "Se deconnecter",
+		"welcomeBack": "Bon retour",
+		"createAccount": "Creer un compte",
+		"needAccount": "Besoin d'un compte ? Inscrivez-vous",
+		"haveAccount": "Deja un compte ? Connectez-vous",
+		"name": "Nom",
+		"email": "E-mail",
+		"password": "Mot de passe",
+		"submitting": "Envoi...",
+		"successSignIn": "Connexion reussie",
+		"successSignUp": "Inscription reussie"
+	},
+	"validation": {
+		"invalidEmail": "Adresse e-mail invalide",
+		"passwordMin": "Le mot de passe doit contenir au moins 8 caracteres",
+		"nameMin": "Le nom doit contenir au moins 2 caracteres"
+	},
+	"theme": {
+		"toggle": "Basculer le theme",
+		"light": "Clair",
+		"dark": "Sombre",
+		"system": "Systeme"
+	},
+	"user": {
+		"myAccount": "Mon compte"
+	},
+	"errors": {
+		"oops": "Oups !",
+		"unexpected": "Une erreur inattendue s'est produite.",
+		"error": "Erreur",
+		"notFound": "La page demandee est introuvable."
+	},
+	"language": {
+		"label": "Langue",
+		"english": "English",
+		"arabic": "العربية",
+		"french": "Français"
+	}
+}
