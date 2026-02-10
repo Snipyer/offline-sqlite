@@ -8,8 +8,11 @@
 		"start": "react-router-serve ./build/server/index.js",
 		"typecheck": "react-router typegen && tsc",
 		"tauri": "tauri",
-		"desktop:dev": "tauri dev",
-		"desktop:build": "tauri build"
+		"copy:migrations": "rm -rf src-tauri/server-data && mkdir -p src-tauri/server-data && cp -r ../../packages/db/src/migrations src-tauri/server-data/",
+		"desktop:dev": "bun run kill-5173 && bun run copy:migrations && bun run build:server && bun run dev & wait-on http://localhost:5173 && tauri dev",
+		"desktop:build": "bun run copy:migrations && bun run build:server && tauri build",
+		"build:server": "cd ../server && bun build:sidecar:linux",
+		"kill-5173": "lsof -ti :5173 | xargs kill -9 || true"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.0.0",
@@ -53,6 +56,7 @@
 		"tailwindcss": "^4.1.18",
 		"typescript": "^5.8.3",
 		"vite": "^7.2.7",
-		"vite-tsconfig-paths": "^5.1.4"
+		"vite-tsconfig-paths": "^5.1.4",
+		"wait-on": "^9.0.3"
 	}
 }

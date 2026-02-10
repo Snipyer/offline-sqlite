@@ -7,7 +7,8 @@
 		"check-types": "tsc -b",
 		"compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
 		"dev": "bun run --hot src/index.ts",
-		"start": "bun run dist/index.mjs"
+		"start": "bun run dist/index.mjs",
+		"build:sidecar:linux": "bun build --compile --minify --target=bun-linux-x64 ./src/index.ts --outfile ../web/src-tauri/binaries/server-x86_64-unknown-linux-gnu"
 	},
 	"dependencies": {
 		"@hono/trpc-server": "^0.4.0",

@@ -2,11 +2,10 @@
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "offline-sqlite",
 	"version": "0.1.0",
-	"identifier": "com.tauri.dev",
+	"identifier": "com.offlinesqlite.app",
 	"build": {
 		"frontendDist": "../build/client",
 		"devUrl": "http://localhost:5173",
-		"beforeDevCommand": "bun run dev",
 		"beforeBuildCommand": "bun run build"
 	},
 	"app": {
@@ -32,6 +31,8 @@
 			"icons/128x128@2x.png",
 			"icons/icon.icns",
 			"icons/icon.ico"
-		]
+		],
+		"externalBin": ["binaries/server"],
+		"resources": ["server-data"]
 	}
 }

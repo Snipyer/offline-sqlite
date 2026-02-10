@@ -8,6 +8,8 @@ dotenv.config({
 
 const dbPath = resolve("../../apps/server", process.env.DATABASE_URL || "local.db");
 
+console.log("Database path:", dbPath);
+
 export default defineConfig({
 	schema: "./src/schema",
 	out: "./src/migrations",
