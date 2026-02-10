@@ -1,0 +1,52 @@
+{
+	"name": "offline-sqlite",
+	"private": true,
+	"workspaces": {
+		"packages": [
+			"apps/*",
+			"packages/*"
+		],
+		"catalog": {
+			"dotenv": "^17.2.2",
+			"zod": "^4.1.13",
+			"@types/bun": "^1.3.4",
+			"hono": "^4.8.2",
+			"@trpc/server": "^11.7.2",
+			"better-auth": "^1.4.18",
+			"@libsql/client": "0.15.15",
+			"libsql": "0.5.22",
+			"@trpc/client": "^11.7.2",
+			"drizzle-orm": "^0.45.1"
+		}
+	},
+	"type": "module",
+	"scripts": {
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"check-types": "turbo check-types",
+		"dev:native": "turbo -F native dev",
+		"dev:web": "turbo -F web dev",
+		"dev:server": "turbo -F server dev",
+		"db:push": "turbo -F @offline-sqlite/db db:push",
+		"db:studio": "turbo -F @offline-sqlite/db db:studio",
+		"db:generate": "turbo -F @offline-sqlite/db db:generate",
+		"db:migrate": "turbo -F @offline-sqlite/db db:migrate",
+		"db:local": "turbo -F @offline-sqlite/db db:local"
+	},
+	"dependencies": {
+		"@offline-sqlite/env": "workspace:*",
+		"dotenv": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@offline-sqlite/config": "workspace:*",
+		"@types/bun": "catalog:",
+		"turbo": "^2.6.3",
+		"prettier": "^3.6.2",
+		"prettier-plugin-classnames": "^0.9.0",
+		"prettier-plugin-merge": "^0.9.0",
+		"prettier-plugin-tailwindcss": "^0.7.2",
+		"typescript": "^5"
+	},
+	"packageManager": "bun@1.3.8"
+}

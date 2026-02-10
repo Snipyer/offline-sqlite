@@ -1,0 +1,24 @@
+{
+	"name": "@offline-sqlite/auth",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {},
+	"dependencies": {
+		"@offline-sqlite/db": "workspace:*",
+		"@offline-sqlite/env": "workspace:*",
+		"better-auth": "catalog:",
+		"dotenv": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@offline-sqlite/config": "workspace:*",
+		"typescript": "^5"
+	}
+}

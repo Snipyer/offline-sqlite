@@ -1,0 +1,3 @@
+{
+	"extends": "@offline-sqlite/config/tsconfig.base.json"
+}

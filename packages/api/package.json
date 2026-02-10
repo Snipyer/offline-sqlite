@@ -1,0 +1,28 @@
+{
+	"name": "@offline-sqlite/api",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {},
+	"dependencies": {
+		"@offline-sqlite/auth": "workspace:*",
+		"@offline-sqlite/db": "workspace:*",
+		"@offline-sqlite/env": "workspace:*",
+		"@trpc/client": "catalog:",
+		"@trpc/server": "catalog:",
+		"dotenv": "catalog:",
+		"drizzle-orm": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@offline-sqlite/config": "workspace:*",
+		"hono": "catalog:",
+		"typescript": "^5"
+	}
+}
