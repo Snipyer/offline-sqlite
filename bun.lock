@@ -44,7 +44,7 @@
     "apps/web": {
       "name": "web",
       "dependencies": {
-        "@base-ui/react": "^1.0.0",
+        "@base-ui/react": "^1.1.0",
         "@offline-sqlite/api": "workspace:*",
         "@offline-sqlite/auth": "workspace:*",
         "@offline-sqlite/env": "workspace:*",

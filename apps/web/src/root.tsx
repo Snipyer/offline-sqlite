@@ -9,6 +9,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 import { queryClient } from "./utils/trpc";
 import { getLanguageDirection, i18n, I18nextProvider, useTranslation } from "@offline-sqlite/i18n";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -59,22 +60,24 @@ function DocumentLanguageSync() {
 export default function App() {
 	return (
 		<I18nextProvider i18n={i18n}>
-			<DocumentLanguageSync />
-			<QueryClientProvider client={queryClient}>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="dark"
-					disableTransitionOnChange
-					storageKey="vite-ui-theme"
-				>
-					<div className="grid h-svh grid-rows-[auto_1fr]">
-						<Header />
-						<Outlet />
-					</div>
-					<Toaster richColors />
-				</ThemeProvider>
-				<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
-			</QueryClientProvider>
+			<DirectionProvider direction="rtl">
+				<DocumentLanguageSync />
+				<QueryClientProvider client={queryClient}>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="dark"
+						disableTransitionOnChange
+						storageKey="vite-ui-theme"
+					>
+						<div className="grid h-svh grid-rows-[auto_1fr]">
+							<Header />
+							<Outlet />
+						</div>
+						<Toaster richColors />
+					</ThemeProvider>
+					<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+				</QueryClientProvider>
+			</DirectionProvider>
 		</I18nextProvider>
 	);
 }

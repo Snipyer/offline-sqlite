@@ -39,7 +39,7 @@ function DropdownMenuContent({
 			>
 				<MenuPrimitive.Popup
 					data-slot="dropdown-menu-content"
-					dir={documentDir}
+					dir={documentDir!}
 					className={cn(
 						`data-open:animate-in data-closed:animate-out data-closed:fade-out-0
 						data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95
@@ -145,7 +145,7 @@ function DropdownMenuSubTrigger({
 function DropdownMenuSubContent({
 	align = "start",
 	alignOffset = -3,
-	side = "right",
+	side = "inline-end",
 	sideOffset = 0,
 	className,
 	...props

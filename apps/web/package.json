@@ -15,7 +15,7 @@
 		"kill-5173": "lsof -ti :5173 | xargs kill -9 || true"
 	},
 	"dependencies": {
-		"@base-ui/react": "^1.0.0",
+		"@base-ui/react": "^1.1.0",
 		"@offline-sqlite/api": "workspace:*",
 		"@offline-sqlite/auth": "workspace:*",
 		"@offline-sqlite/env": "workspace:*",
