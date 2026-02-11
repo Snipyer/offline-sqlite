@@ -5,6 +5,8 @@ import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { toast } from "sonner";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
+import { isTauri } from "./is-tauri";
 
 export const queryClient = new QueryClient({
 	queryCache: new QueryCache({
@@ -24,10 +26,14 @@ export const trpcClient = createTRPCClient<AppRouter>({
 		httpBatchLink({
 			url: `${env.VITE_SERVER_URL}/trpc`,
 			fetch(url, options) {
-				return fetch(url, {
-					...options,
-					credentials: "include",
-				});
+				const fetchFn = isTauri() ? tauriFetch : fetch;
+				return fetchFn(
+					url as string,
+					{
+						...(options || {}),
+						credentials: "include",
+					} as RequestInit,
+				);
 			},
 		}),
 	],

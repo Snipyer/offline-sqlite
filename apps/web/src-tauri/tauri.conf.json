@@ -38,11 +38,7 @@
 			"icons/icon.icns",
 			"icons/icon.ico"
 		],
-		"externalBin": [
-			"binaries/server"
-		],
-		"resources": [
-			"server-data"
-		]
+		"externalBin": ["binaries/server"],
+		"resources": ["server-data"]
 	}
 }

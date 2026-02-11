@@ -23,6 +23,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_log::Builder::default().build())
+        .plugin(tauri_plugin_http::init())
         .manage(AppState {
             sidecar_child: Mutex::new(None),
         })
@@ -54,11 +55,24 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
+/// Check if we're running from the source directory (development) or as a bundled app
+fn is_running_from_source() -> bool {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    // Check if the Cargo.toml exists in the expected location
+    // If it doesn't exist, we're running a bundled app
+    manifest_dir.join("Cargo.toml").exists()
+}
+
 async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
-    let is_dev = cfg!(debug_assertions);
+    let is_debug_build = cfg!(debug_assertions);
+    let from_source = is_running_from_source();
     
-    // Only load .env files in development
-    // In production, env vars must be set in the system environment
+    // When running from source in debug mode: use source directory for database
+    // When running as a bundled app (debug or release): use app_data_dir with migrations
+    let is_dev = is_debug_build && from_source;
+    
+    // Only load .env files when running from source
+    // In bundled apps, env vars must be set at compile time or in system environment
     let env_vars = if is_dev {
         load_dotenv_files()
     } else {
@@ -80,8 +94,8 @@ async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
 
     log::info!("env: {}", env_mode);
 
-    // In dev, use absolute path to project root local.db
-    // In production, use app_data_dir for the database and copy bundled migrations there
+    // When running from source: use absolute path to project root local.db
+    // When running as bundled app: use app_data_dir for the database and copy bundled migrations there
     let (database_url, migrations_path) = if is_dev {
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         // src-tauri is at apps/web/src-tauri, so go up 3 levels to reach project root
@@ -108,7 +122,11 @@ async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
             }
         }
 
-        log::info!("Production mode: using database at {:?}", db_path);
+        if is_debug_build {
+            log::info!("Debug bundled mode: using database at {:?}", db_path);
+        } else {
+            log::info!("Production mode: using database at {:?}", db_path);
+        }
         log::info!("Migrations path: {:?}", app_migrations);
         (db_path.display().to_string(), Some(app_migrations))
     };
@@ -123,7 +141,8 @@ async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
         .env("BETTER_AUTH_URL", &env_vars.better_auth_url)
         .env("CORS_ORIGIN", &env_vars.cors_origin)
         .env("DATABASE_URL", &database_url)
-        .env("NODE_ENV", &env_mode);
+        .env("NODE_ENV", &env_mode)
+        .env("TAURI_ENVIRONMENT", "true");
 
     // Only set migrations folder in production
     if let Some(migrations) = migrations_path {

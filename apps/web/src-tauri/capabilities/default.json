@@ -2,9 +2,7 @@
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "default",
 	"description": "enables the default permissions",
-	"windows": [
-		"main"
-	],
+	"windows": ["main"],
 	"permissions": [
 		"core:default",
 		"core:window:default",
@@ -20,6 +18,18 @@
 				{
 					"name": "binaries/server",
 					"sidecar": true
+				}
+			]
+		},
+		"http:default",
+		{
+			"identifier": "http:allow-fetch",
+			"allow": [
+				{
+					"url": "http://localhost:3000"
+				},
+				{
+					"url": "http://127.0.0.1:3000"
 				}
 			]
 		}
