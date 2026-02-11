@@ -1,0 +1,4 @@
+[target.x86_64-pc-windows-msvc]
+linker = "lld-link"
+ar = "llvm-lib"
+env = { "CC" = "clang-cl", "CXX" = "clang-cl" }

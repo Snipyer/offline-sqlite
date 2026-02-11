@@ -30,7 +30,8 @@
 		"db:generate": "turbo -F @offline-sqlite/db db:generate",
 		"db:migrate": "turbo -F @offline-sqlite/db db:migrate",
 		"desktop:dev": "turbo -F web desktop:dev",
-		"desktop:build": "turbo -F web desktop:build"
+		"desktop:build": "turbo -F web desktop:build",
+		"desktop:build:win": "turbo -F web desktop:build:win"
 	},
 	"dependencies": {
 		"@offline-sqlite/env": "workspace:*",

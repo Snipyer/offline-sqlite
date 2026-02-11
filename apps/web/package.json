@@ -11,7 +11,9 @@
 		"copy:migrations": "rm -rf src-tauri/server-data && mkdir -p src-tauri/server-data && cp -r ../../packages/db/src/migrations src-tauri/server-data/",
 		"desktop:dev": "bun run kill-5173 && bun run copy:migrations && bun run build:server && bun run dev & wait-on http://localhost:5173 && tauri dev",
 		"desktop:build": "bun run copy:migrations && bun run build:server && tauri build",
+		"desktop:build:win": "bun run copy:migrations && bun run build:server:win && tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc",
 		"build:server": "cd ../server && bun build:sidecar:linux",
+		"build:server:win": "cd ../server && bun build:sidecar:windows",
 		"kill-5173": "lsof -ti :5173 | xargs kill -9 || true"
 	},
 	"dependencies": {
@@ -26,6 +28,7 @@
 		"@tanstack/react-form": "^1.27.3",
 		"@tanstack/react-query": "^5.90.12",
 		"@tauri-apps/api": "^2.10.1",
+		"@tauri-apps/plugin-http": "^2.5.7",
 		"@trpc/client": "catalog:",
 		"@trpc/server": "catalog:",
 		"@trpc/tanstack-react-query": "^11.7.2",

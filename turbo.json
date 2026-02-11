@@ -48,6 +48,9 @@
 		},
 		"desktop:build": {
 			"cache": false
+		},
+		"desktop:build:win": {
+			"cache": false
 		}
 	}
 }
