@@ -15,7 +15,8 @@
 				"width": 800,
 				"height": 600,
 				"resizable": true,
-				"fullscreen": false
+				"fullscreen": false,
+				"decorations": false
 			}
 		],
 		"security": {
@@ -32,7 +33,11 @@
 			"icons/icon.icns",
 			"icons/icon.ico"
 		],
-		"externalBin": ["binaries/server"],
-		"resources": ["server-data"]
+		"externalBin": [
+			"binaries/server"
+		],
+		"resources": [
+			"server-data"
+		]
 	}
 }

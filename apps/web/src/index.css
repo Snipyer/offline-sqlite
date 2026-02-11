@@ -2,6 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@layer components {
+	.titlebar {
+		@apply fixed top-0 left-0 right-0 h-9 flex items-center justify-between bg-background border-b select-none z-50;
+	}
+
+	.titlebar-button {
+		@apply inline-flex items-center justify-center w-10 h-9 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors;
+	}
+}
+
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

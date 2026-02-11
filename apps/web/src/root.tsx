@@ -5,11 +5,14 @@ import "./index.css";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
 import Header from "./components/header";
+import { Titlebar } from "./components/titlebar";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 import { queryClient } from "./utils/trpc";
 import { getLanguageDirection, i18n, I18nextProvider, useTranslation } from "@offline-sqlite/i18n";
 import { DirectionProvider } from "@base-ui/react/direction-provider";
+import { isTauri } from "./utils/is-tauri";
+import { cn } from "./lib/utils";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -69,7 +72,13 @@ export default function App() {
 						disableTransitionOnChange
 						storageKey="vite-ui-theme"
 					>
-						<div className="grid h-svh grid-rows-[auto_1fr]">
+						{isTauri() && <Titlebar />}
+						<div
+							className={cn(
+								"grid h-svh grid-rows-[auto_1fr]",
+								isTauri() && "grid-rows-[auto_auto_1fr] pt-9",
+							)}
+						>
 							<Header />
 							<Outlet />
 						</div>
