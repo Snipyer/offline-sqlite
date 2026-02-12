@@ -10,16 +10,16 @@ Deliver patient management and lookup UX for downstream visit workflows.
 
 ## Checklist
 
-- [ ] Create feature folder for patients in web app.
-- [ ] Build create patient form with required/optional fields from PRD.
-- [ ] Build edit patient form.
-- [ ] Build patient search UI and results list.
-- [ ] Ensure fast selection flow for creating visits.
-- [ ] Wire all queries/mutations via tRPC + React Query.
-- [ ] Add loading/empty/error states.
-- [ ] Add i18n keys for all new user-facing strings.
+- [x] Create feature folder for patients in web app.
+- [x] Build create patient form with required/optional fields from PRD.
+- [x] Build edit patient form.
+- [x] Build patient search UI and results list.
+- [x] Ensure fast selection flow for creating visits.
+- [x] Wire all queries/mutations via tRPC + React Query.
+- [x] Add loading/empty/error states.
+- [x] Add i18n keys for all new user-facing strings.
 
 ## Done when
 
-- [ ] Dentist can create/find/edit patients reliably.
-- [ ] Visits flow can depend on patient selection without blockers.
+- [x] Dentist can create/find/edit patients reliably.
+- [x] Visits flow can depend on patient selection without blockers.

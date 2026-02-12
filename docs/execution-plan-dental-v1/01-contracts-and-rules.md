@@ -10,23 +10,23 @@ Define canonical domain contracts and business rules before implementation.
 
 ## Checklist
 
-- [ ] Finalize entities and required fields: Patient, VisitType, Visit, VisitAct.
-- [ ] Finalize enum/value domains (sex, status, tooth ID format FDI).
-- [ ] Finalize required vs optional fields from PRD.
-- [ ] Finalize money invariants:
-    - [ ] `visitTotal = sum(visitAct.price)`
-    - [ ] `visitTotal >= 0`
-    - [ ] `amountPaid >= 0`
-    - [ ] `amountPaid <= visitTotal`
-    - [ ] `amountLeft = visitTotal - amountPaid`
-- [ ] Finalize visit-act invariants:
-    - [ ] at least one act per visit
-    - [ ] each act has one or more teeth
-    - [ ] each act price is non-negative
-- [ ] Finalize soft-delete behavior and visibility rules.
-- [ ] Finalize per-user isolation rules for all domains.
+- [x] Finalize entities and required fields: Patient, VisitType, Visit, VisitAct.
+- [x] Finalize enum/value domains (sex, status, tooth ID format FDI).
+- [x] Finalize required vs optional fields from PRD.
+- [x] Finalize money invariants:
+    - [x] `visitTotal = sum(visitAct.price)`
+    - [x] `visitTotal >= 0`
+    - [x] `amountPaid >= 0`
+    - [x] `amountPaid <= visitTotal`
+    - [x] `amountLeft = visitTotal - amountPaid`
+- [x] Finalize visit-act invariants:
+    - [x] at least one act per visit
+    - [x] each act has one or more teeth
+    - [x] each act price is non-negative
+- [x] Finalize soft-delete behavior and visibility rules.
+- [x] Finalize per-user isolation rules for all domains.
 
 ## Done when
 
-- [ ] Team can implement DB/API/UI without ambiguity.
-- [ ] No unresolved decisions remain for required fields or formulas.
+- [x] Team can implement DB/API/UI without ambiguity.
+- [x] No unresolved decisions remain for required fields or formulas.

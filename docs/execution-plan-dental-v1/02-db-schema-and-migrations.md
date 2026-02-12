@@ -10,22 +10,22 @@ Implement normalized tables and relations that encode the agreed contracts.
 
 ## Checklist
 
-- [ ] Add/extend schema for `patients`.
-- [ ] Add/extend schema for `visit_types`.
-- [ ] Add/extend schema for `visits` (including ownership and soft-delete fields).
-- [ ] Add/extend schema for `visit_acts`.
-- [ ] Add relation/pivot model for act-to-teeth (or equivalent normalized design).
-- [ ] Ensure all required fields are `NOT NULL` where appropriate.
-- [ ] Add indexes for expected filters:
-    - [ ] visit date/time
-    - [ ] patient lookup/search keys
-    - [ ] visit type
-    - [ ] ownership keys
-    - [ ] soft-delete filtering
-- [ ] Generate and review migrations.
-- [ ] Verify migration applies cleanly on a fresh database.
+- [x] Add/extend schema for `patients`.
+- [x] Add/extend schema for `visit_types`.
+- [x] Add/extend schema for `visits` (including ownership and soft-delete fields).
+- [x] Add/extend schema for `visit_acts`.
+- [x] Add relation/pivot model for act-to-teeth (or equivalent normalized design).
+- [x] Ensure all required fields are `NOT NULL` where appropriate.
+- [x] Add indexes for expected filters:
+    - [x] visit date/time
+    - [x] patient lookup/search keys
+    - [x] visit type
+    - [x] ownership keys
+    - [x] soft-delete filtering
+- [x] Generate and review migrations.
+- [x] Verify migration applies cleanly on a fresh database.
 
 ## Done when
 
-- [ ] Schema supports all PRD entities and constraints.
-- [ ] Migrations run successfully and are reproducible.
+- [x] Schema supports all PRD entities and constraints.
+- [x] Migrations run successfully and are reproducible.
