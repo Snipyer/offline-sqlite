@@ -20,6 +20,7 @@
 - use tabs for indentation (tab width 4) and 110 char print width per `.prettierrc`
 - default to small, focused components and files. prefer small diffs over repo-wide rewrites
 - use workspace imports like `@offline-sqlite/db`, `@offline-sqlite/api`, `@offline-sqlite/auth`, `@offline-sqlite/env`, `@offline-sqlite/i18n`
+- use shadcn regestries to find existing components before building new ones. see `apps/web/src/components/ui/` and registeries are in `apps/web/components.json/`
 
 ## Don't
 
@@ -73,12 +74,14 @@ Note: always format and type-check files you edit. use file-scoped or package-sc
 ## Safety and Permissions
 
 Allowed without prompt:
+
 - read files, list files, search codebase
 - type-check a single package
 - format a single file with prettier
 - run dev servers
 
 Ask first:
+
 - installing new packages (`bun add`)
 - deleting files or directories
 - modifying `.env` files or secrets
