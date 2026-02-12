@@ -10,16 +10,16 @@ Deliver visit type management UI backed by protected API procedures.
 
 ## Checklist
 
-- [ ] Create feature folder for visit types in web app.
-- [ ] Build list view of visit types.
-- [ ] Build create flow.
-- [ ] Build edit flow.
-- [ ] Build delete/disable flow aligned with chosen API behavior.
-- [ ] Wire all mutations/queries via tRPC + React Query.
-- [ ] Add loading/empty/error states.
-- [ ] Add i18n keys for all new user-facing strings.
+- [x] Create feature folder for visit types in web app.
+- [x] Build list view of visit types.
+- [x] Build create flow.
+- [x] Build edit flow.
+- [x] Build delete/disable flow aligned with chosen API behavior.
+- [x] Wire all mutations/queries via tRPC + React Query.
+- [x] Add loading/empty/error states.
+- [x] Add i18n keys for all new user-facing strings.
 
 ## Done when
 
-- [ ] Dentist can manage custom visit types end to end.
-- [ ] Visit type selection is ready for visits form dependency.
+- [x] Dentist can manage custom visit types end to end.
+- [x] Visit type selection is ready for visits form dependency.
