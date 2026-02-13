@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
 import { i18n, useTranslation } from "@offline-sqlite/i18n";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import type { Route } from "./+types/_index";
 
 export function meta({}: Route.MetaArgs) {
@@ -14,25 +16,38 @@ export default function Home() {
 	const { t } = useTranslation();
 
 	return (
-		<div className="container mx-auto max-w-3xl px-4 py-2">
-			<pre className="overflow-x-auto font-mono text-sm">{t("home.titleAscii")}</pre>
-			<div className="grid gap-6">
-				<section className="rounded-lg border p-4">
-					<h2 className="mb-2 font-medium">{t("status.apiTitle")}</h2>
-					<div className="flex items-center gap-2">
-						<div
-							className={`h-2 w-2 rounded-full
-								${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
-						/>
-						<span className="text-muted-foreground text-sm">
-							{healthCheck.isLoading
-								? t("status.checking")
-								: healthCheck.data
-									? t("status.connected")
-									: t("status.disconnected")}
-						</span>
-					</div>
-				</section>
+		<div className="container mx-auto max-w-3xl px-4 py-6">
+			<pre className="text-muted-foreground mb-6 overflow-x-auto font-mono text-xs">
+				{t("home.titleAscii")}
+			</pre>
+			<div className="grid gap-4">
+				<Card>
+					<CardHeader>
+						<div className="flex items-center gap-3">
+							<div
+								className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+									healthCheck.data ? "bg-green-500/10" : "bg-red-500/10"
+								}`}
+							>
+								<div
+									className={`h-3 w-3 rounded-full ${
+										healthCheck.data ? "bg-green-500" : "bg-red-500"
+									}`}
+								/>
+							</div>
+							<div>
+								<CardTitle>{t("status.apiTitle")}</CardTitle>
+								<CardDescription>
+									{healthCheck.isLoading
+										? t("status.checking")
+										: healthCheck.data
+											? t("status.connected")
+											: t("status.disconnected")}
+								</CardDescription>
+							</div>
+						</div>
+					</CardHeader>
+				</Card>
 			</div>
 		</div>
 	);

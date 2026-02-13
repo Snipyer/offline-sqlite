@@ -21,45 +21,73 @@ export default function UserMenu() {
 	const { t, i18n } = useTranslation();
 
 	if (isPending) {
-		return <Skeleton className="h-9 w-24" />;
+		return <Skeleton className="h-9 w-24 rounded-lg" />;
 	}
 
 	if (!session) {
 		return (
 			<Link to="/login">
-				<Button variant="outline">{t("auth.signIn")}</Button>
+				<Button variant="outline" size="sm">
+					{t("auth.signIn")}
+				</Button>
 			</Link>
 		);
 	}
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger render={<Button variant="outline" />}>
+			<DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					className="me-1.5 size-4"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				>
+					<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+					<circle cx="12" cy="7" r="4" />
+				</svg>
 				{session.user.name}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="bg-card">
-				<DropdownMenuGroup>
-					<DropdownMenuLabel>{t("user.myAccount")}</DropdownMenuLabel>
-					<DropdownMenuSeparator />
-					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
-					<DropdownMenuItem
-						variant="destructive"
-						onClick={() => {
-							authClient.signOut({
-								fetchOptions: {
-									headers: {
-										"x-locale": i18n.resolvedLanguage ?? i18n.language,
-									},
-									onSuccess: () => {
-										navigate("/");
-									},
+			<DropdownMenuContent className="bg-card" align="end">
+				<div className="px-2 py-1.5 text-sm font-semibold">{t("user.myAccount")}</div>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem className="cursor-default">{session.user.email}</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					variant="destructive"
+					onClick={() => {
+						authClient.signOut({
+							fetchOptions: {
+								headers: {
+									"x-locale": i18n.resolvedLanguage ?? i18n.language,
 								},
-							});
-						}}
+								onSuccess: () => {
+									navigate("/");
+								},
+							},
+						});
+					}}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						className="me-1.5 size-4"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
 					>
-						{t("auth.signOut")}
-					</DropdownMenuItem>
-				</DropdownMenuGroup>
+						<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+						<polyline points="16 17 21 12 16 7" />
+						<line x1="21" x2="9" y1="12" y2="12" />
+					</svg>
+					{t("auth.signOut")}
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

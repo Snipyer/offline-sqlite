@@ -27,6 +27,12 @@ export const supportedLanguages = [
 	{ code: "ar", dir: "rtl" },
 ] as const;
 
+export const languageShortLabels: Record<SupportedLanguageCode, string> = {
+	en: "En",
+	fr: "Fr",
+	ar: "ع",
+};
+
 export const localeCookieName = "offline-sqlite.locale";
 export const localeStorageKey = localeCookieName;
 
