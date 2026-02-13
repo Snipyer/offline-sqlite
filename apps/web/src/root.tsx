@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import "./index.css";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
-import Header from "./components/header";
 import { Titlebar } from "./components/titlebar";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
@@ -13,6 +12,8 @@ import { getLanguageDirection, i18n, I18nextProvider, useTranslation } from "@of
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { isTauri } from "./utils/is-tauri";
 import { cn } from "./lib/utils";
+import { AppSidebar } from "./components/app-sidebar";
+import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -48,22 +49,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
 function DocumentLanguageSync() {
 	const { i18n: instance } = useTranslation();
 	const currentLanguage = instance.resolvedLanguage ?? instance.language;
+	const direction = getLanguageDirection(currentLanguage);
 
 	useEffect(() => {
 		if (typeof document === "undefined") {
 			return;
 		}
 		document.documentElement.lang = currentLanguage;
-		document.documentElement.dir = getLanguageDirection(currentLanguage);
-	}, [currentLanguage]);
+		document.documentElement.dir = direction;
+	}, [currentLanguage, direction]);
 
 	return null;
 }
 
 export default function App() {
+	const { i18n: instance } = useTranslation();
+	const currentLanguage = instance.resolvedLanguage ?? instance.language;
+	const direction = getLanguageDirection(currentLanguage);
+	const sidebarSide = direction === "rtl" ? "right" : "left";
+
 	return (
 		<I18nextProvider i18n={i18n}>
-			<DirectionProvider direction="rtl">
+			<DirectionProvider direction={direction}>
 				<DocumentLanguageSync />
 				<QueryClientProvider client={queryClient}>
 					<ThemeProvider
@@ -72,16 +79,13 @@ export default function App() {
 						disableTransitionOnChange
 						storageKey="vite-ui-theme"
 					>
-						{isTauri() && <Titlebar />}
-						<div
-							className={cn(
-								"grid h-svh grid-rows-[auto_1fr]",
-								isTauri() && "grid-rows-[auto_auto_1fr] pt-9",
-							)}
-						>
-							<Header />
-							<Outlet />
-						</div>
+						<SidebarProvider defaultOpen side={sidebarSide}>
+							{isTauri() && <Titlebar />}
+							<AppSidebar />
+							<SidebarInset className={cn("flex h-svh flex-col", isTauri() && "pt-9")}>
+								<Outlet />
+							</SidebarInset>
+						</SidebarProvider>
 						<Toaster richColors />
 					</ThemeProvider>
 					<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
