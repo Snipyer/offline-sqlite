@@ -132,7 +132,7 @@ export default function VisitTypes() {
 						) : visitTypes.data?.length === 0 ? (
 							<p className="py-4 text-center">{t("visitTypes.empty")}</p>
 						) : (
-							<div className="space-y-2">
+							<div className="space-y-2 py-4">
 								{visitTypes.data?.map((vt) =>
 									editingId === vt.id ? (
 										<form

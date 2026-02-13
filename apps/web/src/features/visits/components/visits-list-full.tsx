@@ -99,7 +99,7 @@ export default function VisitsList() {
 					<Link to="/visits/new">
 						<Button size="lg">
 							<Plus className="mr-2 h-4 w-4" />
-							New Visit
+							{t("visits.addNew")}
 						</Button>
 					</Link>
 				</div>
@@ -108,10 +108,10 @@ export default function VisitsList() {
 			<Card>
 				<CardHeader className="pb-4">
 					<div className="flex items-center justify-between">
-						<CardTitle className="text-lg">All Visits</CardTitle>
+						<CardTitle className="text-lg">{t("visits.allVisits")}</CardTitle>
 						<Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
 							<Filter className="mr-2 h-4 w-4" />
-							Filters
+							{t("visits.filters")}
 							{hasActiveFilters && (
 								<span
 									className="bg-primary text-primary-foreground ml-2 rounded-full px-2
@@ -127,17 +127,17 @@ export default function VisitsList() {
 					{showFilters && (
 						<div className="bg-card mb-6 rounded-lg border p-4">
 							<div className="mb-4 flex items-center justify-between">
-								<h3 className="font-medium">Filter Visits</h3>
+								<h3 className="font-medium">{t("visits.filterVisits")}</h3>
 								{hasActiveFilters && (
 									<Button variant="ghost" size="sm" onClick={clearFilters}>
 										<X className="mr-1 h-3 w-3" />
-										Clear
+										{t("visits.clearFilters")}
 									</Button>
 								)}
 							</div>
 							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 								<div>
-									<Label className="text-sm">From Date</Label>
+									<Label className="text-sm">{t("visits.fromDate")}</Label>
 									<Input
 										type="date"
 										value={filters.dateFrom}
@@ -148,7 +148,7 @@ export default function VisitsList() {
 									/>
 								</div>
 								<div>
-									<Label className="text-sm">To Date</Label>
+									<Label className="text-sm">{t("visits.toDate")}</Label>
 									<Input
 										type="date"
 										value={filters.dateTo}
@@ -159,18 +159,18 @@ export default function VisitsList() {
 									/>
 								</div>
 								<div>
-									<Label className="text-sm">Patient Name</Label>
+									<Label className="text-sm">{t("visits.filterPatient")}</Label>
 									<Input
 										value={filters.patientName}
 										onChange={(e) =>
 											setFilters((prev) => ({ ...prev, patientName: e.target.value }))
 										}
-										placeholder="Search patients..."
+										placeholder={t("visits.searchPatients")}
 										className="mt-1.5"
 									/>
 								</div>
 								<div>
-									<Label className="text-sm">Procedure Type</Label>
+									<Label className="text-sm">{t("visits.procedureTypeFilter")}</Label>
 									<select
 										value={filters.visitTypeId}
 										onChange={(e) =>
@@ -179,7 +179,7 @@ export default function VisitsList() {
 										className="border-input bg-background mt-1.5 h-10 w-full rounded-md
 											border px-3"
 									>
-										<option value="">All types</option>
+										<option value="">{t("visits.allTypes")}</option>
 										{visitTypes.data?.map((vt) => (
 											<option key={vt.id} value={vt.id}>
 												{vt.name}
@@ -205,11 +205,11 @@ export default function VisitsList() {
 									<Calendar className="text-muted-foreground h-8 w-8" />
 								</div>
 							</div>
-							<p className="text-muted-foreground mb-4">No visits found</p>
+							<p className="text-muted-foreground mb-4">{t("visits.noVisitsFound")}</p>
 							<Link to="/visits/new">
 								<Button>
 									<Plus className="mr-2 h-4 w-4" />
-									Create First Visit
+									{t("visits.createFirstVisit")}
 								</Button>
 							</Link>
 						</div>
@@ -241,7 +241,7 @@ export default function VisitsList() {
 																className="bg-destructive/10 text-destructive
 																	rounded-full px-2 py-0.5 text-xs"
 															>
-																Deleted
+																{t("visits.deletedMarker")}
 															</span>
 														)}
 													</div>
@@ -286,7 +286,7 @@ export default function VisitsList() {
 												<div className="flex items-center gap-2">
 													<CreditCard className="text-muted-foreground h-4 w-4" />
 													<span className="text-muted-foreground text-sm">
-														Total:
+														{t("visits.totalAmount")}:
 													</span>
 													<span className="font-semibold">
 														${visit.totalAmount}
@@ -295,14 +295,14 @@ export default function VisitsList() {
 												<div className="bg-border h-4 w-px" />
 												<div className="flex items-center gap-2">
 													<span className="text-muted-foreground text-sm">
-														Paid:
+														{t("visits.amountPaid")}:
 													</span>
 													<span className="font-semibold">${visit.amountPaid}</span>
 												</div>
 												<div className="bg-border h-4 w-px" />
 												<div className="flex items-center gap-2">
 													<span className="text-muted-foreground text-sm">
-														Balance:
+														{t("visits.amountLeft")}:
 													</span>
 													<span
 														className={`font-semibold ${
@@ -331,7 +331,7 @@ export default function VisitsList() {
 													<Button
 														variant="ghost"
 														size="icon"
-														aria-label="Edit visit"
+														aria-label={t("visits.editVisitAction")}
 													>
 														<Pencil className="h-4 w-4" />
 													</Button>
@@ -343,7 +343,7 @@ export default function VisitsList() {
 													size="icon"
 													onClick={() => handleRestore(visit.id)}
 													disabled={restoreMutation.isPending}
-													aria-label="Restore visit"
+													aria-label={t("visits.restoreVisitAction")}
 												>
 													<RotateCcw className="h-4 w-4" />
 												</Button>
@@ -354,7 +354,7 @@ export default function VisitsList() {
 													onClick={() => handleSoftDelete(visit.id)}
 													disabled={softDeleteMutation.isPending}
 													className="text-destructive hover:text-destructive"
-													aria-label="Delete visit"
+													aria-label={t("visits.deleteVisitAction")}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>

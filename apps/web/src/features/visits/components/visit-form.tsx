@@ -35,7 +35,7 @@ interface ActInput {
 interface PatientFormData {
 	name: string;
 	sex: Sex;
-	age: number;
+	age: number | "";
 	phone: string;
 	address: string;
 }
@@ -88,7 +88,7 @@ const emptyAct = (): ActInput => ({
 const emptyPatientData: PatientFormData = {
 	name: "",
 	sex: "M",
-	age: 30,
+	age: "",
 	phone: "",
 	address: "",
 };
@@ -231,14 +231,15 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
+		if (!isValid) return;
+
 		let patientId = formData.patientId;
 
 		if (mode === "create" && (patientId === "new" || patientId === "")) {
-			if (!patientFormData.name.trim()) return;
 			const result = await createPatientMutation.mutateAsync({
 				name: patientFormData.name.trim(),
 				sex: patientFormData.sex,
-				age: patientFormData.age,
+				age: patientFormData.age || 0,
 				phone: patientFormData.phone || undefined,
 				address: patientFormData.address || undefined,
 			});
@@ -279,12 +280,14 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const isSubmitting =
 		createVisitMutation.isPending || updateVisitMutation.isPending || createPatientMutation.isPending;
 
-	const isValid =
-		((formData.patientId && formData.patientId !== "new") ||
-			(mode === "create" && formData.patientId === "new" && patientFormData.name.trim())) &&
-		formData.acts.length > 0 &&
-		formData.acts.every((act) => act.visitTypeId && act.teeth.length > 0 && act.price >= 0) &&
-		formData.amountPaid <= totalAmount;
+	const hasPatient =
+		(formData.patientId !== "" && formData.patientId !== "new") ||
+		(formData.patientId === "new" && mode === "create" && patientFormData.name.trim() !== "");
+
+	const hasActs =
+		formData.acts.length > 0 && formData.acts.every((act) => act.visitTypeId && act.teeth.length > 0);
+
+	const isValid = hasPatient && hasActs;
 
 	const hasSelectedPatient = formData.patientId !== "" && formData.patientId !== "new";
 
@@ -320,11 +323,11 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 							<CardTitle className="text-lg">{t("visits.patientLabel")}</CardTitle>
 						</div>
 					</CardHeader>
-					<CardContent className="space-y-4">
+					<CardContent className="space-y-4 py-4">
 						{mode === "create" && !hasSelectedPatient && (
 							<div className="relative">
 								<Label className="mb-2 block text-sm font-medium">
-									Search for existing patient or create new
+									{t("visits.searchExistingOrNew")}
 								</Label>
 								<div className="relative">
 									<Search
@@ -350,7 +353,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									>
 										{patients.data?.length === 0 && (
 											<div className="text-muted-foreground px-4 py-3 text-sm">
-												No patients found
+												{t("visits.noPatientsFound")}
 											</div>
 										)}
 										{patients.data?.map((patient) => (
@@ -370,8 +373,10 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 												<div>
 													<p className="font-medium">{patient.name}</p>
 													<p className="text-muted-foreground text-sm">
-														{patient.age} years •{" "}
-														{patient.sex === "M" ? "Male" : "Female"}
+														{patient.age} {t("patients.years")} •{" "}
+														{patient.sex === "M"
+															? t("patients.sexMale")
+															: t("patients.sexFemale")}
 														{patient.phone && ` • ${patient.phone}`}
 													</p>
 												</div>
@@ -389,7 +394,9 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 											>
 												<Plus className="h-4 w-4" />
 											</div>
-											<span className="font-medium">Create new patient</span>
+											<span className="font-medium">
+												{t("visits.createNewPatient")}
+											</span>
 										</button>
 									</div>
 								)}
@@ -409,12 +416,14 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									</div>
 									<div>
 										<p className="font-semibold">
-											{patientFormData.name || "Select or Create Patient"}
+											{patientFormData.name || t("visits.selectOrCreatePatient")}
 										</p>
 										{patientFormData.name && (
 											<p className="text-muted-foreground text-sm">
-												{patientFormData.age} years •{" "}
-												{patientFormData.sex === "M" ? "Male" : "Female"}
+												{patientFormData.age || "0"} {t("patients.years")} •{" "}
+												{patientFormData.sex === "M"
+													? t("patients.sexMale")
+													: t("patients.sexFemale")}
 												{patientFormData.phone && ` • ${patientFormData.phone}`}
 											</p>
 										)}
@@ -427,7 +436,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										size="sm"
 										onClick={handleClearPatient}
 									>
-										Change
+										{t("visits.change")}
 									</Button>
 								)}
 							</div>
@@ -435,7 +444,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 							{/* Patient Form Fields - Always visible */}
 							<div className="grid gap-4 border-t pt-4 sm:grid-cols-2">
 								<div className="sm:col-span-2">
-									<Label htmlFor="patient-name">Full Name *</Label>
+									<Label htmlFor="patient-name">{t("patients.nameLabel")} *</Label>
 									<Input
 										id="patient-name"
 										value={patientFormData.name}
@@ -445,13 +454,13 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 												name: e.target.value,
 											}))
 										}
-										placeholder="Enter patient name"
+										placeholder={t("patients.namePlaceholder")}
 										className="mt-1.5"
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
 								</div>
 								<div>
-									<Label htmlFor="patient-sex">Sex *</Label>
+									<Label htmlFor="patient-sex">{t("patients.sexLabel")} *</Label>
 									<select
 										id="patient-sex"
 										value={patientFormData.sex}
@@ -465,22 +474,23 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 											border px-3"
 										disabled={mode === "edit" || hasSelectedPatient}
 									>
-										<option value="M">Male</option>
-										<option value="F">Female</option>
+										<option value="M">{t("patients.sexMale")}</option>
+										<option value="F">{t("patients.sexFemale")}</option>
 									</select>
 								</div>
 								<div>
-									<Label htmlFor="patient-age">Age *</Label>
+									<Label htmlFor="patient-age">{t("patients.ageLabel")} *</Label>
 									<Input
 										id="patient-age"
 										type="number"
 										min={0}
 										max={150}
-										value={patientFormData.age}
+										value={patientFormData.age || ""}
+										placeholder="0"
 										onChange={(e) =>
 											setPatientFormData((prev) => ({
 												...prev,
-												age: parseInt(e.target.value) || 0,
+												age: e.target.value ? parseInt(e.target.value) : "",
 											}))
 										}
 										className="mt-1.5"
@@ -488,7 +498,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									/>
 								</div>
 								<div>
-									<Label htmlFor="patient-phone">Phone</Label>
+									<Label htmlFor="patient-phone">{t("patients.phoneLabel")}</Label>
 									<Input
 										id="patient-phone"
 										value={patientFormData.phone}
@@ -498,13 +508,13 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 												phone: e.target.value,
 											}))
 										}
-										placeholder="Optional"
+										placeholder={t("patients.phonePlaceholder")}
 										className="mt-1.5"
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
 								</div>
-								<div className="sm:col-span-2">
-									<Label htmlFor="patient-address">Address</Label>
+								<div>
+									<Label htmlFor="patient-address">{t("patients.addressLabel")}</Label>
 									<Input
 										id="patient-address"
 										value={patientFormData.address}
@@ -514,7 +524,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 												address: e.target.value,
 											}))
 										}
-										placeholder="Optional"
+										placeholder={t("patients.addressPlaceholder")}
 										className="mt-1.5"
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
@@ -534,13 +544,13 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 							>
 								2
 							</div>
-							<CardTitle className="text-lg">Visit Details</CardTitle>
+							<CardTitle className="text-lg">{t("visits.visitDetails")}</CardTitle>
 						</div>
 					</CardHeader>
-					<CardContent className="space-y-4">
+					<CardContent className="space-y-4 py-4">
 						<div className="grid gap-4 sm:grid-cols-2">
 							<div>
-								<Label htmlFor="visit-time">Visit Date & Time *</Label>
+								<Label htmlFor="visit-time">{t("visits.visitDateTime")} *</Label>
 								<div className="relative mt-1.5">
 									<Calendar
 										className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4
@@ -558,7 +568,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								</div>
 							</div>
 							<div>
-								<Label htmlFor="notes">Clinical Notes</Label>
+								<Label htmlFor="notes">{t("visits.clinicalNotes")}</Label>
 								<div className="relative mt-1.5">
 									<FileText className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
 									<textarea
@@ -567,9 +577,9 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										onChange={(e) =>
 											setFormData((prev) => ({ ...prev, notes: e.target.value }))
 										}
-										placeholder="Add any clinical observations..."
-										className="border-input bg-background min-h-[80px] w-full rounded-md
-											border px-3 py-2 pl-10 text-sm"
+										placeholder={t("visits.addClinicalObservations")}
+										className="border-input bg-background w-full rounded-md border px-3
+											py-2 pl-10 text-sm"
 									/>
 								</div>
 							</div>
@@ -588,15 +598,15 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								>
 									3
 								</div>
-								<CardTitle className="text-lg">Treatment Acts</CardTitle>
+								<CardTitle className="text-lg">{t("visits.treatmentActs")}</CardTitle>
 							</div>
 							<Button type="button" variant="outline" size="sm" onClick={handleAddAct}>
 								<Plus className="mr-1 h-4 w-4" />
-								Add Act
+								{t("visits.addAct")}
 							</Button>
 						</div>
 					</CardHeader>
-					<CardContent className="space-y-4">
+					<CardContent className="space-y-4 py-4">
 						{formData.acts.map((act, index) => (
 							<div key={act.id} className="bg-card rounded-lg border p-4">
 								<div className="mb-4 flex items-center justify-between">
@@ -607,7 +617,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										>
 											{index + 1}
 										</div>
-										<span className="font-medium">Treatment Act</span>
+										<span className="font-medium">{t("visits.treatmentAct")}</span>
 									</div>
 									{formData.acts.length > 1 && (
 										<Button
@@ -618,14 +628,14 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 											className="text-destructive hover:text-destructive"
 										>
 											<Trash2 className="mr-1 h-4 w-4" />
-											Remove
+											{t("visits.removeAct")}
 										</Button>
 									)}
 								</div>
 
 								<div className="grid gap-4 sm:grid-cols-3">
 									<div className="sm:col-span-1">
-										<Label className="text-sm">Procedure Type *</Label>
+										<Label className="text-sm">{t("visits.procedureType")} *</Label>
 										<select
 											value={act.visitTypeId}
 											onChange={(e) =>
@@ -634,7 +644,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 											className="border-input bg-background mt-1.5 h-10 w-full
 												rounded-md border px-3"
 										>
-											<option value="">Select procedure</option>
+											<option value="">{t("visits.selectProcedure")}</option>
 											{visitTypes.data?.map((vt) => (
 												<option key={vt.id} value={vt.id}>
 													{vt.name}
@@ -644,31 +654,25 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									</div>
 
 									<div className="sm:col-span-1">
-										<Label className="text-sm">Price *</Label>
+										<Label className="text-sm">{t("visits.price")} *</Label>
 										<div className="relative mt-1.5">
-											<span
-												className="text-muted-foreground absolute top-1/2 left-3
-													-translate-y-1/2 text-sm"
-											>
-												$
-											</span>
 											<Input
 												type="number"
-												min={0}
-												value={act.price}
+												// min={0}
+												value={act.price || ""}
+												placeholder="0"
 												onChange={(e) =>
 													updateAct(act.id, {
-														price: parseInt(e.target.value) || 0,
+														price: e.target.value ? parseInt(e.target.value) : 0,
 													})
 												}
 												className="pl-7"
-												placeholder="0"
 											/>
 										</div>
 									</div>
 
 									<div className="sm:col-span-1">
-										<Label className="text-sm">Teeth Treated *</Label>
+										<Label className="text-sm">{t("visits.teethTreated")} *</Label>
 										<div className="mt-1.5">
 											<ToothSelector
 												selectedTeeth={act.teeth}
@@ -704,38 +708,35 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 							>
 								4
 							</div>
-							<CardTitle className="text-lg">Payment</CardTitle>
+							<CardTitle className="text-lg">{t("visits.payment")}</CardTitle>
 						</div>
 					</CardHeader>
-					<CardContent>
+					<CardContent className="py-4">
 						<div className="bg-muted rounded-lg p-6">
 							<div className="grid gap-6 sm:grid-cols-3">
 								<div className="text-center sm:text-left">
-									<p className="text-muted-foreground text-sm">Total Amount</p>
-									<p className="mt-1 text-2xl font-bold">${totalAmount}</p>
+									<p className="text-muted-foreground text-sm">
+										{t("visits.totalAmountLabel")}
+									</p>
+									<p className="mt-1 text-2xl font-bold">{totalAmount}</p>
 								</div>
 
 								<div className="text-center sm:text-left">
 									<Label htmlFor="amount-paid" className="text-muted-foreground text-sm">
-										Amount Paid
+										{t("visits.amountPaidLabel")}
 									</Label>
 									<div className="relative mt-1">
-										<span
-											className="text-muted-foreground absolute top-1/2 left-3
-												-translate-y-1/2"
-										>
-											$
-										</span>
 										<Input
 											id="amount-paid"
 											type="number"
 											min={0}
 											max={totalAmount}
-											value={formData.amountPaid}
+											value={formData.amountPaid || ""}
+											placeholder="0"
 											onChange={(e) =>
 												setFormData((prev) => ({
 													...prev,
-													amountPaid: parseInt(e.target.value) || 0,
+													amountPaid: e.target.value ? parseInt(e.target.value) : 0,
 												}))
 											}
 											className="pl-7 text-lg"
@@ -744,20 +745,20 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								</div>
 
 								<div className="text-center sm:text-left">
-									<p className="text-muted-foreground text-sm">Balance Due</p>
+									<p className="text-muted-foreground text-sm">{t("visits.balanceDue")}</p>
 									<p
 										className={`mt-1 text-2xl font-bold ${
 											amountLeft > 0 ? "text-orange-600" : "text-green-600"
 										}`}
 									>
-										${amountLeft}
+										{amountLeft}
 									</p>
 								</div>
 							</div>
 
 							{formData.amountPaid > totalAmount && (
 								<p className="text-destructive mt-4 text-center text-sm">
-									Amount paid cannot exceed total
+									{t("visits.amountExceedError")}
 								</p>
 							)}
 						</div>
@@ -767,7 +768,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 				{/* Actions */}
 				<div className="flex items-center justify-end gap-3 pt-4">
 					<Button type="button" variant="outline" onClick={cancelForm} size="lg">
-						Cancel
+						{t("common.cancel")}
 					</Button>
 					<Button type="submit" disabled={!isValid || isSubmitting} size="lg">
 						{isSubmitting ? (
@@ -775,7 +776,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 						) : (
 							<Check className="mr-2 h-4 w-4" />
 						)}
-						{mode === "create" ? "Create Visit" : "Save Changes"}
+						{mode === "create" ? t("visits.createVisit") : t("visits.saveChanges")}
 					</Button>
 				</div>
 			</form>

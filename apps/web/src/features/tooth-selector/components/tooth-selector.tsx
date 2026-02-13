@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useTranslation } from "@offline-sqlite/i18n";
+
 interface ToothSelectorProps {
 	selectedTeeth: string[];
 	onChange: (teeth: string[]) => void;
@@ -37,6 +39,7 @@ function SingleTooth({ num, selectedTeeth, onToggle }: SingleToothProps) {
 }
 
 export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSelectorProps) {
+	const { t } = useTranslation();
 	const [isOpen, setIsOpen] = useState(false);
 
 	const toggleTooth = (toothId: string) => {
@@ -57,7 +60,9 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 					className="border-border hover:border-primary hover:text-primary rounded-md border
 						border-dashed px-4 py-2 text-sm"
 				>
-					{selectedTeeth.length > 0 ? `${selectedTeeth.length} teeth selected` : "Select Teeth"}
+					{selectedTeeth.length > 0
+						? t("teeth.teethSelected", { count: selectedTeeth.length })
+						: t("visits.selectTeeth")}
 				</button>
 				{selectedTeeth.length > 0 && (
 					<button
@@ -65,7 +70,7 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 						onClick={() => onChange([])}
 						className="text-muted-foreground hover:text-destructive text-xs"
 					>
-						Clear
+						{t("common.cancel")}
 					</button>
 				)}
 			</div>
@@ -87,7 +92,7 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 								/>
 							))}
 						</div>
-						<span className="text-muted-foreground text-xs">Upper</span>
+						<span className="text-muted-foreground text-xs">{t("teeth.upper")}</span>
 						<div className="flex gap-1">
 							{UPPER_LEFT.map((num) => (
 								<SingleTooth
@@ -118,7 +123,7 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 								/>
 							))}
 						</div>
-						<span className="text-muted-foreground text-xs">Lower</span>
+						<span className="text-muted-foreground text-xs">{t("teeth.lower")}</span>
 						<div className="flex gap-1">
 							{LOWER_RIGHT.map((num) => (
 								<SingleTooth
@@ -140,7 +145,7 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 					className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2
 						text-sm"
 				>
-					Done ({selectedTeeth.length} selected)
+					{t("teeth.done", { count: selectedTeeth.length })}
 				</button>
 			</div>
 		</div>

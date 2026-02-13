@@ -59,106 +59,136 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 	}
 
 	return (
-		<div className="mx-auto mt-10 w-full max-w-md p-6">
-			<h1 className="mb-6 text-center text-3xl font-bold">{t("auth.createAccount")}</h1>
-
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					form.handleSubmit();
-				}}
-				className="space-y-4"
-			>
-				<div>
-					<form.Field name="name">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>{t("auth.name")}</Label>
-								<Input
-									id={field.name}
-									name={field.name}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
-										{error?.message}
-									</p>
-								))}
-							</div>
-						)}
-					</form.Field>
-				</div>
-
-				<div>
-					<form.Field name="email">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>{t("auth.email")}</Label>
-								<Input
-									id={field.name}
-									name={field.name}
-									type="email"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
-										{error?.message}
-									</p>
-								))}
-							</div>
-						)}
-					</form.Field>
-				</div>
-
-				<div>
-					<form.Field name="password">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>{t("auth.password")}</Label>
-								<Input
-									id={field.name}
-									name={field.name}
-									type="password"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
-										{error?.message}
-									</p>
-								))}
-							</div>
-						)}
-					</form.Field>
-				</div>
-
-				<form.Subscribe>
-					{(state) => (
-						<Button
-							type="submit"
-							className="w-full"
-							disabled={!state.canSubmit || state.isSubmitting}
+		<div
+			className="from-background via-background to-primary/5 flex min-h-svh items-center justify-center
+				bg-gradient-to-br p-4"
+		>
+			<div className="w-full max-w-md">
+				<div className="mb-8 text-center">
+					<div
+						className="bg-primary shadow-primary/25 mb-4 inline-flex size-14 items-center
+							justify-center rounded-2xl shadow-lg"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							className="text-primary-foreground size-7"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
 						>
-							{state.isSubmitting ? t("auth.submitting") : t("auth.signUp")}
-						</Button>
-					)}
-				</form.Subscribe>
-			</form>
+							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+							<circle cx="9" cy="7" r="4" />
+							<line x1="19" x2="19" y1="8" y2="14" />
+							<line x1="22" x2="16" y1="11" y2="11" />
+						</svg>
+					</div>
+					<h1 className="mb-2 text-2xl font-bold">{t("auth.createAccount")}</h1>
+					<p className="text-muted-foreground">{t("auth.signUpSubtitle")}</p>
+				</div>
 
-			<div className="mt-4 text-center">
-				<Button
-					variant="link"
-					onClick={onSwitchToSignIn}
-					className="text-indigo-600 hover:text-indigo-800"
-				>
-					{t("auth.haveAccount")}
-				</Button>
+				<div className="bg-card/50 rounded-2xl border p-6 shadow-xl backdrop-blur-sm">
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							form.handleSubmit();
+						}}
+						className="space-y-4"
+					>
+						<div>
+							<form.Field name="name">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>{t("auth.name")}</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											placeholder="John Doe"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+										/>
+										{field.state.meta.errors.map((error) => (
+											<p key={error?.message} className="text-destructive text-xs">
+												{error?.message}
+											</p>
+										))}
+									</div>
+								)}
+							</form.Field>
+						</div>
+
+						<div>
+							<form.Field name="email">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>{t("auth.email")}</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											type="email"
+											placeholder="name@example.com"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+										/>
+										{field.state.meta.errors.map((error) => (
+											<p key={error?.message} className="text-destructive text-xs">
+												{error?.message}
+											</p>
+										))}
+									</div>
+								)}
+							</form.Field>
+						</div>
+
+						<div>
+							<form.Field name="password">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>{t("auth.password")}</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											type="password"
+											placeholder="********"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+										/>
+										{field.state.meta.errors.map((error) => (
+											<p key={error?.message} className="text-destructive text-xs">
+												{error?.message}
+											</p>
+										))}
+									</div>
+								)}
+							</form.Field>
+						</div>
+
+						<form.Subscribe>
+							{(state) => (
+								<Button
+									type="submit"
+									className="w-full"
+									disabled={!state.canSubmit || state.isSubmitting}
+								>
+									{state.isSubmitting ? t("auth.submitting") : t("auth.signUp")}
+								</Button>
+							)}
+						</form.Subscribe>
+					</form>
+				</div>
+
+				<p className="text-muted-foreground mt-6 text-center text-sm">
+					{t("auth.haveAccount")}{" "}
+					<Button variant="link" onClick={onSwitchToSignIn} className="text-primary h-auto p-0">
+						{t("auth.signIn")}
+					</Button>
+				</p>
 			</div>
 		</div>
 	);

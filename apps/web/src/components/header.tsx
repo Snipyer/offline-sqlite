@@ -1,8 +1,9 @@
 import { NavLink } from "react-router";
 
-import { LanguageSwitcher, useTranslation } from "@offline-sqlite/i18n";
+import { useTranslation } from "@offline-sqlite/i18n";
 import { ModeToggle } from "./mode-toggle";
 import UserMenu from "./user-menu";
+import LanguageSwitcher from "./language-switcher";
 
 export default function Header() {
 	const { t } = useTranslation();
@@ -14,15 +15,20 @@ export default function Header() {
 	] as const;
 
 	return (
-		<div>
-			<div className="flex flex-row items-center justify-between px-2 py-1">
-				<nav className="flex gap-4 text-lg">
+		<header className="bg-card/50 supports-backdrop-filter:bg-card/60 border-b backdrop-blur-sm">
+			<div className="container mx-auto flex flex-row items-center justify-between px-4 py-2">
+				<nav className="flex gap-1">
 					{links.map(({ to, label }) => {
 						return (
 							<NavLink
 								key={to}
 								to={to}
-								className={({ isActive }) => (isActive ? "font-bold" : "")}
+								className={({ isActive }) =>
+									`rounded-none px-3 py-1.5 text-sm font-medium transition-colors ${isActive
+										? "bg-primary text-primary-foreground"
+										: "text-muted-foreground hover:bg-muted hover:text-foreground"
+									}`
+								}
 								end
 							>
 								{label}
@@ -36,7 +42,6 @@ export default function Header() {
 					<UserMenu />
 				</div>
 			</div>
-			<hr />
-		</div>
+		</header>
 	);
 }
