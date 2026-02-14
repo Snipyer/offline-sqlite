@@ -1,16 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-	Loader2,
-	Plus,
-	Trash2,
-	X,
-	Check,
-	Search,
-	User,
-	Calendar as CalendarIcon,
-	FileText,
-} from "lucide-react";
+import { Loader2, Plus, Trash2, Check, Search, User, Calendar as CalendarIcon, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "react-router";
 import z from "zod";
 import { Button } from "@/components/ui/button";
@@ -27,27 +18,12 @@ import { useTranslation } from "@offline-sqlite/i18n";
 
 type Sex = "M" | "F";
 
-interface ActInput {
-	id: string;
-	visitTypeId: string;
-	price: number;
-	teeth: string[];
-}
-
 interface PatientFormData {
 	name: string;
 	sex: Sex;
 	age: number | "";
 	phone: string;
 	address: string;
-}
-
-interface VisitFormData {
-	patientId: string;
-	visitTime: string;
-	notes: string;
-	amountPaid: number;
-	acts: ActInput[];
 }
 
 interface VisitData {
@@ -80,13 +56,6 @@ function generateId() {
 	return Math.random().toString(36).substring(2, 9);
 }
 
-const emptyAct = (): ActInput => ({
-	id: generateId(),
-	visitTypeId: "",
-	price: 0,
-	teeth: [],
-});
-
 const emptyPatientData: PatientFormData = {
 	name: "",
 	sex: "M",
@@ -95,27 +64,21 @@ const emptyPatientData: PatientFormData = {
 	address: "",
 };
 
-const emptyFormData: VisitFormData = {
-	patientId: "",
-	visitTime: new Date().toISOString().slice(0, 16),
-	notes: "",
-	amountPaid: 0,
-	acts: [emptyAct()],
-};
-
-const visitActSchema = z.object({
-	id: z.string(),
-	visitTypeId: z.string().min(1, "Procedure type is required"),
-	price: z.number().int().min(1, "Price must be greater than 0"),
-	teeth: z.array(z.string()).min(1, "At least one tooth is required"),
-});
-
 const visitFormSchema = z.object({
 	patientId: z.string().min(1, "Patient is required"),
 	visitTime: z.string().min(1, "Visit time is required"),
-	notes: z.string().optional(),
+	notes: z.string().optional().default(""),
 	amountPaid: z.number().int().min(0, "Amount paid cannot be negative"),
-	acts: z.array(visitActSchema).min(1, "At least one treatment act is required"),
+	acts: z
+		.array(
+			z.object({
+				id: z.string(),
+				visitTypeId: z.string().min(1, "Procedure type is required"),
+				price: z.number().int().min(1, "Price must be greater than 0"),
+				teeth: z.array(z.string()).min(1, "At least one tooth is required"),
+			}),
+		)
+		.min(1, "At least one treatment act is required"),
 });
 
 type VisitFormValues = z.infer<typeof visitFormSchema>;
@@ -132,9 +95,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const [patientSearch, setPatientSearch] = useState("");
 	const [showPatientResults, setShowPatientResults] = useState(false);
 	const [datePickerOpen, setDatePickerOpen] = useState(false);
-
 	const [patientFormData, setPatientFormData] = useState<PatientFormData>(emptyPatientData);
-	const [formData, setFormData] = useState<VisitFormData>(emptyFormData);
 
 	const patients = useQuery({
 		...trpc.patient.search.queryOptions({ query: patientSearch }),
@@ -142,20 +103,41 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	});
 	const visitTypes = useQuery(trpc.visitType.list.queryOptions());
 
+	const form = useForm({
+		defaultValues: {
+			patientId: "",
+			visitTime: new Date().toISOString().slice(0, 16),
+			notes: "",
+			amountPaid: 0,
+			acts: [
+				{
+					id: generateId(),
+					visitTypeId: "",
+					price: 0,
+					teeth: [] as string[],
+				},
+			],
+		},
+		onSubmit: async ({ value }) => {
+			await handleFormSubmit(value);
+		},
+	});
+
 	useEffect(() => {
 		if (mode === "edit" && visit) {
-			setFormData({
-				patientId: visit.patientId,
-				visitTime: new Date(visit.visitTime).toISOString().slice(0, 16),
-				notes: visit.notes || "",
-				amountPaid: visit.amountPaid,
-				acts: visit.acts.map((act) => ({
+			form.setFieldValue("patientId", visit.patientId);
+			form.setFieldValue("visitTime", new Date(visit.visitTime).toISOString().slice(0, 16));
+			form.setFieldValue("notes", visit.notes || "");
+			form.setFieldValue("amountPaid", visit.amountPaid);
+			form.setFieldValue(
+				"acts",
+				visit.acts.map((act) => ({
 					id: act.id,
 					visitTypeId: act.visitTypeId,
 					price: act.price,
 					teeth: act.teeth,
 				})),
-			});
+			);
 			setPatientFormData({
 				name: visit.patient.name,
 				sex: visit.patient.sex,
@@ -165,12 +147,12 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 			});
 			setPatientSearch(visit.patient.name);
 		}
-	}, [mode, visit]);
+	}, [mode, visit, form]);
 
 	const createPatientMutation = useMutation(
 		trpc.patient.create.mutationOptions({
 			onSuccess: (data) => {
-				setFormData((prev) => ({ ...prev, patientId: data.id }));
+				form.setFieldValue("patientId", data.id);
 			},
 		}),
 	);
@@ -191,8 +173,54 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		}),
 	);
 
-	const totalAmount = formData.acts.reduce((sum, act) => sum + act.price, 0);
-	const amountLeft = totalAmount - formData.amountPaid;
+	const handleFormSubmit = async (values: VisitFormValues) => {
+		const validationResult = visitFormSchema.safeParse(values);
+		if (!validationResult.success) {
+			return;
+		}
+
+		let patientId = values.patientId;
+
+		if (mode === "create" && (patientId === "new" || patientId === "")) {
+			if (!patientFormData.name.trim()) {
+				return;
+			}
+			const result = await createPatientMutation.mutateAsync({
+				name: patientFormData.name.trim(),
+				sex: patientFormData.sex,
+				age: patientFormData.age || 0,
+				phone: patientFormData.phone || undefined,
+				address: patientFormData.address || undefined,
+			});
+			patientId = result.id;
+		}
+
+		if (!patientId || values.acts.length === 0) return;
+
+		const actsPayload = values.acts.map((act) => ({
+			visitTypeId: act.visitTypeId,
+			price: act.price,
+			teeth: act.teeth,
+		}));
+
+		if (mode === "create") {
+			createVisitMutation.mutate({
+				patientId,
+				visitTime: new Date(values.visitTime).getTime(),
+				notes: values.notes || undefined,
+				amountPaid: values.amountPaid,
+				acts: actsPayload,
+			});
+		} else if (mode === "edit" && visit) {
+			updateVisitMutation.mutate({
+				id: visit.id,
+				visitTime: new Date(values.visitTime).getTime(),
+				notes: values.notes || undefined,
+				amountPaid: values.amountPaid,
+				acts: actsPayload,
+			});
+		}
+	};
 
 	const handlePatientSelect = (patient: {
 		id: string;
@@ -202,7 +230,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		phone: string | null;
 		address: string | null;
 	}) => {
-		setFormData((prev) => ({ ...prev, patientId: patient.id }));
+		form.setFieldValue("patientId", patient.id);
 		setPatientFormData({
 			name: patient.name,
 			sex: patient.sex,
@@ -215,102 +243,26 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	};
 
 	const handleCreateNewPatient = () => {
-		setFormData((prev) => ({ ...prev, patientId: "new" }));
+		form.setFieldValue("patientId", "new");
 		setPatientFormData(emptyPatientData);
 		setPatientSearch("");
 		setShowPatientResults(false);
 	};
 
 	const handleClearPatient = () => {
-		setFormData((prev) => ({ ...prev, patientId: "" }));
+		form.setFieldValue("patientId", "");
 		setPatientSearch("");
 		setPatientFormData(emptyPatientData);
-	};
-
-	const handleAddAct = () => {
-		setFormData((prev) => ({
-			...prev,
-			acts: [...prev.acts, emptyAct()],
-		}));
-	};
-
-	const handleRemoveAct = (actId: string) => {
-		setFormData((prev) => ({
-			...prev,
-			acts: prev.acts.filter((a) => a.id !== actId),
-		}));
-	};
-
-	const updateAct = (actId: string, updates: Partial<ActInput>) => {
-		setFormData((prev) => ({
-			...prev,
-			acts: prev.acts.map((a) => (a.id === actId ? { ...a, ...updates } : a)),
-		}));
-	};
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		if (!isValid) return;
-
-		let patientId = formData.patientId;
-
-		if (mode === "create" && (patientId === "new" || patientId === "")) {
-			const result = await createPatientMutation.mutateAsync({
-				name: patientFormData.name.trim(),
-				sex: patientFormData.sex,
-				age: patientFormData.age || 0,
-				phone: patientFormData.phone || undefined,
-				address: patientFormData.address || undefined,
-			});
-			patientId = result.id;
-		}
-
-		if (!patientId || formData.acts.length === 0) return;
-
-		const actsPayload = formData.acts.map((act) => ({
-			visitTypeId: act.visitTypeId,
-			price: act.price,
-			teeth: act.teeth,
-		}));
-
-		if (mode === "create") {
-			createVisitMutation.mutate({
-				patientId,
-				visitTime: new Date(formData.visitTime).getTime(),
-				notes: formData.notes || undefined,
-				amountPaid: formData.amountPaid,
-				acts: actsPayload,
-			});
-		} else if (mode === "edit" && visit) {
-			updateVisitMutation.mutate({
-				id: visit.id,
-				visitTime: new Date(formData.visitTime).getTime(),
-				notes: formData.notes || undefined,
-				amountPaid: formData.amountPaid,
-				acts: actsPayload,
-			});
-		}
 	};
 
 	const cancelForm = () => {
 		navigate("/visits");
 	};
 
-	const isSubmitting =
-		createVisitMutation.isPending || updateVisitMutation.isPending || createPatientMutation.isPending;
+	const hasSelectedPatient =
+		form.getFieldValue("patientId") !== "" && form.getFieldValue("patientId") !== "new";
 
-	const hasPatient =
-		(formData.patientId !== "" && formData.patientId !== "new") ||
-		(formData.patientId === "new" && mode === "create" && patientFormData.name.trim() !== "");
-
-	const hasActs =
-		formData.acts.length > 0 &&
-		formData.acts.every((act) => act.visitTypeId && act.price > 0 && act.teeth.length > 0);
-
-	const isValid = hasPatient && hasActs;
-
-	const hasSelectedPatient = formData.patientId !== "" && formData.patientId !== "new";
+	const actsValue = form.getFieldValue("acts") || [];
 
 	if (isLoading) {
 		return (
@@ -322,7 +274,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 
 	return (
 		<div className="mx-auto w-full max-w-4xl py-8">
-			{/* Header */}
 			<div className="mb-8">
 				<h1 className="text-3xl font-bold tracking-tight">
 					{mode === "create" ? t("visits.addNew") : t("visits.editVisit")}
@@ -330,8 +281,14 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 				<p className="text-muted-foreground mt-1">{t("visits.description")}</p>
 			</div>
 
-			<form onSubmit={handleSubmit} className="space-y-6">
-				{/* Step 1: Patient Selection */}
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					form.handleSubmit();
+				}}
+				className="space-y-6"
+			>
 				<Card>
 					<CardHeader className="pb-4">
 						<div className="flex items-center gap-3">
@@ -424,9 +381,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 							</div>
 						)}
 
-						{/* Patient Info Card - Always show fields */}
 						<div className="bg-card rounded-lg border p-4">
-							{/* Header with patient info summary */}
 							<div className="mb-4 flex items-start justify-between">
 								<div className="flex items-center gap-3">
 									<div
@@ -462,7 +417,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								)}
 							</div>
 
-							{/* Patient Form Fields - Always visible */}
 							<div className="grid gap-4 border-t pt-4 sm:grid-cols-2">
 								<div className="sm:col-span-2">
 									<Label htmlFor="patient-name">{t("patients.nameLabel")} *</Label>
@@ -557,7 +511,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 					</CardContent>
 				</Card>
 
-				{/* Step 2: Visit Details */}
 				<Card>
 					<CardHeader className="pb-4">
 						<div className="flex items-center gap-3">
@@ -587,8 +540,10 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 												disabled:opacity-50"
 										>
 											<CalendarIcon className="mr-2 h-4 w-4" />
-											{formData.visitTime
-												? new Date(formData.visitTime).toLocaleDateString()
+											{form.getFieldValue("visitTime")
+												? new Date(
+														form.getFieldValue("visitTime"),
+													).toLocaleDateString()
 												: t("visits.selectDate")}
 										</div>
 									</PopoverTrigger>
@@ -596,21 +551,23 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										<Calendar
 											mode="single"
 											selected={
-												formData.visitTime ? new Date(formData.visitTime) : undefined
+												form.getFieldValue("visitTime")
+													? new Date(form.getFieldValue("visitTime"))
+													: undefined
 											}
 											onSelect={(date) => {
 												if (date) {
-													const existingTime = formData.visitTime
-														? new Date(formData.visitTime)
+													const existingTime = form.getFieldValue("visitTime")
+														? new Date(form.getFieldValue("visitTime"))
 														: new Date();
 													date.setHours(
 														existingTime.getHours(),
 														existingTime.getMinutes(),
 													);
-													setFormData((prev) => ({
-														...prev,
-														visitTime: date.toISOString().slice(0, 16),
-													}));
+													form.setFieldValue(
+														"visitTime",
+														date.toISOString().slice(0, 16),
+													);
 													setDatePickerOpen(false);
 												}
 											}}
@@ -622,22 +579,23 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								<Label htmlFor="notes">{t("visits.clinicalNotes")}</Label>
 								<div className="relative mt-1.5">
 									<FileText className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
-									<Textarea
-										id="notes"
-										value={formData.notes}
-										onChange={(e) =>
-											setFormData((prev) => ({ ...prev, notes: e.target.value }))
-										}
-										placeholder={t("visits.addClinicalObservations")}
-										className="pl-10"
-									/>
+									<form.Field name="notes">
+										{(field) => (
+											<Textarea
+												id="notes"
+												value={field.state.value}
+												onChange={(e) => field.handleChange(e.target.value)}
+												placeholder={t("visits.addClinicalObservations")}
+												className="pl-10"
+											/>
+										)}
+									</form.Field>
 								</div>
 							</div>
 						</div>
 					</CardContent>
 				</Card>
 
-				{/* Step 3: Treatment Acts */}
 				<Card>
 					<CardHeader className="pb-4">
 						<div className="flex items-center justify-between">
@@ -650,109 +608,160 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								</div>
 								<CardTitle className="text-lg">{t("visits.treatmentActs")}</CardTitle>
 							</div>
-							<Button type="button" variant="outline" size="sm" onClick={handleAddAct}>
-								<Plus className="mr-1 h-4 w-4" />
-								{t("visits.addAct")}
-							</Button>
+							<form.Field name="acts" mode="array">
+								{(field) => (
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() =>
+											field.pushValue({
+												id: generateId(),
+												visitTypeId: "",
+												price: 0,
+												teeth: [],
+											})
+										}
+									>
+										<Plus className="mr-1 h-4 w-4" />
+										{t("visits.addAct")}
+									</Button>
+								)}
+							</form.Field>
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-4 py-4">
-						{formData.acts.map((act, index) => (
-							<div key={act.id} className="bg-card rounded-lg border p-4">
-								<div className="mb-4 flex items-center justify-between">
-									<div className="flex items-center gap-2">
-										<div
-											className="bg-muted flex h-6 w-6 items-center justify-center
-												rounded-full text-xs font-medium"
-										>
-											{index + 1}
-										</div>
-										<span className="font-medium">{t("visits.treatmentAct")}</span>
-									</div>
-									{formData.acts.length > 1 && (
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={() => handleRemoveAct(act.id)}
-											className="text-destructive hover:text-destructive"
-										>
-											<Trash2 className="mr-1 h-4 w-4" />
-											{t("visits.removeAct")}
-										</Button>
-									)}
-								</div>
-
-								<div className="grid gap-4 sm:grid-cols-3">
-									<div className="sm:col-span-1">
-										<Label className="text-sm">{t("visits.procedureType")} *</Label>
-										<Select
-											value={act.visitTypeId}
-											onValueChange={(value) =>
-												updateAct(act.id, { visitTypeId: value || "" })
-											}
-										>
-											<SelectTrigger className="mt-1.5 w-full">
-												<SelectValue>
-													{visitTypes.data?.find((vt) => vt.id === act.visitTypeId)
-														?.name ?? t("visits.selectProcedure")}
-												</SelectValue>
-											</SelectTrigger>
-											<SelectContent>
-												{visitTypes.data?.map((vt) => (
-													<SelectItem key={vt.id} value={vt.id}>
-														{vt.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</div>
-
-									<div className="sm:col-span-1">
-										<Label className="text-sm">{t("visits.price")} *</Label>
-										<div className="relative mt-1.5">
-											<Input
-												type="number"
-												value={act.price || ""}
-												placeholder="0"
-												onChange={(e) =>
-													updateAct(act.id, {
-														price: e.target.value ? parseInt(e.target.value) : 0,
-													})
-												}
-												className="pl-7"
-											/>
-										</div>
-									</div>
-
-									<div className="sm:col-span-1">
-										<Label className="text-sm">{t("visits.teethTreated")} *</Label>
-										<div className="mt-1.5">
-											<ToothSelector
-												selectedTeeth={act.teeth}
-												onChange={(teeth) => updateAct(act.id, { teeth })}
-											/>
-										</div>
-										{act.teeth.length > 0 && (
-											<div className="mt-2">
-												<ToothBadge
-													teeth={act.teeth}
-													onRemove={(tooth) =>
-														updateAct(act.id, {
-															teeth: act.teeth.filter((t) => t !== tooth),
-														})
-													}
-												/>
+						<form.Field name="acts" mode="array">
+							{(field) => (
+								<>
+									{field.state.value.map((act, index) => (
+										<div key={act.id} className="bg-card rounded-lg border p-4">
+											<div className="mb-4 flex items-center justify-between">
+												<div className="flex items-center gap-2">
+													<div
+														className="bg-muted flex h-6 w-6 items-center
+															justify-center rounded-full text-xs font-medium"
+													>
+														{index + 1}
+													</div>
+													<span className="font-medium">
+														{t("visits.treatmentAct")}
+													</span>
+												</div>
+												{field.state.value.length > 1 && (
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														onClick={() => field.removeValue(index)}
+														className="text-destructive hover:text-destructive"
+													>
+														<Trash2 className="mr-1 h-4 w-4" />
+														{t("visits.removeAct")}
+													</Button>
+												)}
 											</div>
-										)}
-									</div>
-								</div>
-							</div>
-						))}
+
+											<div className="grid gap-4 sm:grid-cols-3">
+												<div className="sm:col-span-1">
+													<Label className="text-sm">
+														{t("visits.procedureType")} *
+													</Label>
+													<form.Field name={`acts[${index}].visitTypeId`}>
+														{(subField) => (
+															<Select
+																value={subField.state.value}
+																onValueChange={(value) =>
+																	subField.handleChange(value || "")
+																}
+															>
+																<SelectTrigger className="mt-1.5 w-full">
+																	<SelectValue>
+																		{visitTypes.data?.find(
+																			(vt) =>
+																				vt.id ===
+																				subField.state.value,
+																		)?.name ??
+																			t("visits.selectProcedure")}
+																	</SelectValue>
+																</SelectTrigger>
+																<SelectContent>
+																	{visitTypes.data?.map((vt) => (
+																		<SelectItem key={vt.id} value={vt.id}>
+																			{vt.name}
+																		</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+														)}
+													</form.Field>
+												</div>
+
+												<div className="sm:col-span-1">
+													<Label className="text-sm">{t("visits.price")} *</Label>
+													<form.Field name={`acts[${index}].price`}>
+														{(subField) => (
+															<div className="relative mt-1.5">
+																<Input
+																	type="number"
+																	value={subField.state.value || ""}
+																	placeholder="0"
+																	onChange={(e) =>
+																		subField.handleChange(
+																			e.target.value
+																				? parseInt(e.target.value)
+																				: 0,
+																		)
+																	}
+																	className="pl-7"
+																/>
+															</div>
+														)}
+													</form.Field>
+												</div>
+
+												<div className="sm:col-span-1">
+													<Label className="text-sm">
+														{t("visits.teethTreated")} *
+													</Label>
+													<form.Field name={`acts[${index}].teeth`}>
+														{(subField) => (
+															<div className="mt-1.5">
+																<ToothSelector
+																	selectedTeeth={subField.state.value || []}
+																	onChange={(teeth) =>
+																		subField.handleChange(teeth)
+																	}
+																/>
+																{subField.state.value &&
+																	subField.state.value.length > 0 && (
+																		<div className="mt-2">
+																			<ToothBadge
+																				teeth={subField.state.value}
+																				onRemove={(tooth) =>
+																					subField.handleChange(
+																						subField.state.value.filter(
+																							(t) =>
+																								t !== tooth,
+																						),
+																					)
+																				}
+																			/>
+																		</div>
+																	)}
+															</div>
+														)}
+													</form.Field>
+												</div>
+											</div>
+										</div>
+									))}
+								</>
+							)}
+						</form.Field>
 					</CardContent>
 				</Card>
 
-				{/* Step 4: Payment Summary */}
 				<Card>
 					<CardHeader className="pb-4">
 						<div className="flex items-center gap-3">
@@ -766,71 +775,135 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 						</div>
 					</CardHeader>
 					<CardContent className="py-4">
-						<div className="bg-muted rounded-lg p-6">
-							<div className="grid gap-6 sm:grid-cols-3">
-								<div className="text-center sm:text-left">
-									<p className="text-muted-foreground text-sm">
-										{t("visits.totalAmountLabel")}
-									</p>
-									<p className="mt-1 text-2xl font-bold">{totalAmount}</p>
-								</div>
+						<form.Subscribe
+							selector={(state) => ({
+								acts: state.values.acts || [],
+								amountPaid: state.values.amountPaid || 0,
+							})}
+						>
+							{(subState) => {
+								const currentTotalAmount = subState.acts.reduce(
+									(sum, act) => sum + (act?.price || 0),
+									0,
+								);
+								const currentAmountPaid = subState.amountPaid || 0;
+								const currentAmountLeft = currentTotalAmount - currentAmountPaid;
 
-								<div className="text-center sm:text-left">
-									<Label htmlFor="amount-paid" className="text-muted-foreground text-sm">
-										{t("visits.amountPaidLabel")}
-									</Label>
-									<div className="relative mt-1">
-										<Input
-											id="amount-paid"
-											type="number"
-											min={0}
-											max={totalAmount}
-											value={formData.amountPaid || ""}
-											placeholder="0"
-											onChange={(e) =>
-												setFormData((prev) => ({
-													...prev,
-													amountPaid: e.target.value ? parseInt(e.target.value) : 0,
-												}))
-											}
-											className="pl-7 text-lg"
-										/>
+								return (
+									<div className="bg-muted rounded-lg p-6">
+										<div className="grid gap-6 sm:grid-cols-3">
+											<div className="text-center sm:text-left">
+												<p className="text-muted-foreground text-sm">
+													{t("visits.totalAmountLabel")}
+												</p>
+												<p className="mt-1 text-2xl font-bold">
+													{currentTotalAmount}
+												</p>
+											</div>
+
+											<div className="text-center sm:text-left">
+												<Label
+													htmlFor="amount-paid"
+													className="text-muted-foreground text-sm"
+												>
+													{t("visits.amountPaidLabel")}
+												</Label>
+												<form.Field name="amountPaid">
+													{(field) => (
+														<div className="relative mt-1">
+															<Input
+																id="amount-paid"
+																type="number"
+																min={0}
+																max={currentTotalAmount}
+																value={field.state.value || ""}
+																placeholder="0"
+																onChange={(e) =>
+																	field.handleChange(
+																		e.target.value
+																			? parseInt(e.target.value)
+																			: 0,
+																	)
+																}
+																className="pl-7 text-lg"
+															/>
+														</div>
+													)}
+												</form.Field>
+											</div>
+
+											<div className="text-center sm:text-left">
+												<p className="text-muted-foreground text-sm">
+													{t("visits.balanceDue")}
+												</p>
+												<p
+													className={`mt-1 text-2xl font-bold ${
+														currentAmountLeft > 0
+															? "text-orange-600"
+															: "text-green-600"
+													}`}
+												>
+													{currentAmountLeft}
+												</p>
+											</div>
+										</div>
+
+										{currentAmountPaid > currentTotalAmount && (
+											<p className="text-destructive mt-4 text-center text-sm">
+												{t("visits.amountExceedError")}
+											</p>
+										)}
 									</div>
-								</div>
-
-								<div className="text-center sm:text-left">
-									<p className="text-muted-foreground text-sm">{t("visits.balanceDue")}</p>
-									<p
-										className={`mt-1 text-2xl font-bold ${amountLeft > 0 ? "text-orange-600" : "text-green-600"
-											}`}
-									>
-										{amountLeft}
-									</p>
-								</div>
-							</div>
-
-							{formData.amountPaid > totalAmount && (
-								<p className="text-destructive mt-4 text-center text-sm">
-									{t("visits.amountExceedError")}
-								</p>
-							)}
-						</div>
+								);
+							}}
+						</form.Subscribe>
 					</CardContent>
 				</Card>
 
-				{/* Actions */}
 				<div className="flex items-center justify-end gap-3 pt-4">
 					<Button type="button" variant="outline" onClick={cancelForm} size="lg">
 						{t("common.cancel")}
 					</Button>
-					<Button type="submit" disabled={!isValid || isSubmitting} size="lg">
-						{isSubmitting ? (
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-						) : (
-							<Check className="mr-2 h-4 w-4" />
-						)}
-						{mode === "create" ? t("visits.createVisit") : t("visits.saveChanges")}
-					</Button>
+					<form.Subscribe
+						selector={(state) => ({
+							isSubmitting: state.isSubmitting,
+							patientId: state.values.patientId,
+							acts: state.values.acts || [],
+						})}
+					>
+						{(subState) => {
+							const hasSelectedPatient =
+								subState.patientId !== "" && subState.patientId !== "new";
+							const hasPatientValue =
+								hasSelectedPatient ||
+								(subState.patientId === "new" && patientFormData.name.trim() !== "");
+							const hasActsValue =
+								subState.acts.length > 0 &&
+								subState.acts.every(
+									(act) =>
+										act?.visitTypeId &&
+										act?.price > 0 &&
+										act?.teeth &&
+										act.teeth.length > 0,
+								);
+							const canSubmitValue = hasPatientValue && hasActsValue;
+
+							return (
+								<Button
+									type="submit"
+									disabled={!canSubmitValue || subState.isSubmitting}
+									size="lg"
+								>
+									{subState.isSubmitting ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : (
+										<Check className="mr-2 h-4 w-4" />
+									)}
+									{mode === "create" ? t("visits.createVisit") : t("visits.saveChanges")}
+								</Button>
+							);
+						}}
+					</form.Subscribe>
 				</div>
 			</form>
 		</div>
