@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router";
-import { Home, LayoutDashboard, MapPin, Waypoints } from "lucide-react";
+import { Home, LayoutDashboard, MapPin, Waypoints, Users } from "lucide-react";
 
 import { useTranslation } from "@offline-sqlite/i18n";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
@@ -23,6 +23,7 @@ const navItems = [
 	{ to: "/", labelKey: "nav.home", icon: Home },
 	{ to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
 	{ to: "/visits", labelKey: "nav.visits", icon: MapPin },
+	{ to: "/patients", labelKey: "nav.patients", icon: Users },
 	{ to: "/visit-types", labelKey: "nav.visitTypes", icon: Waypoints },
 ] as const;
 
@@ -33,7 +34,12 @@ export function AppSidebar() {
 	const isRtl = side === "right";
 
 	return (
-		<Sidebar collapsible="icon" side={side} dir={isRtl ? "rtl" : "ltr"} className={isTauri() ? "pt-9" : ""}>
+		<Sidebar
+			collapsible="icon"
+			side={side}
+			dir={isRtl ? "rtl" : "ltr"}
+			className={isTauri() ? "pt-9" : ""}
+		>
 			<SidebarHeader>
 				<SidebarTrigger />
 			</SidebarHeader>
