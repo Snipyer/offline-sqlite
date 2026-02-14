@@ -389,7 +389,7 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 					type="button"
 					onClick={() => setIsOpen(true)}
 					className="border-border hover:border-primary hover:text-primary rounded-md border
-						border-dashed px-4 py-2 text-sm transition-colors"
+						border-dashed px-2 py-1.5 text-sm transition-colors w-full"
 				>
 					{selectedTeeth.length > 0
 						? t("teeth.teethSelected", { count: selectedTeeth.length })

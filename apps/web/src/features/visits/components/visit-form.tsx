@@ -7,16 +7,20 @@ import {
 	Check,
 	Search,
 	User,
-	Calendar,
+	Calendar as CalendarIcon,
 	FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import z from "zod";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ToothSelector, ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
@@ -127,6 +131,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const navigate = useNavigate();
 	const [patientSearch, setPatientSearch] = useState("");
 	const [showPatientResults, setShowPatientResults] = useState(false);
+	const [datePickerOpen, setDatePickerOpen] = useState(false);
 
 	const [patientFormData, setPatientFormData] = useState<PatientFormData>(emptyPatientData);
 	const [formData, setFormData] = useState<VisitFormData>(emptyFormData);
@@ -477,22 +482,24 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								</div>
 								<div>
 									<Label htmlFor="patient-sex">{t("patients.sexLabel")} *</Label>
-									<select
-										id="patient-sex"
+									<Select
 										value={patientFormData.sex}
-										onChange={(e) =>
+										onValueChange={(value) =>
 											setPatientFormData((prev) => ({
 												...prev,
-												sex: e.target.value as Sex,
+												sex: value as Sex,
 											}))
 										}
-										className="border-input bg-background mt-1.5 h-10 w-full rounded-md
-											border px-3"
 										disabled={mode === "edit" || hasSelectedPatient}
 									>
-										<option value="M">{t("patients.sexMale")}</option>
-										<option value="F">{t("patients.sexFemale")}</option>
-									</select>
+										<SelectTrigger id="patient-sex" className="mt-1.5 w-full">
+											<SelectValue placeholder={t("patients.sexLabel")} />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="M">{t("patients.sexMale")}</SelectItem>
+											<SelectItem value="F">{t("patients.sexFemale")}</SelectItem>
+										</SelectContent>
+									</Select>
 								</div>
 								<div>
 									<Label htmlFor="patient-age">{t("patients.ageLabel")} *</Label>
@@ -566,36 +573,63 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 					<CardContent className="space-y-4 py-4">
 						<div className="grid gap-4 sm:grid-cols-2">
 							<div>
-								<Label htmlFor="visit-time">{t("visits.visitDateTime")} *</Label>
-								<div className="relative mt-1.5">
-									<Calendar
-										className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4
-											-translate-y-1/2"
-									/>
-									<Input
-										id="visit-time"
-										type="datetime-local"
-										value={formData.visitTime}
-										onChange={(e) =>
-											setFormData((prev) => ({ ...prev, visitTime: e.target.value }))
-										}
-										className="pl-10"
-									/>
-								</div>
+								<Label>{t("visits.visitDateTime")} *</Label>
+								<Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+									<PopoverTrigger className="w-full">
+										<div
+											className="border-input bg-background hover:bg-muted
+												hover:text-foreground dark:bg-input/30 dark:border-input
+												dark:hover:bg-input/50 aria-expanded:bg-muted
+												aria-expanded:text-foreground focus-visible:ring-ring/50
+												mt-1.5 flex h-9 w-full cursor-pointer items-center
+												justify-start rounded-none border px-3 text-sm font-normal
+												outline-none focus-visible:ring-1 disabled:pointer-events-none
+												disabled:opacity-50"
+										>
+											<CalendarIcon className="mr-2 h-4 w-4" />
+											{formData.visitTime
+												? new Date(formData.visitTime).toLocaleDateString()
+												: t("visits.selectDate")}
+										</div>
+									</PopoverTrigger>
+									<PopoverContent className="w-auto p-0" align="start">
+										<Calendar
+											mode="single"
+											selected={
+												formData.visitTime ? new Date(formData.visitTime) : undefined
+											}
+											onSelect={(date) => {
+												if (date) {
+													const existingTime = formData.visitTime
+														? new Date(formData.visitTime)
+														: new Date();
+													date.setHours(
+														existingTime.getHours(),
+														existingTime.getMinutes(),
+													);
+													setFormData((prev) => ({
+														...prev,
+														visitTime: date.toISOString().slice(0, 16),
+													}));
+													setDatePickerOpen(false);
+												}
+											}}
+										/>
+									</PopoverContent>
+								</Popover>
 							</div>
 							<div>
 								<Label htmlFor="notes">{t("visits.clinicalNotes")}</Label>
 								<div className="relative mt-1.5">
 									<FileText className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
-									<textarea
+									<Textarea
 										id="notes"
 										value={formData.notes}
 										onChange={(e) =>
 											setFormData((prev) => ({ ...prev, notes: e.target.value }))
 										}
 										placeholder={t("visits.addClinicalObservations")}
-										className="border-input bg-background w-full rounded-md border px-3
-											py-2 pl-10 text-sm"
+										className="pl-10"
 									/>
 								</div>
 							</div>
@@ -652,21 +686,26 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								<div className="grid gap-4 sm:grid-cols-3">
 									<div className="sm:col-span-1">
 										<Label className="text-sm">{t("visits.procedureType")} *</Label>
-										<select
+										<Select
 											value={act.visitTypeId}
-											onChange={(e) =>
-												updateAct(act.id, { visitTypeId: e.target.value })
+											onValueChange={(value) =>
+												updateAct(act.id, { visitTypeId: value || "" })
 											}
-											className="border-input bg-background mt-1.5 h-10 w-full
-												rounded-md border px-3"
 										>
-											<option value="">{t("visits.selectProcedure")}</option>
-											{visitTypes.data?.map((vt) => (
-												<option key={vt.id} value={vt.id}>
-													{vt.name}
-												</option>
-											))}
-										</select>
+											<SelectTrigger className="mt-1.5 w-full">
+												<SelectValue>
+													{visitTypes.data?.find((vt) => vt.id === act.visitTypeId)
+														?.name ?? t("visits.selectProcedure")}
+												</SelectValue>
+											</SelectTrigger>
+											<SelectContent>
+												{visitTypes.data?.map((vt) => (
+													<SelectItem key={vt.id} value={vt.id}>
+														{vt.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 									</div>
 
 									<div className="sm:col-span-1">
@@ -674,7 +713,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										<div className="relative mt-1.5">
 											<Input
 												type="number"
-												// min={0}
 												value={act.price || ""}
 												placeholder="0"
 												onChange={(e) =>
