@@ -15,6 +15,16 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { Button } from "@/components/ui/button";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +50,7 @@ export default function VisitsList() {
 	const { t } = useTranslation();
 	const [showFilters, setShowFilters] = useState(false);
 	const [filters, setFilters] = useState<VisitFilters>(emptyFilters);
+	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const visitTypes = useQuery(trpc.visitType.list.queryOptions());
 
@@ -66,8 +77,13 @@ export default function VisitsList() {
 	);
 
 	const handleSoftDelete = (id: string) => {
-		if (confirm(t("visits.confirmDelete"))) {
-			softDeleteMutation.mutate({ id });
+		setDeleteId(id);
+	};
+
+	const confirmSoftDelete = () => {
+		if (deleteId) {
+			softDeleteMutation.mutate({ id: deleteId });
+			setDeleteId(null);
 		}
 	};
 
@@ -367,6 +383,24 @@ export default function VisitsList() {
 					)}
 				</CardContent>
 			</Card>
+
+			<AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+				<AlertDialogContent onOverlayClick={() => setDeleteId(null)}>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t("visits.confirmDeleteTitle")}</AlertDialogTitle>
+						<AlertDialogDescription>{t("visits.confirmDelete")}</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+						<AlertDialogAction variant="destructive" onClick={confirmSoftDelete}>
+							{softDeleteMutation.isPending ? (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							) : null}
+							{t("common.delete")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

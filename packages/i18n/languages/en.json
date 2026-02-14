@@ -97,6 +97,7 @@
 		"empty": "No visit types yet. Add one to get started!",
 		"editAria": "Edit visit type",
 		"deleteAria": "Delete visit type",
+		"confirmDeleteTitle": "Delete Visit Type",
 		"confirmDelete": "Are you sure you want to delete this visit type?"
 	},
 	"patients": {
@@ -148,6 +149,7 @@
 		"editVisit": "Edit Visit",
 		"deleteVisit": "Delete Visit",
 		"restoreVisit": "Restore Visit",
+		"confirmDeleteTitle": "Delete Visit",
 		"confirmDelete": "Are you sure you want to delete this visit?",
 		"confirmRestore": "Restore this deleted visit?",
 		"empty": "No visits match your filters",

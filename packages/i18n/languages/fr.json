@@ -97,6 +97,7 @@
 		"empty": "Aucun type de visite pour l'instant. Ajoutez-en un pour commencer!",
 		"editAria": "Modifier le type de visite",
 		"deleteAria": "Supprimer le type de visite",
+		"confirmDeleteTitle": "Supprimer le type de visite",
 		"confirmDelete": "Êtes-vous sûr de vouloir supprimer ce type de visite?"
 	},
 	"patients": {
@@ -148,6 +149,7 @@
 		"editVisit": "Modifier la visite",
 		"deleteVisit": "Supprimer la visite",
 		"restoreVisit": "Restaurer la visite",
+		"confirmDeleteTitle": "Supprimer la visite",
 		"confirmDelete": "Êtes-vous sûr de vouloir supprimer cette visite?",
 		"confirmRestore": "Restaurer cette visite supprimée?",
 		"empty": "Aucune visite ne correspond à vos filtres",

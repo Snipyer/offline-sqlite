@@ -3,6 +3,16 @@ import { Loader2, Pencil, Plus, Trash2, X, Check } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +24,7 @@ export default function VisitTypes() {
 	const [isCreating, setIsCreating] = useState(false);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [formName, setFormName] = useState("");
+	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const visitTypes = useQuery(trpc.visitType.list.queryOptions());
 
@@ -60,8 +71,13 @@ export default function VisitTypes() {
 	};
 
 	const handleDelete = (id: string) => {
-		if (confirm(t("visitTypes.confirmDelete"))) {
-			deleteMutation.mutate({ id });
+		setDeleteId(id);
+	};
+
+	const confirmDelete = () => {
+		if (deleteId) {
+			deleteMutation.mutate({ id: deleteId });
+			setDeleteId(null);
 		}
 	};
 
@@ -186,6 +202,7 @@ export default function VisitTypes() {
 													size="icon"
 													onClick={() => handleDelete(vt.id)}
 													aria-label={t("visitTypes.deleteAria")}
+													className="text-destructive hover:text-destructive"
 													disabled={deleteMutation.isPending}
 												>
 													<Trash2 className="h-4 w-4" />
@@ -199,6 +216,24 @@ export default function VisitTypes() {
 					</div>
 				</CardContent>
 			</Card>
+
+			<AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+				<AlertDialogContent onOverlayClick={() => setDeleteId(null)}>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t("visitTypes.confirmDeleteTitle")}</AlertDialogTitle>
+						<AlertDialogDescription>{t("visitTypes.confirmDelete")}</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+						<AlertDialogAction variant="destructive" onClick={confirmDelete}>
+							{deleteMutation.isPending ? (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							) : null}
+							{t("common.delete")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
