@@ -85,7 +85,8 @@
 		"select": "Select",
 		"loading": "Loading...",
 		"empty": "No items found",
-		"actions": "Actions"
+		"actions": "Actions",
+		"clear": "Clear"
 	},
 	"visitTypes": {
 		"title": "Visit Types",

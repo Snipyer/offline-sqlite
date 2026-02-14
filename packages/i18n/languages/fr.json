@@ -85,7 +85,8 @@
 		"select": "Sélectionner",
 		"loading": "Chargement...",
 		"empty": "Aucun élément trouvé",
-		"actions": "Actions"
+		"actions": "Actions",
+		"clear": "Effacer"
 	},
 	"visitTypes": {
 		"title": "Types de visites",
