@@ -10,7 +10,7 @@ const generateId = () => crypto.randomUUID();
 
 const visitActInputSchema = z.object({
 	visitTypeId: z.string(),
-	price: z.number().int().min(0),
+	price: z.number().int().min(1, "Price must be greater than 0"),
 	teeth: z.array(z.string()).min(1),
 });
 

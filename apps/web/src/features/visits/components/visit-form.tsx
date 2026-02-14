@@ -8,13 +8,11 @@ import {
 	Search,
 	User,
 	Calendar,
-	Stethoscope,
-	CreditCard,
 	FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-
+import z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -100,6 +98,23 @@ const emptyFormData: VisitFormData = {
 	amountPaid: 0,
 	acts: [emptyAct()],
 };
+
+const visitActSchema = z.object({
+	id: z.string(),
+	visitTypeId: z.string().min(1, "Procedure type is required"),
+	price: z.number().int().min(1, "Price must be greater than 0"),
+	teeth: z.array(z.string()).min(1, "At least one tooth is required"),
+});
+
+const visitFormSchema = z.object({
+	patientId: z.string().min(1, "Patient is required"),
+	visitTime: z.string().min(1, "Visit time is required"),
+	notes: z.string().optional(),
+	amountPaid: z.number().int().min(0, "Amount paid cannot be negative"),
+	acts: z.array(visitActSchema).min(1, "At least one treatment act is required"),
+});
+
+type VisitFormValues = z.infer<typeof visitFormSchema>;
 
 interface VisitFormProps {
 	mode: "create" | "edit";
@@ -285,7 +300,8 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		(formData.patientId === "new" && mode === "create" && patientFormData.name.trim() !== "");
 
 	const hasActs =
-		formData.acts.length > 0 && formData.acts.every((act) => act.visitTypeId && act.teeth.length > 0);
+		formData.acts.length > 0 &&
+		formData.acts.every((act) => act.visitTypeId && act.price > 0 && act.teeth.length > 0);
 
 	const isValid = hasPatient && hasActs;
 
@@ -747,9 +763,8 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								<div className="text-center sm:text-left">
 									<p className="text-muted-foreground text-sm">{t("visits.balanceDue")}</p>
 									<p
-										className={`mt-1 text-2xl font-bold ${
-											amountLeft > 0 ? "text-orange-600" : "text-green-600"
-										}`}
+										className={`mt-1 text-2xl font-bold ${amountLeft > 0 ? "text-orange-600" : "text-green-600"
+											}`}
 									>
 										{amountLeft}
 									</p>
