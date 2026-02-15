@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 
+import { useTranslation } from "@offline-sqlite/i18n";
+
 import {
 	ADULT_SVG_SCALE,
 	CHILD_SVG_SCALE,
@@ -23,6 +25,10 @@ interface ToothChartProps {
 	highlightColor?: string;
 	showQuadrantLabels?: boolean;
 	ariaLabel?: string;
+	onToggleAllUpper?: () => void;
+	onToggleAllLower?: () => void;
+	allUpperSelected?: boolean;
+	allLowerSelected?: boolean;
 }
 
 interface PlacedTooth {
@@ -47,7 +53,7 @@ interface ToothSvgProps {
 function ToothSvg({
 	tooth,
 	scale,
-	labelFontSize = 9,
+	labelFontSize = 7,
 	mode,
 	isHighlighted,
 	isSelected,
@@ -77,19 +83,19 @@ function ToothSvg({
 	const groupProps =
 		mode === "select"
 			? {
-				onClick: () => onToggle?.(toothId),
-				style: { cursor: "pointer" } as const,
-				role: "button" as const,
-				tabIndex: 0 as const,
-				"aria-label": `Tooth ${def.num}`,
-				"aria-pressed": isSelected,
-				onKeyDown: (e: React.KeyboardEvent) => {
-					if (e.key === "Enter" || e.key === " ") {
-						e.preventDefault();
-						onToggle?.(toothId);
-					}
-				},
-			}
+					onClick: () => onToggle?.(toothId),
+					style: { cursor: "pointer" } as const,
+					role: "button" as const,
+					tabIndex: 0 as const,
+					"aria-label": `Tooth ${def.num}`,
+					"aria-pressed": isSelected,
+					onKeyDown: (e: React.KeyboardEvent) => {
+						if (e.key === "Enter" || e.key === " ") {
+							e.preventDefault();
+							onToggle?.(toothId);
+						}
+					},
+				}
 			: {};
 
 	const fillColor = mode === "select" ? "var(--primary)" : highlightColor;
@@ -155,7 +161,12 @@ export function ToothChart({
 	highlightColor = "var(--primary)",
 	showQuadrantLabels = false,
 	ariaLabel = "Teeth chart",
+	onToggleAllUpper,
+	onToggleAllLower,
+	allUpperSelected,
+	allLowerSelected,
 }: ToothChartProps) {
+	const { t } = useTranslation();
 	const highlightedSet = useMemo(() => new Set(highlightedTeeth), [highlightedTeeth]);
 	const selectedSet = useMemo(() => new Set(selectedTeeth), [selectedTeeth]);
 
@@ -233,6 +244,86 @@ export function ToothChart({
 				strokeWidth={1}
 			/>
 
+			{onToggleAllUpper && (
+				<g
+					onClick={onToggleAllUpper}
+					style={{ cursor: "pointer" }}
+					role="button"
+					tabIndex={0}
+					aria-label={t("teeth.toggleAllUpper")}
+					aria-pressed={allUpperSelected}
+					onKeyDown={(e: React.KeyboardEvent) => {
+						if (e.key === "Enter" || e.key === " ") {
+							e.preventDefault();
+							onToggleAllUpper();
+						}
+					}}
+				>
+					<rect
+						x={LAYOUT.midlineX - 30}
+						y={1}
+						width={60}
+						height={16}
+						rx={4}
+						fill={allUpperSelected ? "var(--primary)" : "transparent"}
+						fillOpacity={allUpperSelected ? 1 : 0.15}
+						stroke="var(--primary)"
+						strokeWidth={1.5}
+					/>
+					<text
+						x={LAYOUT.midlineX}
+						y={9}
+						textAnchor="middle"
+						dominantBaseline="central"
+						fontSize={8}
+						fontWeight={600}
+						fill={allUpperSelected ? "var(--primary-foreground)" : "var(--primary)"}
+					>
+						{t("teeth.upper")}
+					</text>
+				</g>
+			)}
+
+			{onToggleAllLower && (
+				<g
+					onClick={onToggleAllLower}
+					style={{ cursor: "pointer" }}
+					role="button"
+					tabIndex={0}
+					aria-label={t("teeth.toggleAllLower")}
+					aria-pressed={allLowerSelected}
+					onKeyDown={(e: React.KeyboardEvent) => {
+						if (e.key === "Enter" || e.key === " ") {
+							e.preventDefault();
+							onToggleAllLower();
+						}
+					}}
+				>
+					<rect
+						x={LAYOUT.midlineX - 30}
+						y={LAYOUT.totalHeight - 17}
+						width={60}
+						height={16}
+						rx={4}
+						fill={allLowerSelected ? "var(--primary)" : "transparent"}
+						fillOpacity={allLowerSelected ? 1 : 0.15}
+						stroke="var(--primary)"
+						strokeWidth={1.5}
+					/>
+					<text
+						x={LAYOUT.midlineX}
+						y={LAYOUT.totalHeight - 9}
+						textAnchor="middle"
+						dominantBaseline="central"
+						fontSize={8}
+						fontWeight={600}
+						fill={allLowerSelected ? "var(--primary-foreground)" : "var(--primary)"}
+					>
+						{t("teeth.lower")}
+					</text>
+				</g>
+			)}
+
 			{showQuadrantLabels && (
 				<>
 					<text
@@ -304,7 +395,7 @@ export function ToothChart({
 					key={tooth.def.num}
 					tooth={tooth}
 					scale={CHILD_SVG_SCALE}
-					labelFontSize={mode === "select" ? 8 : 6}
+					labelFontSize={mode === "select" ? 7 : 6}
 					mode={mode}
 					isHighlighted={highlightedSet.has(tooth.def.num.toString())}
 					isSelected={selectedSet.has(tooth.def.num.toString())}
@@ -318,7 +409,7 @@ export function ToothChart({
 					key={tooth.def.num}
 					tooth={tooth}
 					scale={CHILD_SVG_SCALE}
-					labelFontSize={mode === "select" ? 8 : 6}
+					labelFontSize={mode === "select" ? 7 : 6}
 					mode={mode}
 					isHighlighted={highlightedSet.has(tooth.def.num.toString())}
 					isSelected={selectedSet.has(tooth.def.num.toString())}

@@ -240,6 +240,8 @@
 	"teeth": {
 		"upper": "Upper",
 		"lower": "Lower",
+		"toggleAllUpper": "Toggle all upper teeth",
+		"toggleAllLower": "Toggle all lower teeth",
 		"teethSelected": "{{count}} teeth selected",
 		"done": "Done ({{count}} selected)"
 	},

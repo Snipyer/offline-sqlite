@@ -238,8 +238,10 @@
 		"actionEdit": "التعديل"
 	},
 	"teeth": {
-		"upper": "علوي",
-		"lower": "سفلي",
+		"upper": "العلوي",
+		"lower": "السفلي",
+		"toggleAllUpper": "تبديل جميع الأسنان العلوية",
+		"toggleAllLower": "تبديل جميع الأسنان السفلية",
 		"teethSelected": "تم اختيار {{count}} أسنان",
 		"done": "تم ({{count}} محدد)"
 	},

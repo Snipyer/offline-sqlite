@@ -238,8 +238,10 @@
 		"actionEdit": "la modification"
 	},
 	"teeth": {
-		"upper": "Supérieur",
-		"lower": "Inférieur",
+		"upper": "Haut",
+		"lower": "Bas",
+		"toggleAllUpper": "Basculer toutes les dents supérieures",
+		"toggleAllLower": "Basculer toutes les dents inférieures",
 		"teethSelected": "{{count}} dents sélectionnées",
 		"done": "Terminé ({{count}} sélectionné)"
 	},

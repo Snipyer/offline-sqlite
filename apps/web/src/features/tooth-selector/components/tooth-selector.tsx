@@ -3,6 +3,10 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "@offline-sqlite/i18n";
 
 import { ToothChart } from "./tooth-chart";
+import { UPPER_ROW, LOWER_ROW } from "./tooth-data";
+
+const ADULT_UPPER_TEETH = UPPER_ROW.map((t) => t.num.toString());
+const ADULT_LOWER_TEETH = LOWER_ROW.map((t) => t.num.toString());
 
 interface ToothSelectorProps {
 	selectedTeeth: string[];
@@ -25,6 +29,35 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 		},
 		[selectedTeeth, onChange, maxSelection],
 	);
+
+	const allUpperSelected = ADULT_UPPER_TEETH.every((t) => selectedTeeth.includes(t));
+	const allLowerSelected = ADULT_LOWER_TEETH.every((t) => selectedTeeth.includes(t));
+
+	const toggleAllUpper = useCallback(() => {
+		if (allUpperSelected) {
+			onChange(selectedTeeth.filter((t) => !ADULT_UPPER_TEETH.includes(t)));
+		} else {
+			const newSelection = [...new Set([...selectedTeeth, ...ADULT_UPPER_TEETH])];
+			if (maxSelection) {
+				onChange(newSelection.slice(0, maxSelection));
+			} else {
+				onChange(newSelection);
+			}
+		}
+	}, [selectedTeeth, onChange, maxSelection, allUpperSelected]);
+
+	const toggleAllLower = useCallback(() => {
+		if (allLowerSelected) {
+			onChange(selectedTeeth.filter((t) => !ADULT_LOWER_TEETH.includes(t)));
+		} else {
+			const newSelection = [...new Set([...selectedTeeth, ...ADULT_LOWER_TEETH])];
+			if (maxSelection) {
+				onChange(newSelection.slice(0, maxSelection));
+			} else {
+				onChange(newSelection);
+			}
+		}
+	}, [selectedTeeth, onChange, maxSelection, allLowerSelected]);
 
 	return (
 		<>
@@ -73,9 +106,13 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 							onToggle={toggleTooth}
 							showQuadrantLabels
 							ariaLabel={t("visits.selectTeeth")}
+							onToggleAllUpper={toggleAllUpper}
+							onToggleAllLower={toggleAllLower}
+							allUpperSelected={allUpperSelected}
+							allLowerSelected={allLowerSelected}
 						/>
 
-						<div className="mt-4 flex items-center justify-between border-t pt-3">
+						<div className="mt-2 flex items-center justify-between border-t pt-3">
 							<span className="text-muted-foreground text-sm">
 								{selectedTeeth.length > 0
 									? t("teeth.teethSelected", { count: selectedTeeth.length })

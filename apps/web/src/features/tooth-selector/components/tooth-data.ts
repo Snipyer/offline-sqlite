@@ -126,7 +126,7 @@ export const CHILD_UPPER_SVG_Y_OFFSET = 3;
 export const CHILD_UPPER_MOLAR_EXTRA_Y_OFFSET = 6;
 export const MARGIN_X = 16;
 export const MARGIN_Y = 10;
-export const LABEL_OFFSET = 16;
+export const LABEL_OFFSET = 10;
 
 export function getScaledSize(def: ToothDef, scale: number) {
 	const source = TOOTH_SVG_SIZES[def.source];
