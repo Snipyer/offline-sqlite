@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
+import { getVisitTotalPaid } from "../utils/payment";
 
 const generateId = () => crypto.randomUUID();
 
@@ -18,7 +19,6 @@ const visitCreateSchema = z.object({
 	patientId: z.string(),
 	visitTime: z.number(),
 	notes: z.string().optional(),
-	amountPaid: z.number().int().min(0).default(0),
 	acts: z.array(visitActInputSchema).min(1),
 });
 
@@ -26,7 +26,6 @@ const visitUpdateSchema = z.object({
 	id: z.string(),
 	visitTime: z.number().optional(),
 	notes: z.string().optional(),
-	amountPaid: z.number().int().min(0).optional(),
 	acts: z.array(visitActInputSchema).min(1).optional(),
 });
 
@@ -37,9 +36,41 @@ const visitFilterSchema = z.object({
 	visitTypeId: z.string().optional(),
 });
 
+async function getVisitWithPaymentData(
+	visitData: typeof visit.$inferSelect,
+	patientData: typeof patient.$inferSelect,
+) {
+	const acts = await db
+		.select({
+			act: visitAct,
+			visitType: visitType,
+			teeth: sql<string>`json_group_array(${visitActTooth.toothId})`,
+		})
+		.from(visitAct)
+		.innerJoin(visitType, eq(visitAct.visitTypeId, visitType.id))
+		.leftJoin(visitActTooth, eq(visitAct.id, visitActTooth.visitActId))
+		.where(eq(visitAct.visitId, visitData.id))
+		.groupBy(visitAct.id);
+
+	const totalAmount = acts.reduce((sum, a) => sum + a.act.price, 0);
+	const totalPaid = await getVisitTotalPaid(visitData.id);
+
+	return {
+		...visitData,
+		patient: patientData,
+		totalAmount,
+		amountPaid: totalPaid,
+		amountLeft: totalAmount - totalPaid,
+		acts: acts.map((a) => ({
+			...a.act,
+			visitType: a.visitType,
+			teeth: JSON.parse(a.teeth) as string[],
+		})),
+	};
+}
+
 export const visitRouter = router({
 	list: protectedProcedure.input(visitFilterSchema).query(async ({ ctx, input }) => {
-		// Build base query for visits
 		let visitQuery = db
 			.select({
 				visit: visit,
@@ -62,45 +93,17 @@ export const visitRouter = router({
 
 		let visits = await visitQuery;
 
-		// If filtering by visit type, we need to filter visits that have acts with that type
 		if (input.visitTypeId !== undefined) {
 			const actsWithType = await db
 				.select({ visitId: visitAct.visitId })
 				.from(visitAct)
 				.where(eq(visitAct.visitTypeId, input.visitTypeId));
-
 			const visitIds = actsWithType.map((a) => a.visitId);
 			visits = visits.filter((v) => visitIds.includes(v.visit.id));
 		}
 
 		const visitsWithActs = await Promise.all(
-			visits.map(async (v) => {
-				const acts = await db
-					.select({
-						act: visitAct,
-						visitType: visitType,
-						teeth: sql<string>`json_group_array(${visitActTooth.toothId})`,
-					})
-					.from(visitAct)
-					.innerJoin(visitType, eq(visitAct.visitTypeId, visitType.id))
-					.leftJoin(visitActTooth, eq(visitAct.id, visitActTooth.visitActId))
-					.where(eq(visitAct.visitId, v.visit.id))
-					.groupBy(visitAct.id);
-
-				const totalAmount = acts.reduce((sum, a) => sum + a.act.price, 0);
-
-				return {
-					...v.visit,
-					patient: v.patient,
-					totalAmount,
-					amountLeft: totalAmount - v.visit.amountPaid,
-					acts: acts.map((a) => ({
-						...a.act,
-						visitType: a.visitType,
-						teeth: JSON.parse(a.teeth) as string[],
-					})),
-				};
-			}),
+			visits.map(async (v) => getVisitWithPaymentData(v.visit, v.patient)),
 		);
 
 		return visitsWithActs;
@@ -127,52 +130,18 @@ export const visitRouter = router({
 			return null;
 		}
 
-		const v = result[0];
-
-		const acts = await db
-			.select({
-				act: visitAct,
-				visitType: visitType,
-				teeth: sql<string>`json_group_array(${visitActTooth.toothId})`,
-			})
-			.from(visitAct)
-			.innerJoin(visitType, eq(visitAct.visitTypeId, visitType.id))
-			.leftJoin(visitActTooth, eq(visitAct.id, visitActTooth.visitActId))
-			.where(eq(visitAct.visitId, v.visit.id))
-			.groupBy(visitAct.id);
-
-		const totalAmount = acts.reduce((sum, a) => sum + a.act.price, 0);
-
-		return {
-			...v.visit,
-			patient: v.patient,
-			totalAmount,
-			amountLeft: totalAmount - v.visit.amountPaid,
-			acts: acts.map((a) => ({
-				...a.act,
-				visitType: a.visitType,
-				teeth: JSON.parse(a.teeth) as string[],
-			})),
-		};
+		return getVisitWithPaymentData(result[0].visit, result[0].patient);
 	}),
 
 	create: protectedProcedure.input(visitCreateSchema).mutation(async ({ ctx, input }) => {
 		const visitId = generateId();
 		const totalAmount = input.acts.reduce((sum, act) => sum + act.price, 0);
 
-		if (input.amountPaid > totalAmount) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Amount paid cannot exceed total amount",
-			});
-		}
-
 		await db.insert(visit).values({
 			id: visitId,
 			patientId: input.patientId,
 			visitTime: input.visitTime,
 			notes: input.notes ?? null,
-			amountPaid: input.amountPaid,
 			isDeleted: false,
 			userId: ctx.session.user.id,
 		});
@@ -195,11 +164,11 @@ export const visitRouter = router({
 			}
 		}
 
-		return { id: visitId, totalAmount, amountLeft: totalAmount - input.amountPaid };
+		return { id: visitId, totalAmount };
 	}),
 
 	update: protectedProcedure.input(visitUpdateSchema).mutation(async ({ ctx, input }) => {
-		const { id, acts, amountPaid, ...updateData } = input;
+		const { id, acts, ...updateData } = input;
 
 		const existingVisit = await db
 			.select()
@@ -208,17 +177,13 @@ export const visitRouter = router({
 			.limit(1);
 
 		if (existingVisit.length === 0 || existingVisit[0] === undefined) {
-			throw new TRPCError({
-				code: "NOT_FOUND",
-				message: "Visit not found",
-			});
+			throw new TRPCError({ code: "NOT_FOUND", message: "Visit not found" });
 		}
 
 		let totalAmount = 0;
 
 		if (acts !== undefined) {
 			await db.delete(visitAct).where(eq(visitAct.visitId, id));
-
 			totalAmount = acts.reduce((sum, act) => sum + act.price, 0);
 
 			for (const act of acts) {
@@ -246,25 +211,20 @@ export const visitRouter = router({
 			totalAmount = existingActs.reduce((sum, a) => sum + a.price, 0);
 		}
 
-		const newAmountPaid = amountPaid ?? existingVisit[0].amountPaid;
-
-		if (newAmountPaid > totalAmount) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Amount paid cannot exceed total amount",
-			});
-		}
-
-		const setData: Record<string, unknown> = { amountPaid: newAmountPaid };
+		const setData: Record<string, unknown> = {};
 		if (updateData.visitTime !== undefined) setData.visitTime = updateData.visitTime;
 		if (updateData.notes !== undefined) setData.notes = updateData.notes;
 
-		await db
-			.update(visit)
-			.set(setData)
-			.where(and(eq(visit.id, id), eq(visit.userId, ctx.session.user.id)));
+		if (Object.keys(setData).length > 0) {
+			await db
+				.update(visit)
+				.set(setData)
+				.where(and(eq(visit.id, id), eq(visit.userId, ctx.session.user.id)));
+		}
 
-		return { id, totalAmount, amountLeft: totalAmount - newAmountPaid };
+		const totalPaid = await getVisitTotalPaid(id);
+
+		return { id, totalAmount, amountPaid: totalPaid, amountLeft: totalAmount - totalPaid };
 	}),
 
 	softDelete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {

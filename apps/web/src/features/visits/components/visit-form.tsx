@@ -1,5 +1,15 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Plus, Trash2, Check, Search, User, Calendar as CalendarIcon, FileText } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	Loader2,
+	Plus,
+	Trash2,
+	Check,
+	Search,
+	User,
+	Calendar as CalendarIcon,
+	FileText,
+	CreditCard,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "react-router";
@@ -15,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToothSelector, ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { toast } from "sonner";
 
 type Sex = "M" | "F";
 
@@ -32,6 +43,7 @@ interface VisitData {
 	visitTime: number;
 	notes: string | null;
 	amountPaid: number;
+	amountLeft: number;
 	patient: {
 		id: string;
 		name: string;
@@ -68,7 +80,6 @@ const visitFormSchema = z.object({
 	patientId: z.string().min(1, "Patient is required"),
 	visitTime: z.string().min(1, "Visit time is required"),
 	notes: z.string().optional().default(""),
-	amountPaid: z.number().int().min(0, "Amount paid cannot be negative"),
 	acts: z
 		.array(
 			z.object({
@@ -92,10 +103,13 @@ interface VisitFormProps {
 export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const [patientSearch, setPatientSearch] = useState("");
 	const [showPatientResults, setShowPatientResults] = useState(false);
 	const [datePickerOpen, setDatePickerOpen] = useState(false);
 	const [patientFormData, setPatientFormData] = useState<PatientFormData>(emptyPatientData);
+	const [paymentAmount, setPaymentAmount] = useState(0);
+	const [existingPaid, setExistingPaid] = useState(0);
 
 	const patients = useQuery({
 		...trpc.patient.search.queryOptions({ query: patientSearch }),
@@ -108,7 +122,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 			patientId: "",
 			visitTime: new Date().toISOString().slice(0, 16),
 			notes: "",
-			amountPaid: 0,
 			acts: [
 				{
 					id: generateId(),
@@ -128,7 +141,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 			form.setFieldValue("patientId", visit.patientId);
 			form.setFieldValue("visitTime", new Date(visit.visitTime).toISOString().slice(0, 16));
 			form.setFieldValue("notes", visit.notes || "");
-			form.setFieldValue("amountPaid", visit.amountPaid);
 			form.setFieldValue(
 				"acts",
 				visit.acts.map((act) => ({
@@ -146,6 +158,8 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 				address: visit.patient.address ?? "",
 			});
 			setPatientSearch(visit.patient.name);
+			setExistingPaid(visit.amountPaid);
+			setPaymentAmount(0);
 		}
 	}, [mode, visit, form]);
 
@@ -159,15 +173,46 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 
 	const createVisitMutation = useMutation(
 		trpc.visit.create.mutationOptions({
-			onSuccess: () => {
+			onSuccess: async (data) => {
+				if (paymentAmount > 0) {
+					try {
+						await createPaymentMutation.mutateAsync({
+							visitId: data.id,
+							amount: paymentAmount,
+						});
+					} catch {
+						queryClient.invalidateQueries({ queryKey: ["visit", "list"] });
+					}
+				}
 				navigate("/visits");
+			},
+		}),
+	);
+
+	const createPaymentMutation = useMutation(
+		trpc.payment.create.mutationOptions({
+			onSuccess: () => {
+				toast.success(t("payments.paymentRecorded"));
+			},
+			onError: (error: { message: string }) => {
+				toast.error(error.message);
 			},
 		}),
 	);
 
 	const updateVisitMutation = useMutation(
 		trpc.visit.update.mutationOptions({
-			onSuccess: () => {
+			onSuccess: async (data) => {
+				if (paymentAmount > 0 && mode === "edit") {
+					try {
+						await createPaymentMutation.mutateAsync({
+							visitId: data.id,
+							amount: paymentAmount,
+						});
+					} catch {
+						queryClient.invalidateQueries({ queryKey: ["visit", "getById"] });
+					}
+				}
 				navigate("/visits");
 			},
 		}),
@@ -208,7 +253,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 				patientId,
 				visitTime: new Date(values.visitTime).getTime(),
 				notes: values.notes || undefined,
-				amountPaid: values.amountPaid,
 				acts: actsPayload,
 			});
 		} else if (mode === "edit" && visit) {
@@ -216,7 +260,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 				id: visit.id,
 				visitTime: new Date(values.visitTime).getTime(),
 				notes: values.notes || undefined,
-				amountPaid: values.amountPaid,
 				acts: actsPayload,
 			});
 		}
@@ -776,7 +819,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 						<form.Subscribe
 							selector={(state) => ({
 								acts: state.values.acts || [],
-								amountPaid: state.values.amountPaid || 0,
 							})}
 						>
 							{(subState) => {
@@ -784,71 +826,114 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									(sum, act) => sum + (act?.price || 0),
 									0,
 								);
-								const currentAmountPaid = subState.amountPaid || 0;
-								const currentAmountLeft = currentTotalAmount - currentAmountPaid;
+								const currentPaymentAmount = paymentAmount;
+								const currentAmountLeft =
+									currentTotalAmount - existingPaid - currentPaymentAmount;
 
 								return (
-									<div className="bg-muted rounded-lg p-6">
-										<div className="grid gap-6 sm:grid-cols-3">
-											<div className="text-center sm:text-left">
-												<p className="text-muted-foreground text-sm">
-													{t("visits.totalAmountLabel")}
-												</p>
-												<p className="mt-1 text-2xl font-bold">
-													<Currency size="lg" value={currentTotalAmount} />
-												</p>
+									<div className="space-y-6">
+										<div className="bg-muted rounded-lg p-6">
+											<div className="grid gap-6 sm:grid-cols-3">
+												<div className="text-center sm:text-left">
+													<p className="text-muted-foreground text-sm">
+														{t("visits.totalAmountLabel")}
+													</p>
+													<p className="mt-1 text-2xl font-bold">
+														<Currency size="lg" value={currentTotalAmount} />
+													</p>
+												</div>
+
+												<div className="text-center sm:text-left">
+													<Label
+														htmlFor="payment-amount"
+														className="text-muted-foreground flex items-center
+															gap-2 text-sm"
+													>
+														<CreditCard className="h-4 w-4" />
+														{t("visits.payNow")}
+													</Label>
+													<div className="relative mt-1">
+														<Input
+															id="payment-amount"
+															type="number"
+															min={0}
+															max={currentTotalAmount - existingPaid}
+															value={currentPaymentAmount || ""}
+															placeholder="0"
+															onChange={(e) =>
+																setPaymentAmount(
+																	e.target.value
+																		? Math.min(
+																				parseInt(e.target.value) || 0,
+																				currentTotalAmount -
+																					existingPaid,
+																			)
+																		: 0,
+																)
+															}
+															className="pl-7 text-lg"
+														/>
+													</div>
+												</div>
+
+												<div className="text-center sm:text-left">
+													<p className="text-muted-foreground text-sm">
+														{t("visits.balanceDue")}
+													</p>
+													<p
+														className={`mt-1 text-2xl font-bold
+														${currentAmountLeft > 0 ? "text-orange-600" : "text-green-600"}`}
+													>
+														<Currency value={currentAmountLeft} />
+													</p>
+												</div>
 											</div>
 
-											<div className="text-center sm:text-left">
-												<Label
-													htmlFor="amount-paid"
-													className="text-muted-foreground text-sm"
-												>
-													{t("visits.amountPaidLabel")}
-												</Label>
-												<form.Field name="amountPaid">
-													{(field) => (
-														<div className="relative mt-1">
-															<Input
-																id="amount-paid"
-																type="number"
-																min={0}
-																max={currentTotalAmount}
-																value={field.state.value || ""}
-																placeholder="0"
-																onChange={(e) =>
-																	field.handleChange(
-																		e.target.value
-																			? parseInt(e.target.value)
-																			: 0,
-																	)
-																}
-																className="pl-7 text-lg"
-															/>
-														</div>
-													)}
-												</form.Field>
-											</div>
-
-											<div className="text-center sm:text-left">
-												<p className="text-muted-foreground text-sm">
-													{t("visits.balanceDue")}
+											{currentPaymentAmount > currentTotalAmount && (
+												<p className="text-destructive mt-4 text-center text-sm">
+													{t("visits.amountExceedError")}
 												</p>
-												<p
-													className={`mt-1 text-2xl font-bold ${currentAmountLeft > 0
-														? "text-orange-600"
-														: "text-green-600"
-														}`}
-												>
-													<Currency value={currentAmountLeft} />
-												</p>
-											</div>
+											)}
 										</div>
 
-										{currentAmountPaid > currentTotalAmount && (
-											<p className="text-destructive mt-4 text-center text-sm">
-												{t("visits.amountExceedError")}
-											</p>
+										{currentPaymentAmount > 0 && (
+											<div className="flex items-center justify-center">
+												<div
+													className="rounded-lg border border-green-200 bg-green-50
+														px-6 py-4 dark:border-green-800 dark:bg-green-950"
+												>
+													<div className="flex items-center gap-3">
+														<div
+															className="rounded-full bg-green-100 p-2
+																dark:bg-green-900"
+														>
+															<Check
+																className="h-5 w-5 text-green-600
+																	dark:text-green-400"
+															/>
+														</div>
+														<div>
+															<p
+																className="font-medium text-green-800
+																	dark:text-green-200"
+															>
+																{t("visits.paymentWillBeRecorded")}
+															</p>
+															<p
+																className="text-sm text-green-600
+																	dark:text-green-400"
+															>
+																{t("visits.paymentWillBeRegistered", {
+																	action:
+																		mode === "create"
+																			? t("visits.actionCreate")
+																			: t("visits.actionEdit"),
+																})}
+															</p>
+														</div>
+													</div>
+												</div>
+											</div>
 										)}
 									</div>
 								);

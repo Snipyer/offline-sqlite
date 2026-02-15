@@ -145,6 +145,7 @@ export const visitRelations = relations(visit, ({ one, many }) => ({
 		references: [user.id],
 	}),
 	acts: many(visitAct),
+	payments: many(payment),
 }));
 
 export const visitActRelations = relations(visitAct, ({ one, many }) => ({
@@ -163,5 +164,46 @@ export const visitActToothRelations = relations(visitActTooth, ({ one }) => ({
 	visitAct: one(visitAct, {
 		fields: [visitActTooth.visitActId],
 		references: [visitAct.id],
+	}),
+}));
+
+export const paymentMethodEnum = ["cash"] as const;
+export type PaymentMethod = (typeof paymentMethodEnum)[number];
+
+export const payment = sqliteTable(
+	"payment",
+	{
+		id: text("id").primaryKey(),
+		visitId: text("visit_id")
+			.notNull()
+			.references(() => visit.id, { onDelete: "cascade" }),
+		amount: integer("amount").notNull(),
+		paymentMethod: text("payment_method", { enum: paymentMethodEnum }).notNull().default("cash"),
+		notes: text("notes"),
+		recordedAt: integer("recorded_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+	},
+	(table) => [
+		index("payment_visitId_idx").on(table.visitId),
+		index("payment_userId_idx").on(table.userId),
+		index("payment_recordedAt_idx").on(table.recordedAt),
+	],
+);
+
+export const paymentRelations = relations(payment, ({ one }) => ({
+	visit: one(visit, {
+		fields: [payment.visitId],
+		references: [visit.id],
+	}),
+	user: one(user, {
+		fields: [payment.userId],
+		references: [user.id],
 	}),
 }));

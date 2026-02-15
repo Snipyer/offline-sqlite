@@ -16,6 +16,9 @@ export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
 	const patientDetails = useQuery({
 		...trpc.patient.getByIdWithVisits.queryOptions({ id: patientId! }, { enabled: !!patientId }),
 	});
+	const patientPayments = useQuery({
+		...trpc.payment.listByPatient.queryOptions({ patientId: patientId! }, { enabled: !!patientId }),
+	});
 
 	return (
 		<Sheet
@@ -38,6 +41,7 @@ export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
 						patient={patientDetails.data.patient}
 						visits={patientDetails.data.visits}
 						totalUnpaid={patientDetails.data.totalUnpaid}
+						payments={patientPayments.data ?? []}
 					/>
 				) : null}
 			</SheetContent>

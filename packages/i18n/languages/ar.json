@@ -151,7 +151,10 @@
 		"visitHistory": "سجل الزيارات",
 		"total": "الإجمالي",
 		"paid": "المدفوع",
-		"left": "المتبقي"
+		"left": "المتبقي",
+		"visitsTab": "الزيارات",
+		"paymentsTab": "المدفوعات",
+		"noPayments": "لا توجد مدفوعات"
 	},
 	"visits": {
 		"title": "الزيارات",
@@ -227,12 +230,26 @@
 		"editVisitAction": "تعديل الزيارة",
 		"restoreVisitAction": "استعادة الزيارة",
 		"deleteVisitAction": "حذف الزيارة",
-		"visitNotFound": "الزيارة غير موجودة"
+		"visitNotFound": "الزيارة غير موجودة",
+		"payNow": "ادفع الآن",
+		"paymentWillBeRecorded": "سيتم تسجيل الدفعة",
+		"paymentWillBeRegistered": "سيتم تسجيل الدفعة عند {{action}}",
+		"actionCreate": "الإنشاء",
+		"actionEdit": "التعديل"
 	},
 	"teeth": {
 		"upper": "علوي",
 		"lower": "سفلي",
 		"teethSelected": "تم اختيار {{count}} أسنان",
 		"done": "تم ({{count}} محدد)"
+	},
+	"payments": {
+		"pay": "دفع",
+		"paymentRecorded": "تم تسجيل الدفعة بنجاح",
+		"addPayment": "إضافة دفعة",
+		"remainingBalance": "الرصيد المتبقي",
+		"amount": "المبلغ",
+		"notes": "ملاحظات",
+		"notesPlaceholder": "إضافة ملاحظات للدفعة (اختياري)"
 	}
 }

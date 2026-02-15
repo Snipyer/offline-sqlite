@@ -151,7 +151,10 @@
 		"visitHistory": "Historique des visites",
 		"total": "Total",
 		"paid": "Payé",
-		"left": "Restant"
+		"left": "Restant",
+		"visitsTab": "Visites",
+		"paymentsTab": "Paiements",
+		"noPayments": "Aucun paiement"
 	},
 	"visits": {
 		"title": "Visites",
@@ -227,12 +230,26 @@
 		"editVisitAction": "Modifier la visite",
 		"restoreVisitAction": "Restaurer la visite",
 		"deleteVisitAction": "Supprimer la visite",
-		"visitNotFound": "Visite non trouvée"
+		"visitNotFound": "Visite non trouvée",
+		"payNow": "Payer maintenant",
+		"paymentWillBeRecorded": "Le paiement sera enregistré",
+		"paymentWillBeRegistered": "Le paiement sera enregistré lors de {{action}}",
+		"actionCreate": "la création",
+		"actionEdit": "la modification"
 	},
 	"teeth": {
 		"upper": "Supérieur",
 		"lower": "Inférieur",
 		"teethSelected": "{{count}} dents sélectionnées",
 		"done": "Terminé ({{count}} sélectionné)"
+	},
+	"payments": {
+		"pay": "Payer",
+		"paymentRecorded": "Paiement enregistré avec succès",
+		"addPayment": "Ajouter un paiement",
+		"remainingBalance": "Solde restant",
+		"amount": "Montant",
+		"notes": "Notes",
+		"notesPlaceholder": "Ajouter des notes de paiement (optionnel)"
 	}
 }

@@ -2,6 +2,8 @@ import { Calendar } from "lucide-react";
 
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { Button } from "@/components/ui/button";
+import { PaymentForm } from "@/features/payments/components/payment-form";
 
 interface VisitHistoryItemProps {
 	visit: {
@@ -19,10 +21,13 @@ interface VisitHistoryItemProps {
 			teeth: string[];
 		}[];
 	};
+	patientId: string;
 }
 
-export function VisitHistoryItem({ visit }: VisitHistoryItemProps) {
+export function VisitHistoryItem({ visit, patientId }: VisitHistoryItemProps) {
 	const { t } = useTranslation();
+
+	const totalPaid = visit.amountPaid;
 
 	return (
 		<div
@@ -30,16 +35,30 @@ export function VisitHistoryItem({ visit }: VisitHistoryItemProps) {
 				transition-colors"
 		>
 			<div className="mb-3">
-				<div className="flex items-center gap-2">
-					<Calendar className="text-primary h-4 w-4" />
-					<span className="font-medium">{formatDate(visit.visitTime)}</span>
+				<div className="flex items-center justify-between gap-2">
+					<div className="flex items-center gap-2">
+						<Calendar className="text-primary h-4 w-4" />
+						<span className="font-medium">{formatDate(visit.visitTime)}</span>
+					</div>
+					{visit.amountLeft > 0 && (
+						<PaymentForm
+							visitId={visit.id}
+							totalAmount={visit.totalAmount}
+							totalPaid={totalPaid}
+							patientId={patientId}
+						>
+							<Button variant="outline" size="sm">
+								{t("payments.pay")}
+							</Button>
+						</PaymentForm>
+					)}
 				</div>
 				<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
 					<span className="text-muted-foreground">
 						{t("patients.total")}: <Currency value={visit.totalAmount} size="sm" />
 					</span>
 					<span className="text-muted-foreground">
-						{t("patients.paid")}: <Currency value={visit.amountPaid} size="sm" />
+						{t("patients.paid")}: <Currency value={totalPaid} size="sm" />
 					</span>
 					<span
 						className={

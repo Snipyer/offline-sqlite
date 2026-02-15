@@ -4,6 +4,7 @@ import { eq, and, like, desc, sql } from "drizzle-orm";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
+import { getVisitTotalPaid } from "../utils/payment";
 
 const generateId = () => crypto.randomUUID();
 
@@ -129,11 +130,13 @@ export const patientRouter = router({
 							.groupBy(visitAct.id);
 
 						const totalAmount = acts.reduce((sum, a) => sum + a.act.price, 0);
+						const totalPaid = await getVisitTotalPaid(v.id);
 
 						return {
 							...v,
 							totalAmount,
-							amountLeft: totalAmount - v.amountPaid,
+							amountPaid: totalPaid,
+							amountLeft: totalAmount - totalPaid,
 							acts: acts.map((a) => ({
 								...a.act,
 								visitType: a.visitType,
@@ -239,11 +242,13 @@ export const patientRouter = router({
 						.groupBy(visitAct.id);
 
 					const totalAmount = acts.reduce((sum, a) => sum + a.act.price, 0);
+					const totalPaid = await getVisitTotalPaid(v.id);
 
 					return {
 						...v,
 						totalAmount,
-						amountLeft: totalAmount - v.amountPaid,
+						amountPaid: totalPaid,
+						amountLeft: totalAmount - totalPaid,
 						acts: acts.map((a) => ({
 							...a.act,
 							visitType: a.visitType,

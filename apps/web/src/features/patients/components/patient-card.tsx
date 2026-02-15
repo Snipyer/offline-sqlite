@@ -5,6 +5,7 @@ import { getVisitColor } from "@/utils/visit-colors";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { VisitHistoryItem } from "./visit-history-item";
 import { useDirection } from "@base-ui/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PatientCardProps {
 	patient: {
@@ -114,9 +115,17 @@ interface PatientSheetProps {
 		}[];
 	}[];
 	totalUnpaid: number;
+	payments: {
+		id: string;
+		visitId: string;
+		amount: number;
+		paymentMethod: string;
+		notes: string | null;
+		recordedAt: string | Date;
+	}[];
 }
 
-export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientSheetProps) {
+export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: PatientSheetProps) {
 	const { t } = useTranslation();
 	const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
 	const direction = useDirection();
@@ -147,7 +156,7 @@ export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientShe
 
 	return (
 		<div className="flex flex-1 flex-col overflow-hidden">
-			<div className="border-b p-6">
+			<div className="p-6">
 				<div className="flex items-start gap-5">
 					<div
 						className="bg-primary/10 flex h-20 w-20 shrink-0 items-center justify-center
@@ -189,36 +198,79 @@ export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientShe
 				</div>
 			</div>
 
-			<div className="flex-1 overflow-y-auto p-6">
-				<h3 className="mb-4 text-lg font-semibold">
-					{t("patients.visitHistory")} ({visits.length})
-				</h3>
-				<div className="space-y-4">
-					{visits.length === 0 ? (
-						<p className="text-muted-foreground text-sm">{t("patients.noVisits")}</p>
-					) : (
-						visits.map((visit) => (
-							<div
-								key={visit.id}
-								className="relative"
-								onMouseEnter={() => setHoveredVisitId(visit.id)}
-								onMouseLeave={() => setHoveredVisitId(null)}
-							>
-								<div
-									className={
-										isRtl
-											? "absolute top-0 right-0 bottom-0 w-1 rounded-r-xl"
-											: "absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
-									}
-									style={{ backgroundColor: getVisitColor(visit.id) }}
-								/>
-								<div className={isRtl ? "pr-3" : "pl-3"}>
-									<VisitHistoryItem visit={visit} />
-								</div>
-							</div>
-						))
-					)}
-				</div>
+			<div className="flex-1 overflow-hidden">
+				<Tabs defaultValue="visits" className="flex h-full flex-col">
+					<div className="border-b px-6">
+						<TabsList variant="line" className="h-10">
+							<TabsTrigger value="visits">
+								{t("patients.visitsTab")} ({visits.length})
+							</TabsTrigger>
+							<TabsTrigger value="payments">
+								{t("patients.paymentsTab")} ({payments.length})
+							</TabsTrigger>
+						</TabsList>
+					</div>
+					<TabsContent value="visits" className="m-0 flex-1 overflow-y-auto p-6">
+						<div className="space-y-4">
+							{visits.length === 0 ? (
+								<p className="text-muted-foreground text-sm">{t("patients.noVisits")}</p>
+							) : (
+								visits.map((visit) => (
+									<div
+										key={visit.id}
+										className="relative"
+										onMouseEnter={() => setHoveredVisitId(visit.id)}
+										onMouseLeave={() => setHoveredVisitId(null)}
+									>
+										<div
+											className={
+												isRtl
+													? "absolute top-0 right-0 bottom-0 w-1 rounded-r-xl"
+													: "absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
+											}
+											style={{ backgroundColor: getVisitColor(visit.id) }}
+										/>
+										<div className={isRtl ? "pr-3" : "pl-3"}>
+											<VisitHistoryItem visit={visit} patientId={patient.id} />
+										</div>
+									</div>
+								))
+							)}
+						</div>
+					</TabsContent>
+					<TabsContent value="payments" className="m-0 flex-1 overflow-y-auto p-6">
+						<div className="space-y-3">
+							{payments.length === 0 ? (
+								<p className="text-muted-foreground text-sm">{t("patients.noPayments")}</p>
+							) : (
+								payments.map((payment) => (
+									<div
+										key={payment.id}
+										className="bg-card flex flex-col gap-2 rounded-lg border p-4"
+									>
+										<div className="flex items-center justify-between">
+											<span className="text-sm font-medium">
+												<Currency value={payment.amount} />
+											</span>
+											<span className="text-muted-foreground text-xs uppercase">
+												{formatDate(
+													typeof payment.recordedAt === "string"
+														? new Date(payment.recordedAt).getTime()
+														: payment.recordedAt.getTime(),
+												)}
+											</span>
+										</div>
+										{payment.notes && (
+											<span className="text-muted-foreground text-xs">
+												{payment.notes}
+											</span>
+										)}
+									</div>
+								))
+							)}
+						</div>
+					</TabsContent>
+				</Tabs>
 			</div>
 
 			{hasAnyTeeth && (
