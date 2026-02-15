@@ -24,7 +24,7 @@ export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
 		>
 			<SheetContent
 				side="right"
-				className="inset-y-0! flex h-full! w-[95vw] max-w-200! flex-col border-l pt-6"
+				className="inset-y-0! flex h-full! w-[95vw] max-w-150! flex-col border-l pt-6"
 			>
 				{patientDetails.isLoading ? (
 					<div className="flex flex-1 items-center justify-center">

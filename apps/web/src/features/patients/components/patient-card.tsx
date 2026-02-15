@@ -1,6 +1,9 @@
 import { Calendar, CreditCard, Phone, MapPin, User } from "lucide-react";
+import { useState } from "react";
 
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
+import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
+import { getVisitColor } from "@/utils/visit-colors";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { VisitHistoryItem } from "./visit-history-item";
 
@@ -120,6 +123,30 @@ interface PatientSheetProps {
 
 export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientSheetProps) {
 	const { t } = useTranslation();
+	const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
+
+	const getAllVisitTeeth = () => {
+		const teeth = new Set<string>();
+		visits.forEach((visit) => {
+			visit.acts.forEach((act) => {
+				act.teeth.forEach((tooth) => teeth.add(tooth));
+			});
+		});
+		return Array.from(teeth);
+	};
+
+	const getVisitTeeth = (visitId: string) => {
+		const teeth = new Set<string>();
+		const visit = visits.find((v) => v.id === visitId);
+		if (visit) {
+			visit.acts.forEach((act) => {
+				act.teeth.forEach((tooth) => teeth.add(tooth));
+			});
+		}
+		return Array.from(teeth);
+	};
+
+	const hasAnyTeeth = visits.some((visit) => visit.acts.some((act) => act.teeth.length > 0));
 
 	return (
 		<div className="flex flex-1 flex-col overflow-hidden">
@@ -171,10 +198,40 @@ export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientShe
 					{visits.length === 0 ? (
 						<p className="text-muted-foreground text-sm">{t("patients.noVisits")}</p>
 					) : (
-						visits.map((visit) => <VisitHistoryItem key={visit.id} visit={visit} />)
+						visits.map((visit) => (
+							<div
+								key={visit.id}
+								className="relative"
+								onMouseEnter={() => setHoveredVisitId(visit.id)}
+								onMouseLeave={() => setHoveredVisitId(null)}
+							>
+								<div
+									className="absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
+									style={{ backgroundColor: getVisitColor(visit.id) }}
+								/>
+								<div className="pl-3">
+									<VisitHistoryItem visit={visit} />
+								</div>
+							</div>
+						))
 					)}
 				</div>
 			</div>
+
+			{hasAnyTeeth && (
+				<div className="border-t p-2">
+					<div className="mx-auto w-full max-w-96">
+						<ToothDisplay
+							highlightedTeeth={
+								hoveredVisitId ? getVisitTeeth(hoveredVisitId) : getAllVisitTeeth()
+							}
+							highlightColor={hoveredVisitId ? getVisitColor(hoveredVisitId) : "var(--primary)"}
+							hovered={!!hoveredVisitId}
+							otherHovered={!!hoveredVisitId}
+						/>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
