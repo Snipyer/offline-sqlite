@@ -12,7 +12,8 @@
 		"todos": "Taches",
 		"visitTypes": "Types de visites",
 		"patients": "Patients",
-		"visits": "Visites"
+		"visits": "Visites",
+		"payments": "Paiements"
 	},
 	"status": {
 		"apiTitle": "Statut API",
@@ -247,11 +248,23 @@
 	},
 	"payments": {
 		"pay": "Payer",
-		"paymentRecorded": "Paiement enregistré avec succès",
+		"paymentRecorded": "Paiement enregistre avec succes",
 		"addPayment": "Ajouter un paiement",
 		"remainingBalance": "Solde restant",
 		"amount": "Montant",
 		"notes": "Notes",
-		"notesPlaceholder": "Ajouter des notes de paiement (optionnel)"
+		"notesPlaceholder": "Ajouter des notes de paiement (optionnel)",
+		"title": "Paiements",
+		"description": "Voir tous les paiements des patients",
+		"allPayments": "Tous les paiements",
+		"searchPatient": "Rechercher par nom de patient...",
+		"filters": "Filtres",
+		"filterPayments": "Filtrer les paiements",
+		"clearFilters": "Effacer les filtres",
+		"noPaymentsFound": "Aucun paiement trouve",
+		"patient": "Patient",
+		"date": "Date",
+		"method": "Methode",
+		"cash": "Especes"
 	}
 }

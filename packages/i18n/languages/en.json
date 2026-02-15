@@ -12,7 +12,8 @@
 		"todos": "Todos",
 		"visitTypes": "Visit Types",
 		"patients": "Patients",
-		"visits": "Visits"
+		"visits": "Visits",
+		"payments": "Payments"
 	},
 	"status": {
 		"apiTitle": "API Status",
@@ -252,6 +253,18 @@
 		"remainingBalance": "Remaining Balance",
 		"amount": "Amount",
 		"notes": "Notes",
-		"notesPlaceholder": "Add payment notes (optional)"
+		"notesPlaceholder": "Add payment notes (optional)",
+		"title": "Payments",
+		"description": "View all patient payments",
+		"allPayments": "All Payments",
+		"searchPatient": "Search by patient name...",
+		"filters": "Filters",
+		"filterPayments": "Filter Payments",
+		"clearFilters": "Clear Filters",
+		"noPaymentsFound": "No payments found",
+		"patient": "Patient",
+		"date": "Date",
+		"method": "Method",
+		"cash": "Cash"
 	}
 }

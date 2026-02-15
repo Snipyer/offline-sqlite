@@ -1,6 +1,5 @@
 import { NavLink, useLocation } from "react-router";
-import { Home, LayoutDashboard, MapPin, Waypoints, Users } from "lucide-react";
-
+import { Home, LayoutDashboard, MapPin, Waypoints, Users, CreditCard } from "lucide-react";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
@@ -25,6 +24,7 @@ const navItems = [
 	{ to: "/visits", labelKey: "nav.visits", icon: MapPin },
 	{ to: "/patients", labelKey: "nav.patients", icon: Users },
 	{ to: "/visit-types", labelKey: "nav.visitTypes", icon: Waypoints },
+	{ to: "/payments", labelKey: "nav.payments", icon: CreditCard },
 ] as const;
 
 export function AppSidebar() {

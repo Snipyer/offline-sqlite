@@ -1,6 +1,6 @@
 import { db } from "@offline-sqlite/db";
 import { payment, visit, visitAct, patient, paymentMethodEnum } from "@offline-sqlite/db/schema/dental";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, like } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
@@ -198,5 +198,65 @@ export const paymentRouter = router({
 				totalPaid,
 				remainingBalance: totalAmount - totalPaid,
 			};
+		}),
+
+	list: protectedProcedure
+		.input(
+			z.object({
+				patientName: z.string().optional(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			let paymentsData;
+
+			if (input.patientName) {
+				paymentsData = await db
+					.select({
+						id: payment.id,
+						visitId: payment.visitId,
+						amount: payment.amount,
+						paymentMethod: payment.paymentMethod,
+						notes: payment.notes,
+						recordedAt: payment.recordedAt,
+						createdAt: payment.createdAt,
+						patientId: patient.id,
+						patientName: patient.name,
+						visitTime: visit.visitTime,
+					})
+					.from(payment)
+					.innerJoin(visit, eq(payment.visitId, visit.id))
+					.innerJoin(patient, eq(visit.patientId, patient.id))
+					.where(
+						and(
+							eq(payment.userId, ctx.session.user.id),
+							eq(visit.userId, ctx.session.user.id),
+							like(patient.name, `%${input.patientName}%`),
+						),
+					)
+					.orderBy(desc(payment.recordedAt));
+			} else {
+				paymentsData = await db
+					.select({
+						id: payment.id,
+						visitId: payment.visitId,
+						amount: payment.amount,
+						paymentMethod: payment.paymentMethod,
+						notes: payment.notes,
+						recordedAt: payment.recordedAt,
+						createdAt: payment.createdAt,
+						patientId: patient.id,
+						patientName: patient.name,
+						visitTime: visit.visitTime,
+					})
+					.from(payment)
+					.innerJoin(visit, eq(payment.visitId, visit.id))
+					.innerJoin(patient, eq(visit.patientId, patient.id))
+					.where(
+						and(eq(payment.userId, ctx.session.user.id), eq(visit.userId, ctx.session.user.id)),
+					)
+					.orderBy(desc(payment.recordedAt));
+			}
+
+			return paymentsData;
 		}),
 });

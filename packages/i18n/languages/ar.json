@@ -12,7 +12,8 @@
 		"todos": "المهام",
 		"visitTypes": "أنواع الزيارات",
 		"patients": "المرضى",
-		"visits": "الزيارات"
+		"visits": "الزيارات",
+		"payments": "المدفوعات"
 	},
 	"status": {
 		"apiTitle": "حالة واجهة برمجة التطبيقات",
@@ -252,6 +253,18 @@
 		"remainingBalance": "الرصيد المتبقي",
 		"amount": "المبلغ",
 		"notes": "ملاحظات",
-		"notesPlaceholder": "إضافة ملاحظات للدفعة (اختياري)"
+		"notesPlaceholder": "إضافة ملاحظات للدفعة (اختياري)",
+		"title": "المدفوعات",
+		"description": "عرض جميع مدفوعات المرضى",
+		"allPayments": "جميع المدفوعات",
+		"searchPatient": "البحث باسم المريض...",
+		"filters": "عوامل التصفية",
+		"filterPayments": "تصفية المدفوعات",
+		"clearFilters": "مسح عوامل التصفية",
+		"noPaymentsFound": "لم يتم العثور على مدفوعات",
+		"patient": "المريض",
+		"date": "التاريخ",
+		"method": "الطريقة",
+		"cash": "نقدي"
 	}
 }
