@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useDirection } from "@/components/ui/direction";
 import { trpc } from "@/utils/trpc";
 import { PatientSheetContent } from "./patient-card";
 
@@ -11,6 +12,7 @@ interface PatientSheetProps {
 }
 
 export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
+	const direction = useDirection();
 	const patientDetails = useQuery({
 		...trpc.patient.getByIdWithVisits.queryOptions({ id: patientId! }, { enabled: !!patientId }),
 	});
@@ -23,7 +25,8 @@ export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
 			}}
 		>
 			<SheetContent
-				side="right"
+				side={direction === "rtl" ? "left" : "right"}
+				dir={direction}
 				className="inset-y-0! flex h-full! w-[95vw] max-w-150! flex-col border-l pt-6"
 			>
 				{patientDetails.isLoading ? (

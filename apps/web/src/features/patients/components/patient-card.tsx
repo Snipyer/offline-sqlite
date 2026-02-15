@@ -1,11 +1,10 @@
 import { Calendar, CreditCard, Phone, MapPin, User } from "lucide-react";
 import { useState } from "react";
-
-import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
 import { getVisitColor } from "@/utils/visit-colors";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { VisitHistoryItem } from "./visit-history-item";
+import { useDirection } from "@base-ui/react";
 
 interface PatientCardProps {
 	patient: {
@@ -124,6 +123,8 @@ interface PatientSheetProps {
 export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientSheetProps) {
 	const { t } = useTranslation();
 	const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
+	const direction = useDirection();
+	const isRtl = direction === "rtl";
 
 	const getAllVisitTeeth = () => {
 		const teeth = new Set<string>();
@@ -206,10 +207,10 @@ export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientShe
 								onMouseLeave={() => setHoveredVisitId(null)}
 							>
 								<div
-									className="absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
+									className={isRtl ? "absolute top-0 bottom-0 right-0 w-1 rounded-r-xl" : "absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"}
 									style={{ backgroundColor: getVisitColor(visit.id) }}
 								/>
-								<div className="pl-3">
+								<div className={isRtl ? "pr-3" : "pl-3"}>
 									<VisitHistoryItem visit={visit} />
 								</div>
 							</div>
