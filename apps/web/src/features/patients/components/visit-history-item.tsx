@@ -1,7 +1,7 @@
 import { Calendar } from "lucide-react";
 
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
-import { useTranslation } from "@offline-sqlite/i18n";
+import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 
 interface VisitHistoryItemProps {
 	visit: {
@@ -24,10 +24,6 @@ interface VisitHistoryItemProps {
 export function VisitHistoryItem({ visit }: VisitHistoryItemProps) {
 	const { t } = useTranslation();
 
-	const formatDate = (timestamp: number) => {
-		return new Date(timestamp).toLocaleDateString();
-	};
-
 	return (
 		<div
 			className="group bg-card hover:bg-card/80 relative overflow-hidden rounded-xl border p-4
@@ -40,10 +36,10 @@ export function VisitHistoryItem({ visit }: VisitHistoryItemProps) {
 				</div>
 				<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
 					<span className="text-muted-foreground">
-						{t("patients.total")}: <span className="font-medium">${visit.totalAmount}</span>
+						{t("patients.total")}: <Currency value={visit.totalAmount} size="sm" />
 					</span>
 					<span className="text-muted-foreground">
-						{t("patients.paid")}: <span className="font-medium">${visit.amountPaid}</span>
+						{t("patients.paid")}: <Currency value={visit.amountPaid} size="sm" />
 					</span>
 					<span
 						className={
@@ -52,7 +48,7 @@ export function VisitHistoryItem({ visit }: VisitHistoryItemProps) {
 								: "font-medium text-green-600 dark:text-green-400"
 						}
 					>
-						{t("patients.left")}: ${visit.amountLeft}
+						{t("patients.left")}: <Currency value={visit.amountLeft} size="sm" />
 					</span>
 				</div>
 			</div>
@@ -69,7 +65,7 @@ export function VisitHistoryItem({ visit }: VisitHistoryItemProps) {
 								<span className="font-medium">{act.visitType.name}</span>
 								<ToothBadge teeth={act.teeth} />
 							</div>
-							<span className="font-semibold">${act.price}</span>
+							<Currency value={act.price} size="sm" />
 						</div>
 					))}
 				</div>

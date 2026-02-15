@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ToothSelector, ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { trpc } from "@/utils/trpc";
-import { useTranslation } from "@offline-sqlite/i18n";
+import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 
 type Sex = "M" | "F";
 
@@ -541,9 +541,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										>
 											<CalendarIcon className="mr-2 h-4 w-4" />
 											{form.getFieldValue("visitTime")
-												? new Date(
-														form.getFieldValue("visitTime"),
-													).toLocaleDateString()
+												? formatDate(new Date(form.getFieldValue("visitTime")))
 												: t("visits.selectDate")}
 										</div>
 									</PopoverTrigger>
@@ -797,7 +795,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 													{t("visits.totalAmountLabel")}
 												</p>
 												<p className="mt-1 text-2xl font-bold">
-													{currentTotalAmount}
+													<Currency size="lg" value={currentTotalAmount} />
 												</p>
 											</div>
 
@@ -837,13 +835,12 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 													{t("visits.balanceDue")}
 												</p>
 												<p
-													className={`mt-1 text-2xl font-bold ${
-														currentAmountLeft > 0
-															? "text-orange-600"
-															: "text-green-600"
-													}`}
+													className={`mt-1 text-2xl font-bold ${currentAmountLeft > 0
+														? "text-orange-600"
+														: "text-green-600"
+														}`}
 												>
-													{currentAmountLeft}
+													<Currency value={currentAmountLeft} />
 												</p>
 											</div>
 										</div>

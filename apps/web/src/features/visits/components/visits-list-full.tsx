@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { trpc } from "@/utils/trpc";
-import { useTranslation } from "@offline-sqlite/i18n";
+import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 
 interface VisitFilters {
 	dateFrom: string;
@@ -95,10 +95,6 @@ export default function VisitsList() {
 
 	const clearFilters = () => {
 		setFilters(emptyFilters);
-	};
-
-	const formatDate = (timestamp: number) => {
-		return new Date(timestamp).toLocaleDateString();
 	};
 
 	const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.patientName || filters.visitTypeId;
@@ -287,7 +283,7 @@ export default function VisitsList() {
 															</span>
 															<ToothBadge teeth={act.teeth} />
 															<span className="ml-auto font-semibold">
-																${act.price}
+																<Currency value={act.price} size="sm" />
 															</span>
 														</div>
 													))}
@@ -304,16 +300,14 @@ export default function VisitsList() {
 													<span className="text-muted-foreground text-sm">
 														{t("visits.totalAmount")}:
 													</span>
-													<span className="font-semibold">
-														${visit.totalAmount}
-													</span>
+													<Currency value={visit.totalAmount} size="sm" />
 												</div>
 												<div className="bg-border h-4 w-px" />
 												<div className="flex items-center gap-2">
 													<span className="text-muted-foreground text-sm">
 														{t("visits.amountPaid")}:
 													</span>
-													<span className="font-semibold">${visit.amountPaid}</span>
+													<Currency value={visit.amountPaid} size="sm" />
 												</div>
 												<div className="bg-border h-4 w-px" />
 												<div className="flex items-center gap-2">
@@ -327,7 +321,7 @@ export default function VisitsList() {
 																: "text-green-600"
 															}`}
 													>
-														${visit.amountLeft}
+														<Currency value={visit.amountLeft} size="sm" />
 													</span>
 												</div>
 											</div>

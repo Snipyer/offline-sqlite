@@ -2,7 +2,7 @@ import { Calendar, CreditCard, Phone, MapPin, User } from "lucide-react";
 import { useState } from "react";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
 import { getVisitColor } from "@/utils/visit-colors";
-import { useTranslation } from "@offline-sqlite/i18n";
+import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { VisitHistoryItem } from "./visit-history-item";
 import { useDirection } from "@base-ui/react";
 
@@ -22,10 +22,6 @@ interface PatientCardProps {
 	totalUnpaid: number;
 	onClick: () => void;
 }
-
-const formatDate = (timestamp: number) => {
-	return new Date(timestamp).toLocaleDateString();
-};
 
 export function PatientCard({ patient, lastVisit, visits, totalUnpaid, onClick }: PatientCardProps) {
 	const { t } = useTranslation();
@@ -75,7 +71,7 @@ export function PatientCard({ patient, lastVisit, visits, totalUnpaid, onClick }
 								rounded-md px-3 py-2 text-sm font-medium"
 						>
 							<CreditCard className="h-4 w-4" />
-							{t("patients.unpaid")}: ${totalUnpaid}
+							{t("patients.unpaid")}: <Currency value={totalUnpaid} />
 						</div>
 					)}
 				</div>
@@ -185,7 +181,9 @@ export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientShe
 							<p className="text-destructive text-center text-xs font-medium uppercase">
 								{t("patients.unpaid")}
 							</p>
-							<p className="text-destructive text-center text-2xl font-bold">${totalUnpaid}</p>
+							<p className="text-destructive text-center text-2xl font-bold">
+								<Currency value={totalUnpaid} size="lg" />
+							</p>
 						</div>
 					)}
 				</div>
@@ -207,7 +205,11 @@ export function PatientSheetContent({ patient, visits, totalUnpaid }: PatientShe
 								onMouseLeave={() => setHoveredVisitId(null)}
 							>
 								<div
-									className={isRtl ? "absolute top-0 bottom-0 right-0 w-1 rounded-r-xl" : "absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"}
+									className={
+										isRtl
+											? "absolute top-0 right-0 bottom-0 w-1 rounded-r-xl"
+											: "absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
+									}
 									style={{ backgroundColor: getVisitColor(visit.id) }}
 								/>
 								<div className={isRtl ? "pr-3" : "pl-3"}>
