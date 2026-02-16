@@ -22,8 +22,10 @@ export function Currency({ value, currency = "DZD", size = "md", className = "" 
 
 	return (
 		<span className={`inline-flex items-baseline gap-0.5 ${sizeClasses[size]} ${className}`}>
-			<span>{integer}</span>
-			{fraction && <span>.{fraction}</span>}
+			<span dir="ltr">
+				{integer}
+				{fraction && <>.{fraction}</>}
+			</span>
 			<span className="ms-0.5">{symbol}</span>
 		</span>
 	);

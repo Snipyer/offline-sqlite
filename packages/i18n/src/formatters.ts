@@ -1,4 +1,4 @@
-import i18next from "i18next";
+import { i18n } from "./core";
 
 export const defaultCurrency = "DZD";
 
@@ -30,7 +30,7 @@ export type DateStyle = DateStyleLegacy | "dd/mm/yyyy";
 export type NumberStyle = "decimal" | "currency" | "percent" | "unit";
 
 function getLocale(): string {
-	return i18next.language ?? "en";
+	return i18n.resolvedLanguage ?? i18n.language ?? "en";
 }
 
 export function formatDate(
@@ -184,6 +184,7 @@ export function getCurrencyParts(
 	const formatted = new Intl.NumberFormat(locale, {
 		minimumFractionDigits: 0,
 		maximumFractionDigits: 2,
+		numberingSystem: "latn",
 		...options,
 	}).format(value);
 
