@@ -22,6 +22,8 @@
 		"signOut": "Sign Out",
 		"welcomeBack": "Welcome Back",
 		"createAccount": "Create Account",
+		"signInSubtitle": "Enter your credentials to access your account",
+		"signUpSubtitle": "Create a new account to get started",
 		"needAccount": "Need an account? Sign Up",
 		"haveAccount": "Already have an account? Sign In",
 		"name": "Name",

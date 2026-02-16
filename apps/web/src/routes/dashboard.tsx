@@ -1,25 +1,13 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
-
-import { authClient } from "@/lib/auth-client";
 import { useTranslation } from "@offline-sqlite/i18n";
-
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Loader from "@/components/loader";
+import { useAuthGuard } from "@/components/auth-guard";
 
 export default function Dashboard() {
-	const { data: session, isPending } = authClient.useSession();
-	const navigate = useNavigate();
+	const { session, isPending } = useAuthGuard();
 	const { t } = useTranslation();
 
-	useEffect(() => {
-		if (!session && !isPending) {
-			navigate("/login");
-		}
-	}, [session, isPending, navigate]);
-
 	if (isPending) {
-		return <Loader />;
+		return null;
 	}
 
 	return (

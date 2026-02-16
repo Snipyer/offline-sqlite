@@ -22,6 +22,8 @@
 		"signOut": "Se deconnecter",
 		"welcomeBack": "Bon retour",
 		"createAccount": "Creer un compte",
+		"signInSubtitle": "Entrez vos identifiants pour acceder a votre compte",
+		"signUpSubtitle": "Creez un nouveau compte pour commencer",
 		"needAccount": "Besoin d'un compte ? Inscrivez-vous",
 		"haveAccount": "Deja un compte ? Connectez-vous",
 		"name": "Nom",

@@ -1,5 +1,10 @@
 import PaymentsList from "@/features/payments/components/payments-list-full";
+import { AuthGuard } from "@/components/auth-guard";
 
 export default function PaymentsPage() {
-	return <PaymentsList />;
+	return (
+		<AuthGuard>
+			<PaymentsList />
+		</AuthGuard>
+	);
 }

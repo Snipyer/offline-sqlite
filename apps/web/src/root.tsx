@@ -1,8 +1,16 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./index.css";
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import {
+	isRouteErrorResponse,
+	Links,
+	Meta,
+	Outlet,
+	Scripts,
+	ScrollRestoration,
+	useLocation,
+} from "react-router";
 import type { Route } from "./+types/root";
 import { Titlebar } from "./components/titlebar";
 import { ThemeProvider } from "./components/theme-provider";
@@ -14,6 +22,7 @@ import { isTauri } from "./utils/is-tauri";
 import { cn } from "./lib/utils";
 import { AppSidebar } from "./components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
+import { authClient } from "./lib/auth-client";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -67,6 +76,10 @@ export default function App() {
 	const currentLanguage = instance.resolvedLanguage ?? instance.language;
 	const direction = getLanguageDirection(currentLanguage);
 	const sidebarSide = direction === "rtl" ? "right" : "left";
+	const location = useLocation();
+	const { data: session } = authClient.useSession();
+	const isAuthPage = location.pathname === "/login";
+	const isAuthenticated = !!session;
 
 	return (
 		<I18nextProvider i18n={i18n}>
@@ -79,13 +92,17 @@ export default function App() {
 						disableTransitionOnChange
 						storageKey="vite-ui-theme"
 					>
-						<SidebarProvider defaultOpen side={sidebarSide}>
-							{isTauri() && <Titlebar />}
-							<AppSidebar />
-							<SidebarInset className={cn("flex h-svh flex-col", isTauri() && "pt-9")}>
-								<Outlet />
-							</SidebarInset>
-						</SidebarProvider>
+						{isAuthenticated ? (
+							<SidebarProvider defaultOpen side={sidebarSide}>
+								{isTauri() && <Titlebar />}
+								<AppSidebar />
+								<SidebarInset className={cn("flex h-svh flex-col", isTauri() && "pt-9")}>
+									<Outlet />
+								</SidebarInset>
+							</SidebarProvider>
+						) : (
+							<Outlet />
+						)}
 						<Toaster richColors />
 					</ThemeProvider>
 					<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />

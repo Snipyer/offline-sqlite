@@ -6,8 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
+import { AuthGuard } from "@/components/auth-guard";
 
 export default function DailySummaryPage() {
+	return (
+		<AuthGuard>
+			<DailySummaryContent />
+		</AuthGuard>
+	);
+}
+
+function DailySummaryContent() {
 	const { t } = useTranslation();
 	const summary = useQuery(trpc.dailySummary.get.queryOptions());
 
@@ -129,7 +138,9 @@ export default function DailySummaryPage() {
 													<Users className="text-primary h-5 w-5" />
 												</div>
 												<div>
-													<h4 className="font-semibold text-lg">{visit.patient.name}</h4>
+													<h4 className="text-lg font-semibold">
+														{visit.patient.name}
+													</h4>
 													<p className="text-muted-foreground text-xs">
 														{formatDate(visit.visitTime)}
 													</p>
