@@ -146,12 +146,23 @@ export function ToothSelector({ selectedTeeth, onChange, maxSelection }: ToothSe
 	);
 }
 
-export function ToothBadge({ teeth, onRemove }: { teeth: string[]; onRemove?: (tooth: string) => void }) {
+export function ToothBadge({
+	teeth,
+	onRemove,
+	maxTeeth,
+}: {
+	teeth: string[];
+	onRemove?: (tooth: string) => void;
+	maxTeeth?: number;
+}) {
 	if (teeth.length === 0) return null;
+
+	const displayTeeth = maxTeeth ? teeth.slice(0, maxTeeth) : teeth;
+	const remainingCount = maxTeeth ? teeth.length - maxTeeth : 0;
 
 	return (
 		<div className="flex flex-wrap gap-1">
-			{teeth.map((tooth) => (
+			{displayTeeth.map((tooth) => (
 				<span
 					key={tooth}
 					className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2
@@ -169,6 +180,10 @@ export function ToothBadge({ teeth, onRemove }: { teeth: string[]; onRemove?: (t
 					)}
 				</span>
 			))}
+			{remainingCount > 0 && (
+				<span className="bg-muted-foreground/10 inline-flex items-center gap-1 rounded-full px-2
+					py-0.5 font-medium text-muted-foreground text-xs">+{remainingCount}</span>
+			)}
 		</div>
 	);
 }

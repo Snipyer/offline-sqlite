@@ -3,6 +3,7 @@ import { patientRouter } from "./patient";
 import { visitTypeRouter } from "./visit-type";
 import { visitRouter } from "./visit";
 import { paymentRouter } from "./payment";
+import { dailySummaryRouter } from "./daily-summary";
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => {
@@ -18,5 +19,6 @@ export const appRouter = router({
 	visitType: visitTypeRouter,
 	visit: visitRouter,
 	payment: paymentRouter,
+	dailySummary: dailySummaryRouter,
 });
 export type AppRouter = typeof appRouter;

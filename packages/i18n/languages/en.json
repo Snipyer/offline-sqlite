@@ -9,6 +9,7 @@
 	"nav": {
 		"home": "Home",
 		"dashboard": "Dashboard",
+		"dailySummary": "Daily Summary",
 		"todos": "Todos",
 		"visitTypes": "Visit Types",
 		"patients": "Patients",
@@ -266,5 +267,21 @@
 		"date": "Date",
 		"method": "Method",
 		"cash": "Cash"
+	},
+	"dailySummary": {
+		"title": "Daily Summary",
+		"todayVisits": "Today's Visits",
+		"patients": "patients",
+		"todayPatients": "Today's Patients",
+		"dailyIncome": "Today's Income",
+		"expected": "Expected",
+		"monthlyIncome": "Monthly Income",
+		"allTime": "All time",
+		"totalPatients": "Total Patients",
+		"unpaid": "Unpaid",
+		"new": "new",
+		"proceduresBreakdown": "Procedures Breakdown",
+		"todayVisitsList": "Today's Visits",
+		"noVisitsToday": "No visits today"
 	}
 }

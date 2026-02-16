@@ -9,6 +9,7 @@
 	"nav": {
 		"home": "Accueil",
 		"dashboard": "Tableau de bord",
+		"dailySummary": "Resume quotidien",
 		"todos": "Taches",
 		"visitTypes": "Types de visites",
 		"patients": "Patients",
@@ -266,5 +267,21 @@
 		"date": "Date",
 		"method": "Methode",
 		"cash": "Especes"
+	},
+	"dailySummary": {
+		"title": "Resume quotidien",
+		"todayVisits": "Visites du jour",
+		"patients": "patients",
+		"todayPatients": "Patients du jour",
+		"dailyIncome": "Revenus du jour",
+		"expected": "Prevu",
+		"monthlyIncome": "Revenus mensuels",
+		"allTime": "Total",
+		"totalPatients": "Total patients",
+		"unpaid": "Impayes",
+		"new": "nouveau",
+		"proceduresBreakdown": "Repartition des actes",
+		"todayVisitsList": "Visites du jour",
+		"noVisitsToday": "Aucune visite aujourd'hui"
 	}
 }
