@@ -8,7 +8,6 @@ import LanguageSwitcher from "./language-switcher";
 export default function Header() {
 	const { t } = useTranslation();
 	const links = [
-		{ to: "/", label: t("nav.home") },
 		{ to: "/dashboard", label: t("nav.dashboard") },
 		{ to: "/visits", label: t("nav.visits") },
 		{ to: "/visit-types", label: t("nav.visitTypes") },
@@ -24,9 +23,10 @@ export default function Header() {
 								key={to}
 								to={to}
 								className={({ isActive }) =>
-									`rounded-none px-3 py-1.5 text-sm font-medium transition-colors ${isActive
-										? "bg-primary text-primary-foreground"
-										: "text-muted-foreground hover:bg-muted hover:text-foreground"
+									`rounded-none px-3 py-1.5 text-sm font-medium transition-colors ${
+										isActive
+											? "bg-primary text-primary-foreground"
+											: "text-muted-foreground hover:bg-muted hover:text-foreground"
 									}`
 								}
 								end

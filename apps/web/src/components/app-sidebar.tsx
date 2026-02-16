@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router";
-import { Home, LayoutDashboard, Users, CreditCard, Calendar, Syringe, Stethoscope } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, Calendar, Syringe, Stethoscope } from "lucide-react";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
@@ -19,7 +19,6 @@ import UserMenu from "./user-menu";
 import { isTauri } from "@/utils/is-tauri";
 
 const navItems = [
-	{ to: "/", labelKey: "nav.home", icon: Home },
 	{ to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
 	{ to: "/visits", labelKey: "nav.visits", icon: Stethoscope },
 	{ to: "/patients", labelKey: "nav.patients", icon: Users },
@@ -49,10 +48,7 @@ export function AppSidebar() {
 					<SidebarGroupContent>
 						<SidebarMenu>
 							{navItems.map((item) => {
-								const isActive =
-									item.to === "/"
-										? location.pathname === "/"
-										: location.pathname.startsWith(item.to);
+								const isActive = location.pathname.startsWith(item.to);
 								const Icon = item.icon;
 
 								return (

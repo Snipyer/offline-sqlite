@@ -3,38 +3,18 @@
 		"title": "offline-sqlite",
 		"description": "offline-sqlite est une application web"
 	},
-	"home": {
-		"titleAscii": "\n ██████╗ ███████╗████████╗████████╗███████╗██████╗\n ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗\n ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝\n ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗\n ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║\n ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝\n\n ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗\n ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝\n    ██║       ███████╗   ██║   ███████║██║     █████╔╝\n    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗\n    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗\n    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝\n "
-	},
 	"nav": {
-		"home": "Accueil",
 		"dashboard": "Tableau de bord",
 		"dailySummary": "Resume quotidien",
-		"todos": "Taches",
 		"visitTypes": "Types de visites",
 		"patients": "Patients",
 		"visits": "Visites",
 		"payments": "Paiements"
 	},
-	"status": {
-		"apiTitle": "Statut API",
-		"checking": "Verification...",
-		"connected": "Connecte",
-		"disconnected": "Deconnecte"
-	},
 	"dashboard": {
 		"loading": "Chargement...",
 		"title": "Tableau de bord",
-		"welcome": "Bienvenue {{name}}",
-		"api": "API : {{message}}"
-	},
-	"todos": {
-		"title": "Liste de taches",
-		"description": "Gerez vos taches efficacement",
-		"placeholder": "Ajouter une nouvelle tache...",
-		"add": "Ajouter",
-		"empty": "Aucune tache pour l'instant. Ajoutez-en une ci-dessus !",
-		"deleteAria": "Supprimer la tache"
+		"welcome": "Bienvenue {{name}}"
 	},
 	"auth": {
 		"signIn": "Se connecter",

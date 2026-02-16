@@ -3,38 +3,18 @@
 		"title": "offline-sqlite",
 		"description": "offline-sqlite is a web application"
 	},
-	"home": {
-		"titleAscii": "\n ██████╗ ███████╗████████╗████████╗███████╗██████╗\n ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗\n ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝\n ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗\n ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║\n ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝\n\n ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗\n ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝\n    ██║       ███████╗   ██║   ███████║██║     █████╔╝\n    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗\n    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗\n    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝\n "
-	},
 	"nav": {
-		"home": "Home",
 		"dashboard": "Dashboard",
 		"dailySummary": "Daily Summary",
-		"todos": "Todos",
 		"visitTypes": "Visit Types",
 		"patients": "Patients",
 		"visits": "Visits",
 		"payments": "Payments"
 	},
-	"status": {
-		"apiTitle": "API Status",
-		"checking": "Checking...",
-		"connected": "Connected",
-		"disconnected": "Disconnected"
-	},
 	"dashboard": {
 		"loading": "Loading...",
 		"title": "Dashboard",
-		"welcome": "Welcome {{name}}",
-		"api": "API: {{message}}"
-	},
-	"todos": {
-		"title": "Todo List",
-		"description": "Manage your tasks efficiently",
-		"placeholder": "Add a new task...",
-		"add": "Add",
-		"empty": "No todos yet. Add one above!",
-		"deleteAria": "Delete todo"
+		"welcome": "Welcome {{name}}"
 	},
 	"auth": {
 		"signIn": "Sign In",
