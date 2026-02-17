@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router";
+import { User, LogOut } from "lucide-react";
 
 import {
 	DropdownMenu,
@@ -15,7 +16,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
-import { User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function UserMenu() {
 	const navigate = useNavigate();
@@ -25,14 +26,19 @@ export default function UserMenu() {
 	const isCollapsed = state === "collapsed";
 
 	if (isPending) {
-		return <Skeleton className={isCollapsed ? "size-8 rounded-full" : "h-9 w-24 rounded-lg"} />;
+		return <Skeleton className={cn(isCollapsed ? "size-9 rounded-xl" : "h-9 w-full rounded-xl")} />;
 	}
 
 	if (!session) {
 		return (
-			<Link to="/login">
-				<Button variant="outline" size={isCollapsed ? "icon-sm" : "sm"}>
-					{isCollapsed ? <User className="size-4" /> : t("auth.signIn")}
+			<Link to="/login" className="block w-full">
+				<Button
+					variant="outline"
+					size="icon"
+					className="border-border/50 bg-background/50 hover:border-border hover:bg-muted h-9 w-9
+						rounded-xl"
+				>
+					<User className="h-4 w-4" />
 				</Button>
 			</Link>
 		);
@@ -44,36 +50,47 @@ export default function UserMenu() {
 				render={
 					<Button
 						variant="outline"
-						size={isCollapsed ? "xs" : "sm"}
-						className={isCollapsed ? "w-full justify-center" : ""}
-					/>
+						size={isCollapsed ? "icon" : "default"}
+						className={cn(
+							`border-border/50 bg-background/50 hover:border-border hover:bg-muted
+							transition-all duration-200`,
+							isCollapsed
+								? "h-9 w-9 rounded-xl"
+								: "h-9 w-full justify-start gap-2 rounded-xl px-3 pl-0",
+						)}
+					>
+						{isCollapsed ? (
+							<span
+								className="bg-primary/10 text-primary flex h-7 w-7 items-center justify-center
+									rounded-lg text-xs font-semibold"
+							>
+								{session.user.name.charAt(0).toUpperCase()}
+							</span>
+						) : (
+							<>
+								<div
+									className="bg-primary/10 flex h-9 w-9 items-center justify-center
+										rounded-lg"
+								>
+									<span className="text-primary text-xs font-semibold">
+										{session.user.name.charAt(0).toUpperCase()}
+									</span>
+								</div>
+								<span className="flex-1 truncate text-xs">{session.user.name}</span>
+							</>
+						)}
+					</Button>
 				}
-			>
-				{isCollapsed ? (
-					<User className="size-4" />
-				) : (
-					<>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="me-1.5 size-4"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-							<circle cx="12" cy="7" r="4" />
-						</svg>
-						{session.user.name}
-					</>
-				)}
-			</DropdownMenuTrigger>
-			<DropdownMenuContent className="bg-card" align="end">
-				<div className="px-2 py-1.5 text-sm font-semibold">{t("user.myAccount")}</div>
-				<DropdownMenuSeparator />
-				<DropdownMenuItem className="cursor-default">{session.user.email}</DropdownMenuItem>
+			/>
+			<DropdownMenuContent className="w-56" align="start" side="right">
+				<DropdownMenuGroup>
+					<DropdownMenuLabel className="font-normal">
+						<div className="flex flex-col space-y-1">
+							<p className="text-sm font-medium">{session.user.name}</p>
+							<p className="text-muted-foreground text-xs">{session.user.email}</p>
+						</div>
+					</DropdownMenuLabel>
+				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
 					variant="destructive"
@@ -89,21 +106,9 @@ export default function UserMenu() {
 							},
 						});
 					}}
+					className="cursor-pointer"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						className="me-1.5 size-4"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					>
-						<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-						<polyline points="16 17 21 12 16 7" />
-						<line x1="21" x2="9" y1="12" y2="12" />
-					</svg>
+					<LogOut className="mr-2 h-4 w-4" />
 					{t("auth.signOut")}
 				</DropdownMenuItem>
 			</DropdownMenuContent>

@@ -1,12 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Calendar, DollarSign, Clock, CreditCard, Users, Syringe } from "lucide-react";
 import { Link } from "react-router";
+import { motion } from "motion/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { AuthGuard } from "@/components/auth-guard";
+import { cn } from "@/lib/utils";
+
+const containerVariants = {
+	hidden: { opacity: 0 },
+	visible: {
+		opacity: 1,
+		transition: {
+			staggerChildren: 0.1,
+			delayChildren: 0.1,
+		},
+	},
+};
+
+const itemVariants = {
+	hidden: { opacity: 0, y: 20 },
+	visible: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			duration: 0.5,
+			ease: "easeOut" as const,
+		},
+	},
+};
 
 export default function DailySummaryPage() {
 	return (
@@ -22,8 +47,11 @@ function DailySummaryContent() {
 
 	if (summary.isLoading) {
 		return (
-			<div className="flex h-64 items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin" />
+			<div className="flex h-[calc(100vh-8rem)] items-center justify-center">
+				<div className="relative">
+					<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
+					<Loader2 className="text-primary relative h-10 w-10 animate-spin" />
+				</div>
 			</div>
 		);
 	}
@@ -39,169 +67,300 @@ function DailySummaryContent() {
 		newPatientsToday,
 		totalCollected,
 		totalExpected,
-		totalRemaining,
 		totalUnpaidAmount,
 		proceduresByType,
 		visits,
 	} = summary.data;
 
 	return (
-		<div className="container mx-auto max-w-6xl px-4 py-6">
-			<div className="mb-6">
-				<h1 className="mb-1 text-2xl font-bold">{t("dailySummary.title")}</h1>
-				<p className="text-muted-foreground">{formatDate(new Date(date).getTime(), "full")}</p>
+		<motion.div
+			variants={containerVariants}
+			initial="hidden"
+			animate="visible"
+			className="container mx-auto max-w-6xl px-4 py-8"
+		>
+			{/* Header */}
+			<motion.div variants={itemVariants} className="mb-8">
+				<h1 className="mb-1 text-2xl font-semibold tracking-tight">{t("dailySummary.title")}</h1>
+				<p className="text-muted-foreground text-sm">
+					{formatDate(new Date(date).getTime(), "full")}
+				</p>
+			</motion.div>
+
+			{/* Stats Row - Original 2 Cards */}
+			<div className="mb-8 grid gap-5 sm:grid-cols-2">
+				<motion.div variants={itemVariants}>
+					<StatCard
+						icon={Calendar}
+						title={t("dailySummary.todayVisits")}
+						value={totalVisits}
+						subtitle={
+							<span className="text-muted-foreground">
+								{uniquePatients} {t("dailySummary.patients")}
+								{newPatientsToday > 0 && (
+									<span className="ml-2 text-emerald-600">
+										({newPatientsToday} {t("dailySummary.new")})
+									</span>
+								)}
+							</span>
+						}
+						color="emerald"
+					/>
+				</motion.div>
+
+				<motion.div variants={itemVariants}>
+					<StatCard
+						icon={DollarSign}
+						title={t("dailySummary.dailyIncome")}
+						value={<Currency className="text-3xl!" value={totalCollected} />}
+						subtitle={
+							<span className="text-muted-foreground">
+								{t("dailySummary.expected")}: <Currency value={totalExpected} size="sm" />
+								<span className="mx-2">|</span>
+								{t("dailySummary.unpaid")}: <Currency value={totalUnpaidAmount} size="sm" />
+							</span>
+						}
+						color="blue"
+					/>
+				</motion.div>
 			</div>
 
-			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium">{t("dailySummary.todayVisits")}</CardTitle>
-						<Calendar className="text-muted-foreground h-4 w-4" />
-					</CardHeader>
-					<CardContent>
-						<div className="text-2xl font-bold">{totalVisits}</div>
-						<p className="text-muted-foreground text-xs">
-							{uniquePatients} {t("dailySummary.patients")}
-							{newPatientsToday > 0 && (
-								<span className="ml-1 text-green-600">
-									({newPatientsToday} {t("dailySummary.new")})
-								</span>
-							)}
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium">{t("dailySummary.dailyIncome")}</CardTitle>
-						<DollarSign className="text-muted-foreground h-4 w-4" />
-					</CardHeader>
-					<CardContent>
-						<div className="text-2xl font-bold">
-							<Currency value={totalCollected} />
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{t("dailySummary.expected")}: <Currency value={totalExpected} size="sm" />
-							<span className="mx-2">|</span>
-							{t("dailySummary.unpaid")}: <Currency value={totalUnpaidAmount} size="sm" />
-						</p>
-					</CardContent>
-				</Card>
-			</div>
-
-			<div className="mt-6 grid gap-4 lg:grid-cols-3">
-				<Card className="lg:col-span-1">
-					<CardHeader>
-						<CardTitle className="text-lg">{t("dailySummary.proceduresBreakdown")}</CardTitle>
-					</CardHeader>
-					<CardContent>
-						{Object.keys(proceduresByType).length === 0 ? (
-							<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
-						) : (
-							<div className="space-y-3">
-								{Object.entries(proceduresByType).map(([type, count]) => (
-									<div key={type} className="flex items-center justify-between">
-										<div className="flex items-center gap-2">
-											<Syringe className="text-muted-foreground h-4 w-4" />
-											<span className="text-sm">{type}</span>
-										</div>
-										<span className="font-semibold">{count}</span>
-									</div>
-								))}
+			{/* Content Grid - Original Layout */}
+			<div className="grid gap-6 lg:grid-cols-3">
+				{/* Procedures Breakdown */}
+				<motion.div variants={itemVariants} className="lg:col-span-1">
+					<Card className="border-border/50 h-full overflow-hidden">
+						<CardHeader className="pb-3">
+							<div className="flex items-center gap-3">
+								<div
+									className="flex h-10 w-10 items-center justify-center rounded-xl
+										bg-violet-500/10"
+								>
+									<Syringe className="h-5 w-5 text-violet-500" />
+								</div>
+								<CardTitle className="text-sm font-medium">
+									{t("dailySummary.proceduresBreakdown")}
+								</CardTitle>
 							</div>
-						)}
-					</CardContent>
-				</Card>
-
-				<Card className="lg:col-span-2">
-					<CardHeader>
-						<CardTitle className="text-lg">{t("dailySummary.todayVisitsList")}</CardTitle>
-					</CardHeader>
-					<CardContent>
-						{visits.length === 0 ? (
-							<div className="py-8 text-center">
-								<Clock className="text-muted-foreground mx-auto h-8 w-8" />
-								<p className="text-muted-foreground mt-2 text-sm">
-									{t("dailySummary.noVisitsToday")}
-								</p>
-							</div>
-						) : (
-							<div className="space-y-4">
-								{visits.map((visit) => (
-									<div key={visit.id} className="bg-muted/50 rounded-lg p-4">
-										<div className="mb-3 flex items-center justify-between">
-											<div className="flex items-center gap-3">
-												<div
-													className="bg-primary/10 flex h-10 w-10 items-center
-														justify-center rounded-full"
-												>
-													<Users className="text-primary h-5 w-5" />
-												</div>
-												<div>
-													<h4 className="text-lg font-semibold">
-														{visit.patient.name}
-													</h4>
-													<p className="text-muted-foreground text-xs">
-														{formatDate(visit.visitTime)}
-													</p>
-												</div>
-											</div>
-											<div className="text-right">
-												<div className="font-semibold">
-													<Currency value={visit.amountPaid} />
-												</div>
-												<p className="text-muted-foreground text-xs">
-													{t("visits.amountLeft")}:{" "}
-													<Currency value={visit.amountLeft} size="sm" />
-												</p>
-											</div>
-										</div>
-
-										{visit.acts.length > 0 && (
-											<div className="mb-3 space-y-1">
-												{visit.acts.map((act, idx) => (
-													<div
-														key={idx}
-														className="flex items-center justify-between text-sm"
-													>
-														<div className="flex items-center gap-2">
-															<span className="text-muted-foreground">
-																{idx + 1}.
-															</span>
-															<span>{act.visitType.name}</span>
-															<ToothBadge teeth={act.teeth} maxTeeth={4} />
-														</div>
-														<Currency value={act.price} size="sm" />
-													</div>
-												))}
-											</div>
-										)}
-
-										<div
-											className="flex items-center justify-between border-t pt-3
-												text-sm"
+						</CardHeader>
+						<CardContent>
+							{Object.keys(proceduresByType).length === 0 ? (
+								<div className="py-8 text-center">
+									<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
+								</div>
+							) : (
+								<div className="space-y-2">
+									{Object.entries(proceduresByType).map(([type, count], index) => (
+										<motion.div
+											key={type}
+											initial={{ opacity: 0, x: -10 }}
+											animate={{ opacity: 1, x: 0 }}
+											transition={{ delay: 0.3 + index * 0.05 }}
+											className="hover:border-border/50 hover:bg-muted/30 flex
+												items-center justify-between rounded-lg border
+												border-transparent p-3 transition-colors"
 										>
 											<div className="flex items-center gap-2">
-												<CreditCard className="text-muted-foreground h-4 w-4" />
-												<span className="text-muted-foreground">
-													{t("visits.totalAmount")}:
-												</span>
-												<Currency value={visit.totalAmount} size="sm" />
+												<Syringe className="text-muted-foreground h-4 w-4" />
+												<span className="text-sm">{type}</span>
 											</div>
-											<Link
-												to={`/visits/${visit.id}/edit`}
-												className="text-primary text-sm font-medium hover:underline"
+											<span
+												className="rounded-full bg-violet-500/10 px-2.5 py-0.5 text-xs
+													font-semibold text-violet-600"
 											>
-												{t("common.edit")}
-											</Link>
-										</div>
-									</div>
-								))}
+												{count}
+											</span>
+										</motion.div>
+									))}
+								</div>
+							)}
+						</CardContent>
+					</Card>
+				</motion.div>
+
+				{/* Today's Visits List */}
+				<motion.div variants={itemVariants} className="lg:col-span-2">
+					<Card className="border-border/50 h-full overflow-hidden">
+						<CardHeader className="pb-3">
+							<div className="flex items-center gap-3">
+								<div
+									className="flex h-10 w-10 items-center justify-center rounded-xl
+										bg-blue-500/10"
+								>
+									<Users className="h-5 w-5 text-blue-500" />
+								</div>
+								<CardTitle className="text-sm font-medium">
+									{t("dailySummary.todayVisitsList")}
+								</CardTitle>
 							</div>
-						)}
-					</CardContent>
-				</Card>
+						</CardHeader>
+						<CardContent>
+							{visits.length === 0 ? (
+								<div className="flex flex-col items-center justify-center py-12 text-center">
+									<div
+										className="bg-muted/50 mb-3 flex h-16 w-16 items-center justify-center
+											rounded-2xl"
+									>
+										<Clock className="text-muted-foreground/50 h-8 w-8" />
+									</div>
+									<p className="text-muted-foreground text-sm">
+										{t("dailySummary.noVisitsToday")}
+									</p>
+								</div>
+							) : (
+								<div className="space-y-3">
+									{visits.map((visit, index) => (
+										<motion.div
+											key={visit.id}
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{ delay: 0.4 + index * 0.08 }}
+											className="group border-border/50 hover:border-border bg-muted/30
+												hover:bg-card relative overflow-hidden rounded-xl border p-4
+												transition-all duration-300"
+										>
+											{/* Hover gradient */}
+											<div
+												className="from-primary/5 pointer-events-none absolute inset-0
+													bg-gradient-to-br via-transparent to-transparent opacity-0
+													transition-opacity group-hover:opacity-100"
+											/>
+
+											<div className="relative">
+												<div className="mb-3 flex items-start justify-between">
+													<div className="flex items-center gap-3">
+														<div
+															className="bg-primary/10 flex h-10 w-10
+																items-center justify-center rounded-full"
+														>
+															<Users className="text-primary h-5 w-5" />
+														</div>
+														<div>
+															<h4 className="text-base font-semibold">
+																{visit.patient.name}
+															</h4>
+															<p className="text-muted-foreground text-xs">
+																{formatDate(visit.visitTime)}
+															</p>
+														</div>
+													</div>
+													<div className="text-right">
+														<div className="font-semibold">
+															<Currency value={visit.amountPaid} />
+														</div>
+														<p className="text-muted-foreground text-xs">
+															{t("visits.amountLeft")}:{" "}
+															<Currency value={visit.amountLeft} size="sm" />
+														</p>
+													</div>
+												</div>
+
+												{visit.acts.length > 0 && (
+													<div className="mb-3 space-y-1">
+														{visit.acts.map((act, idx) => (
+															<div
+																key={idx}
+																className="bg-background/50 flex items-center
+																	justify-between rounded-lg px-3 py-2
+																	text-sm"
+															>
+																<div className="flex items-center gap-2">
+																	<span className="text-muted-foreground">
+																		{idx + 1}.
+																	</span>
+																	<span>{act.visitType.name}</span>
+																	<ToothBadge
+																		teeth={act.teeth}
+																		maxTeeth={4}
+																	/>
+																</div>
+																<Currency value={act.price} size="sm" />
+															</div>
+														))}
+													</div>
+												)}
+
+												<div
+													className="flex items-center justify-between border-t pt-3
+														text-sm"
+												>
+													<div className="flex items-center gap-2">
+														<CreditCard className="text-muted-foreground h-4 w-4" />
+														<span className="text-muted-foreground">
+															{t("visits.totalAmount")}:
+														</span>
+														<span className="font-semibold">
+															<Currency value={visit.totalAmount} size="sm" />
+														</span>
+													</div>
+													<Link
+														to={`/visits/${visit.id}/edit`}
+														className="text-primary hover:text-primary/80 text-sm
+															font-medium hover:underline"
+													>
+														{t("common.edit")}
+													</Link>
+												</div>
+											</div>
+										</motion.div>
+									))}
+								</div>
+							)}
+						</CardContent>
+					</Card>
+				</motion.div>
 			</div>
-		</div>
+		</motion.div>
+	);
+}
+
+function StatCard({
+	icon: Icon,
+	title,
+	value,
+	subtitle,
+	color,
+}: {
+	icon: React.ElementType;
+	title: string;
+	value: React.ReactNode;
+	subtitle: React.ReactNode;
+	color: "emerald" | "blue";
+}) {
+	const colorStyles = {
+		emerald: {
+			bg: "bg-emerald-500/10",
+			icon: "text-emerald-500",
+		},
+		blue: {
+			bg: "bg-blue-500/10",
+			icon: "text-blue-500",
+		},
+	};
+
+	const styles = colorStyles[color];
+
+	return (
+		<Card
+			className="border-border/50 hover:border-border group relative overflow-hidden transition-all
+				duration-300 hover:shadow-sm"
+		>
+			<div
+				className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br
+					via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+			/>
+			<CardHeader className="relative flex flex-row items-center justify-between pb-2">
+				<CardTitle className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+					{title}
+				</CardTitle>
+				<div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", styles.bg)}>
+					<Icon className={cn("h-4 w-4", styles.icon)} />
+				</div>
+			</CardHeader>
+			<CardContent className="relative">
+				<div className="text-3xl font-bold tracking-tight">{value}</div>
+				<div className="text-muted-foreground mt-1 text-xs">{subtitle}</div>
+			</CardContent>
+		</Card>
 	);
 }

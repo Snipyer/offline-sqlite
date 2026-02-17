@@ -11,6 +11,8 @@ import {
 	useTranslation,
 } from "@offline-sqlite/i18n";
 import { Button } from "./ui/button";
+import { Globe } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function LanguageSwitcher() {
 	const { i18n, t } = useTranslation();
@@ -24,15 +26,24 @@ export default function LanguageSwitcher() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger render={<Button variant="outline" size="icon-sm" />}>
-				{languageShortLabels[currentLanguage]}
-			</DropdownMenuTrigger>
+			<DropdownMenuTrigger
+				render={
+					<Button
+						variant="outline"
+						size="icon"
+						className="border-border/50 bg-background/50 hover:border-border hover:bg-muted h-9
+							w-9 rounded-xl transition-all duration-200"
+					>
+						<span className="text-xs font-medium">{languageShortLabels[currentLanguage]}</span>
+					</Button>
+				}
+			/>
 			<DropdownMenuContent align="end">
 				{supportedLanguages.map(({ code }) => (
 					<DropdownMenuItem
 						key={code}
 						onClick={() => i18n.changeLanguage(code)}
-						className={currentLanguage === code ? "bg-accent" : ""}
+						className={cn(currentLanguage === code && "bg-accent")}
 					>
 						{t(`language.${languageKeys[code]}`)}
 					</DropdownMenuItem>
