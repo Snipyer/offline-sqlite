@@ -1,0 +1,303 @@
+import { Calendar, AlertCircle, CheckCircle2, Pencil, Trash2, RotateCcw, User } from "lucide-react";
+import { motion } from "motion/react";
+import { Link } from "react-router";
+
+import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
+import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { Button } from "@/components/ui/button";
+import { PaymentForm } from "@/features/payments/components/payment-form";
+import { cn } from "@/lib/utils";
+
+export interface Visit {
+	id: string;
+	visitTime: number;
+	notes: string | null;
+	totalAmount: number;
+	amountPaid: number;
+	amountLeft: number;
+	isDeleted?: boolean;
+	patient?: {
+		id: string;
+		name: string;
+	};
+	acts: {
+		id: string;
+		price: number;
+		visitTypeId: string;
+		visitType: { name: string };
+		teeth: string[];
+	}[];
+}
+
+interface VisitCardProps {
+	visit: Visit;
+	patientId?: string;
+	index?: number;
+	showPatient?: boolean;
+	showActions?: boolean;
+	showBorder?: boolean;
+	borderColor?: string;
+	isRtl?: boolean;
+	editLink?: string;
+	onEdit?: () => void;
+	onDelete?: () => void;
+	onRestore?: () => void;
+	className?: string;
+}
+
+export function VisitCard({
+	visit,
+	patientId,
+	index = 0,
+	showPatient = false,
+	showActions = true,
+	showBorder = false,
+	borderColor,
+	isRtl = false,
+	editLink,
+	onEdit,
+	onDelete,
+	onRestore,
+	className,
+}: VisitCardProps) {
+	const { t } = useTranslation();
+
+	const content = (
+		<motion.div
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ delay: index * 0.05 }}
+			className={cn(
+				`group border-border/50 hover:border-border bg-muted/30 hover:bg-card relative overflow-hidden
+				rounded-2xl border p-5 transition-all duration-300`,
+				visit.isDeleted && "opacity-60",
+				className,
+			)}
+		>
+			{/* Hover gradient */}
+			<div
+				className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br
+					via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+			/>
+
+			<div className="relative">
+				<div className="flex items-start justify-between gap-4">
+					<div className="flex items-start gap-4">
+						{/* Avatar - shown when patient info is displayed */}
+						{showPatient && visit.patient && (
+							<div
+								className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center
+									rounded-2xl"
+							>
+								<User className="text-primary h-6 w-6" />
+							</div>
+						)}
+
+						{/* Main Content */}
+						<div className="min-w-0 flex-1">
+							{/* Patient name (when shown) */}
+							{showPatient && visit.patient && (
+								<div className="mb-1 flex items-center gap-2">
+									<h3 className="truncate text-lg font-semibold">{visit.patient.name}</h3>
+									{visit.isDeleted && (
+										<span
+											className="bg-destructive/10 text-destructive shrink-0
+												rounded-full px-2 py-0.5 text-xs font-medium"
+										>
+											{t("visits.deletedMarker")}
+										</span>
+									)}
+								</div>
+							)}
+
+							{/* Date - show without patient name */}
+							{(!showPatient || !visit.patient) && visit.isDeleted && (
+								<div className="mb-1 flex items-center gap-2">
+									<span
+										className="bg-destructive/10 text-destructive shrink-0 rounded-full
+											px-2 py-0.5 text-xs font-medium"
+									>
+										{t("visits.deletedMarker")}
+									</span>
+								</div>
+							)}
+
+							<p className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
+								<Calendar className="h-3.5 w-3.5" />
+								{formatDate(visit.visitTime)}
+							</p>
+
+							{/* Treatment Acts Summary */}
+							{visit.acts.length > 0 && (
+								<div className="mb-2 flex flex-wrap gap-2">
+									{visit.acts.slice(0, 3).map((act, idx) => (
+										<div
+											key={idx}
+											className="bg-background/50 flex items-center gap-2 rounded-lg
+												px-2.5 py-1"
+										>
+											<span className="text-muted-foreground text-xs">
+												{act.visitType.name}
+											</span>
+											<ToothBadge teeth={act.teeth} />
+										</div>
+									))}
+									{visit.acts.length > 3 && (
+										<span
+											className="text-muted-foreground bg-background/50 flex
+												items-center rounded-lg px-2.5 py-1 text-xs"
+										>
+											+{visit.acts.length - 3} more
+										</span>
+									)}
+								</div>
+							)}
+
+							{/* Notes */}
+							{visit.notes && (
+								<p className="text-muted-foreground line-clamp-2 text-sm">{visit.notes}</p>
+							)}
+						</div>
+					</div>
+
+					{/* Actions - Top Right */}
+					{showActions && (
+						<div className="flex shrink-0 gap-1">
+							{/* Pay button - only in sheet */}
+							{!visit.isDeleted && patientId && visit.amountLeft > 0 && (
+								<PaymentForm
+									visitId={visit.id}
+									totalAmount={visit.totalAmount}
+									totalPaid={visit.amountPaid}
+									patientId={patientId}
+								>
+									<Button variant="outline" size="sm" className="mr-2">
+										{t("payments.pay")}
+									</Button>
+								</PaymentForm>
+							)}
+
+							{/* Edit */}
+							{!visit.isDeleted &&
+								(editLink ? (
+									<Link to={editLink}>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-8 w-8 rounded-lg"
+											onClick={(e) => e.stopPropagation()}
+											aria-label={t("visits.editVisitAction")}
+										>
+											<Pencil className="h-4 w-4" />
+										</Button>
+									</Link>
+								) : onEdit ? (
+									<Button
+										variant="ghost"
+										size="icon"
+										className="h-8 w-8 rounded-lg"
+										onClick={(e) => {
+											e.stopPropagation();
+											onEdit();
+										}}
+										aria-label={t("visits.editVisitAction")}
+									>
+										<Pencil className="h-4 w-4" />
+									</Button>
+								) : null)}
+
+							{/* Restore/Delete */}
+							{onRestore && visit.isDeleted ? (
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8 rounded-lg"
+									onClick={(e) => {
+										e.stopPropagation();
+										onRestore();
+									}}
+									aria-label={t("visits.restoreVisitAction")}
+								>
+									<RotateCcw className="h-4 w-4" />
+								</Button>
+							) : onDelete && !visit.isDeleted ? (
+								<Button
+									variant="ghost"
+									size="icon"
+									className="text-destructive hover:text-destructive h-8 w-8 rounded-lg"
+									onClick={(e) => {
+										e.stopPropagation();
+										onDelete();
+									}}
+									aria-label={t("visits.deleteVisitAction")}
+								>
+									<Trash2 className="h-4 w-4" />
+								</Button>
+							) : null}
+						</div>
+					)}
+				</div>
+
+				{/* Bottom Row - Payment Status on Left */}
+				<div className="border-border/50 mt-4 flex items-center justify-between border-t pt-4">
+					{/* Payment Status - Bottom Left */}
+					{visit.amountLeft > 0 ? (
+						<div className="flex items-center gap-3">
+							<div className="flex items-center gap-1.5">
+								<div
+									className="flex h-6 w-6 items-center justify-center rounded-lg
+										bg-amber-500/10"
+								>
+									<AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+								</div>
+								<span className="text-xs font-medium text-amber-600/70">
+									{t("visits.remaining")}
+								</span>
+							</div>
+							<span className="text-lg font-bold text-amber-600">
+								<Currency value={visit.amountLeft} />
+							</span>
+							<span className="text-muted-foreground text-sm">
+								/ <Currency value={visit.totalAmount} size="sm" />
+							</span>
+						</div>
+					) : (
+						<div className="flex items-center gap-3">
+							<div className="flex items-center gap-1.5">
+								<div
+									className="flex h-6 w-6 items-center justify-center rounded-lg
+										bg-emerald-500/10"
+								>
+									<CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+								</div>
+								<span className="text-xs font-medium text-emerald-600/70">
+									{t("visits.paid")}
+								</span>
+							</div>
+							<span className="text-lg font-bold text-emerald-600">
+								<Currency value={visit.totalAmount} />
+							</span>
+						</div>
+					)}
+				</div>
+			</div>
+		</motion.div>
+	);
+
+	// If border is shown, wrap with border container
+	if (showBorder && borderColor) {
+		return (
+			<div className="relative">
+				<div
+					className={cn("absolute top-0 bottom-0 w-1 rounded-full", isRtl ? "right-0" : "left-0")}
+					style={{ backgroundColor: borderColor }}
+				/>
+				<div className={isRtl ? "pr-3" : "pl-3"}>{content}</div>
+			</div>
+		);
+	}
+
+	return content;
+}
+
+export default VisitCard;

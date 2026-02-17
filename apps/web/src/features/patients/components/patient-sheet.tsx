@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useDirection } from "@/components/ui/direction";
 import { trpc } from "@/utils/trpc";
-import { PatientSheetContent } from "./patient-card";
+import { PatientSheetContent } from "./patient-card-content";
 
 interface PatientSheetProps {
 	patientId: string | null;

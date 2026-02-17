@@ -146,7 +146,7 @@ export const patientRouter = router({
 					}),
 				);
 
-				const totalUnpaid = visitsWithActs.reduce((sum, v) => sum + v.amountLeft, 0);
+				const totalUnpaid = visitsWithActs.reduce((sum, v) => sum + Math.max(0, v.amountLeft), 0);
 
 				return {
 					patient: p,
@@ -258,7 +258,7 @@ export const patientRouter = router({
 				}),
 			);
 
-			const totalUnpaid = visitsWithActs.reduce((sum, v) => sum + v.amountLeft, 0);
+			const totalUnpaid = visitsWithActs.reduce((sum, v) => sum + Math.max(0, v.amountLeft), 0);
 
 			return {
 				patient: p,

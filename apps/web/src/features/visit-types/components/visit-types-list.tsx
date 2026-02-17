@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Pencil, Plus, Trash2, X, Check } from "lucide-react";
+import { motion } from "motion/react";
+import { Loader2, Pencil, Plus, Trash2, X, Check, Syringe } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
+import { cn } from "@/lib/utils";
+
+const containerVariants = {
+	hidden: { opacity: 0 },
+	visible: {
+		opacity: 1,
+		transition: {
+			staggerChildren: 0.08,
+			delayChildren: 0.1,
+		},
+	},
+};
+
+const itemVariants = {
+	hidden: { opacity: 0, y: 20 },
+	visible: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			duration: 0.5,
+			ease: "easeOut" as const,
+		},
+	},
+};
 
 export default function VisitTypes() {
 	const { t } = useTranslation();
@@ -93,129 +118,194 @@ export default function VisitTypes() {
 	};
 
 	return (
-		<div className="mx-auto w-full max-w-2xl py-10">
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between">
-					<div>
-						<CardTitle>{t("visitTypes.title")}</CardTitle>
-						<CardDescription>{t("visitTypes.description")}</CardDescription>
+		<motion.div
+			variants={containerVariants}
+			initial="hidden"
+			animate="visible"
+			className="container mx-auto max-w-2xl px-4 py-8"
+		>
+			{/* Header */}
+			<motion.div variants={itemVariants} className="mb-8">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-4">
+						<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
+							<Syringe className="text-primary h-6 w-6" />
+						</div>
+						<div>
+							<h1 className="text-3xl font-semibold tracking-tight">{t("visitTypes.title")}</h1>
+							<p className="text-muted-foreground mt-1">{t("visitTypes.description")}</p>
+						</div>
 					</div>
 					{!isCreating && (
-						<Button onClick={() => setIsCreating(true)}>
-							<Plus className="mr-2 h-4 w-4" />
+						<Button onClick={() => setIsCreating(true)} className="gap-2">
+							<Plus className="h-4 w-4" />
 							{t("visitTypes.addNew")}
 						</Button>
 					)}
-				</CardHeader>
-				<CardContent>
-					<div className="space-y-4">
-						{isCreating && (
-							<form onSubmit={handleCreate} className="rounded-md border p-4">
-								<div className="mb-4">
-									<Label htmlFor="new-name">{t("visitTypes.nameLabel")}</Label>
-									<Input
-										id="new-name"
-										value={formName}
-										onChange={(e) => setFormName(e.target.value)}
-										placeholder={t("visitTypes.namePlaceholder")}
-										className="mt-1"
-									/>
-								</div>
-								<div className="flex gap-2">
-									<Button
-										type="submit"
-										disabled={createMutation.isPending || !formName.trim()}
-									>
-										{createMutation.isPending ? (
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										) : (
-											<Check className="mr-2 h-4 w-4" />
-										)}
-										{t("common.save")}
-									</Button>
-									<Button type="button" variant="outline" onClick={cancelForm}>
-										<X className="mr-2 h-4 w-4" />
-										{t("common.cancel")}
-									</Button>
-								</div>
-							</form>
-						)}
+				</div>
+			</motion.div>
 
-						{visitTypes.isLoading ? (
-							<div className="flex justify-center py-4">
-								<Loader2 className="h-6 w-6 animate-spin" />
-							</div>
-						) : visitTypes.data?.length === 0 ? (
-							<p className="py-4 text-center">{t("visitTypes.empty")}</p>
-						) : (
-							<div className="space-y-2 py-4">
-								{visitTypes.data?.map((vt) =>
-									editingId === vt.id ? (
-										<form
-											key={vt.id}
-											onSubmit={handleUpdate}
-											className="flex items-center gap-2 rounded-md border p-2"
+			<motion.div variants={itemVariants}>
+				<Card className="border-border/50 overflow-hidden">
+					<CardContent className="p-6">
+						<div className="space-y-4">
+							{isCreating && (
+								<motion.form
+									initial={{ opacity: 0, height: 0 }}
+									animate={{ opacity: 1, height: "auto" }}
+									exit={{ opacity: 0, height: 0 }}
+									onSubmit={handleCreate}
+									className="border-border/50 bg-muted/30 mb-6 rounded-xl border p-4"
+								>
+									<div className="mb-4">
+										<Label
+											htmlFor="new-name"
+											className="text-muted-foreground text-xs font-medium
+												tracking-wider uppercase"
 										>
-											<Input
-												value={formName}
-												onChange={(e) => setFormName(e.target.value)}
-												autoFocus
-											/>
-											<Button
-												type="submit"
-												size="sm"
-												disabled={updateMutation.isPending || !formName.trim()}
-											>
-												{updateMutation.isPending ? (
-													<Loader2 className="h-4 w-4 animate-spin" />
-												) : (
-													<Check className="h-4 w-4" />
-												)}
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												size="sm"
-												onClick={cancelForm}
-											>
-												<X className="h-4 w-4" />
-											</Button>
-										</form>
-									) : (
-										<div
-											key={vt.id}
-											className="flex items-center justify-between rounded-md border
-												p-3"
+											{t("visitTypes.nameLabel")}
+										</Label>
+										<Input
+											id="new-name"
+											value={formName}
+											onChange={(e) => setFormName(e.target.value)}
+											placeholder={t("visitTypes.namePlaceholder")}
+											className="mt-1.5"
+										/>
+									</div>
+									<div className="flex gap-2">
+										<Button
+											type="submit"
+											disabled={createMutation.isPending || !formName.trim()}
+											className="gap-2"
 										>
-											<span className="font-medium">{vt.name}</span>
-											<div className="flex gap-1">
+											{createMutation.isPending ? (
+												<Loader2 className="h-4 w-4 animate-spin" />
+											) : (
+												<Check className="h-4 w-4" />
+											)}
+											{t("common.save")}
+										</Button>
+										<Button type="button" variant="outline" onClick={cancelForm}>
+											<X className="mr-2 h-4 w-4" />
+											{t("common.cancel")}
+										</Button>
+									</div>
+								</motion.form>
+							)}
+
+							{visitTypes.isLoading ? (
+								<div className="flex h-32 items-center justify-center">
+									<div className="relative">
+										<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
+										<Loader2 className="text-primary relative h-8 w-8 animate-spin" />
+									</div>
+								</div>
+							) : visitTypes.data?.length === 0 ? (
+								<div className="flex flex-col items-center justify-center py-16 text-center">
+									<div
+										className="bg-muted/50 mb-4 flex h-20 w-20 items-center justify-center
+											rounded-3xl"
+									>
+										<Syringe className="text-muted-foreground/50 h-10 w-10" />
+									</div>
+									<p className="text-muted-foreground text-sm">{t("visitTypes.empty")}</p>
+								</div>
+							) : (
+								<div className="space-y-2">
+									{visitTypes.data?.map((vt, index) =>
+										editingId === vt.id ? (
+											<motion.form
+												key={vt.id}
+												initial={{ opacity: 0 }}
+												animate={{ opacity: 1 }}
+												onSubmit={handleUpdate}
+												className="border-border/50 bg-muted/30 flex items-center
+													gap-2 rounded-xl border p-3"
+											>
+												<Input
+													value={formName}
+													onChange={(e) => setFormName(e.target.value)}
+													autoFocus
+													className="flex-1"
+												/>
 												<Button
-													variant="ghost"
+													type="submit"
 													size="icon"
-													onClick={() => startEdit(vt.id, vt.name)}
-													aria-label={t("visitTypes.editAria")}
+													className="h-9 w-9 rounded-lg"
+													disabled={updateMutation.isPending || !formName.trim()}
 												>
-													<Pencil className="h-4 w-4" />
+													{updateMutation.isPending ? (
+														<Loader2 className="h-4 w-4 animate-spin" />
+													) : (
+														<Check className="h-4 w-4" />
+													)}
 												</Button>
 												<Button
+													type="button"
 													variant="ghost"
 													size="icon"
-													onClick={() => handleDelete(vt.id)}
-													aria-label={t("visitTypes.deleteAria")}
-													className="text-destructive hover:text-destructive"
-													disabled={deleteMutation.isPending}
+													className="h-9 w-9 rounded-lg"
+													onClick={cancelForm}
 												>
-													<Trash2 className="h-4 w-4" />
+													<X className="h-4 w-4" />
 												</Button>
-											</div>
-										</div>
-									),
-								)}
-							</div>
-						)}
-					</div>
-				</CardContent>
-			</Card>
+											</motion.form>
+										) : (
+											<motion.div
+												key={vt.id}
+												initial={{ opacity: 0, y: 10 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ delay: 0.1 + index * 0.05 }}
+												className="group border-border/50 hover:border-border
+													bg-muted/30 hover:bg-card flex items-center
+													justify-between rounded-xl border p-4 transition-all
+													duration-300"
+											>
+												<div className="flex items-center gap-3">
+													<div
+														className="flex h-8 w-8 items-center justify-center
+															rounded-lg bg-violet-500/10"
+													>
+														<span
+															className="text-xs font-semibold text-violet-600"
+														>
+															{String.fromCharCode(65 + index)}
+														</span>
+													</div>
+													<span className="font-medium">{vt.name}</span>
+												</div>
+												<div className="flex gap-1">
+													<Button
+														variant="ghost"
+														size="icon"
+														className="h-8 w-8 rounded-lg"
+														onClick={() => startEdit(vt.id, vt.name)}
+														aria-label={t("visitTypes.editAria")}
+													>
+														<Pencil className="h-4 w-4" />
+													</Button>
+													<Button
+														variant="ghost"
+														size="icon"
+														onClick={() => handleDelete(vt.id)}
+														aria-label={t("visitTypes.deleteAria")}
+														className="text-destructive hover:text-destructive h-8
+															w-8 rounded-lg"
+														disabled={deleteMutation.isPending}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</motion.div>
+										),
+									)}
+								</div>
+							)}
+						</div>
+					</CardContent>
+				</Card>
+			</motion.div>
 
 			<AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
 				<AlertDialogContent onOverlayClick={() => setDeleteId(null)}>
@@ -234,6 +324,6 @@ export default function VisitTypes() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</motion.div>
 	);
 }
