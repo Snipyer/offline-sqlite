@@ -182,7 +182,7 @@ export function AppSidebar() {
 
 			<SidebarFooter className="border-border/50 border-t p-3">
 				<div className={cn("flex items-center gap-2", isCollapsed && "flex-col")}>
-					<div className={cn("", isCollapsed ? "w-full" : "flex-1")}>
+					<div className={cn("", isCollapsed ? "w-auto" : "flex-1")}>
 						<UserMenu />
 					</div>
 					<div className={cn("flex items-center gap-1", isCollapsed && "flex-col")}>

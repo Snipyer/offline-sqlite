@@ -1,13 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, User } from "lucide-react";
+import { motion } from "motion/react";
+import { Loader2, User, Users, Filter, X } from "lucide-react";
 import { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
-import { PatientCard } from "./patient-card";
-import { PatientsFilter, FilterToggle, type PatientFilters } from "./patients-filter";
+import { PatientCard } from "@/components/patient-card";
+import { PatientsFilter, type PatientFilters } from "./patients-filter";
 import { PatientSheet } from "./patient-sheet";
+import { cn } from "@/lib/utils";
 
 const emptyFilters: PatientFilters = {
 	sex: "",
@@ -16,6 +19,29 @@ const emptyFilters: PatientFilters = {
 	visitTypeId: "",
 	hasUnpaid: false,
 	name: "",
+};
+
+const containerVariants = {
+	hidden: { opacity: 0 },
+	visible: {
+		opacity: 1,
+		transition: {
+			staggerChildren: 0.08,
+			delayChildren: 0.1,
+		},
+	},
+};
+
+const itemVariants = {
+	hidden: { opacity: 0, y: 20 },
+	visible: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			duration: 0.5,
+			ease: "easeOut" as const,
+		},
+	},
 };
 
 export function PatientsList() {
@@ -52,75 +78,146 @@ export function PatientsList() {
 	);
 
 	return (
-		<div className="mx-auto w-full max-w-4xl py-8">
-			<div className="mb-8 flex items-center justify-between">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">{t("patients.title")}</h1>
-					<p className="text-muted-foreground mt-1">{t("patients.description")}</p>
-				</div>
-			</div>
-
-			<Card>
-				<CardHeader className="pb-4">
-					<div className="flex items-center justify-between">
-						<CardTitle className="text-lg">{t("patients.allPatients")}</CardTitle>
-						<FilterToggle
-							showFilters={showFilters}
-							onToggle={() => setShowFilters(!showFilters)}
-							hasActiveFilters={hasActiveFilters}
-						/>
+		<motion.div
+			variants={containerVariants}
+			initial="hidden"
+			animate="visible"
+			className="container mx-auto max-w-5xl px-4 py-8"
+		>
+			{/* Header */}
+			<motion.div variants={itemVariants} className="mb-8">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-4">
+						<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
+							<Users className="text-primary h-6 w-6" />
+						</div>
+						<div>
+							<h1 className="text-3xl font-semibold tracking-tight">{t("patients.title")}</h1>
+							<p className="text-muted-foreground mt-1">{t("patients.description")}</p>
+						</div>
 					</div>
-				</CardHeader>
-				<CardContent>
-					{showFilters && (
-						<div className="bg-card mb-6 rounded-lg border p-4">
-							<PatientsFilter
-								filters={filters}
-								onFilterChange={setFilters}
-								visitTypes={visitTypes.data ?? []}
-								hasActiveFilters={hasActiveFilters}
-								onClearFilters={clearFilters}
-								showFilters={showFilters}
-								onToggleFilters={() => setShowFilters(!showFilters)}
-							/>
-						</div>
-					)}
+				</div>
+			</motion.div>
 
-					{patients.isLoading ? (
-						<div className="flex justify-center py-12">
-							<Loader2 className="h-8 w-8 animate-spin" />
-						</div>
-					) : patients.data?.length === 0 ? (
-						<div className="py-12 text-center">
-							<div className="mb-4 flex justify-center">
+			<motion.div variants={itemVariants}>
+				<Card className="border-border/50 overflow-hidden">
+					<CardHeader className="pb-4">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-3">
 								<div
-									className="bg-muted flex h-16 w-16 items-center justify-center
-										rounded-full"
+									className="flex h-10 w-10 items-center justify-center rounded-xl
+										bg-violet-500/10"
 								>
-									<User className="text-muted-foreground h-8 w-8" />
+									<User className="h-5 w-5 text-violet-500" />
+								</div>
+								<CardTitle className="text-base font-semibold">
+									{t("patients.allPatients")}
+								</CardTitle>
+							</div>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setShowFilters(!showFilters)}
+								className="gap-2"
+							>
+								<Filter className="h-4 w-4" />
+								{t("patients.filters")}
+								{hasActiveFilters && (
+									<span
+										className="bg-primary text-primary-foreground ml-2 rounded-full px-2
+											py-0.5 text-xs"
+									>
+										!
+									</span>
+								)}
+							</Button>
+						</div>
+					</CardHeader>
+					<CardContent>
+						{showFilters && (
+							<motion.div
+								initial={{ opacity: 0, height: 0 }}
+								animate={{ opacity: 1, height: "auto" }}
+								exit={{ opacity: 0, height: 0 }}
+								className="border-border/50 bg-muted/30 mb-6 rounded-xl border p-4"
+							>
+								<div className="mb-4 flex items-center justify-between">
+									<h3 className="font-medium">{t("patients.filterPatients")}</h3>
+									{hasActiveFilters && (
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={clearFilters}
+											className="gap-1"
+										>
+											<X className="h-3 w-3" />
+											{t("patients.clearFilters")}
+										</Button>
+									)}
+								</div>
+								<PatientsFilter
+									filters={filters}
+									onFilterChange={setFilters}
+									visitTypes={visitTypes.data ?? []}
+									hasActiveFilters={hasActiveFilters}
+									onClearFilters={clearFilters}
+									showFilters={showFilters}
+									onToggleFilters={() => setShowFilters(!showFilters)}
+								/>
+							</motion.div>
+						)}
+
+						{patients.isLoading ? (
+							<div className="flex h-64 items-center justify-center">
+								<div className="relative">
+									<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
+									<Loader2 className="text-primary relative h-10 w-10 animate-spin" />
 								</div>
 							</div>
-							<p className="text-muted-foreground mb-4">{t("patients.noPatientsFound")}</p>
-						</div>
-					) : (
-						<div className="space-y-4">
-							{patients.data?.map((data) => (
-								<PatientCard
-									key={data.patient.id}
-									patient={data.patient}
-									lastVisit={data.lastVisit}
-									visits={data.visits}
-									totalUnpaid={data.totalUnpaid}
-									onClick={() => setSelectedPatientId(data.patient.id)}
-								/>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
+						) : patients.data?.length === 0 ? (
+							<div className="flex flex-col items-center justify-center py-16 text-center">
+								<div
+									className="bg-muted/50 mb-4 flex h-20 w-20 items-center justify-center
+										rounded-3xl"
+								>
+									<User className="text-muted-foreground/50 h-10 w-10" />
+								</div>
+								<h3 className="mb-1 text-base font-semibold">
+									{t("patients.noPatientsFound")}
+								</h3>
+								<p className="text-muted-foreground max-w-xs text-sm">
+									{hasActiveFilters
+										? t("patients.tryClearingFilters")
+										: t("patients.noPatientsDescription")}
+								</p>
+							</div>
+						) : (
+							<div className="space-y-3">
+								{patients.data?.map((data, index) => (
+									<motion.div
+										key={data.patient.id}
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: 0.2 + index * 0.05 }}
+									>
+										<PatientCard
+											patient={data.patient}
+											lastVisit={data.lastVisit}
+											visits={data.visits}
+											totalUnpaid={data.totalUnpaid}
+											onClick={() => setSelectedPatientId(data.patient.id)}
+											index={index}
+										/>
+									</motion.div>
+								))}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			</motion.div>
 
 			<PatientSheet patientId={selectedPatientId} onClose={() => setSelectedPatientId(null)} />
-		</div>
+		</motion.div>
 	);
 }
 

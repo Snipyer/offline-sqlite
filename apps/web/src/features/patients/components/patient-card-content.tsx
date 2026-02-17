@@ -1,11 +1,12 @@
-import { Calendar, CreditCard, Phone, MapPin, User } from "lucide-react";
+import { Calendar, CreditCard, Phone, MapPin, User, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
 import { getVisitColor } from "@/utils/visit-colors";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
-import { VisitHistoryItem } from "./visit-history-item";
+import { VisitCard } from "@/components/visit-card";
 import { useDirection } from "@base-ui/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 interface PatientCardProps {
 	patient: {
@@ -29,62 +30,80 @@ export function PatientCard({ patient, lastVisit, visits, totalUnpaid, onClick }
 
 	return (
 		<div
-			className="bg-card hover:bg-card/80 cursor-pointer rounded-lg border p-5 transition-colors"
+			className="group border-border/50 hover:border-border bg-muted/30 hover:bg-card relative
+				cursor-pointer overflow-hidden rounded-2xl border p-5 transition-all duration-300"
 			onClick={onClick}
 		>
-			<div className="flex items-start justify-between gap-4">
-				<div className="flex-1">
-					<div className="mb-3 flex items-center gap-3">
-						<div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
-							<User className="text-primary h-5 w-5" />
+			{/* Hover gradient */}
+			<div
+				className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br
+					via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+			/>
+
+			<div className="relative">
+				<div className="flex items-start justify-between gap-4">
+					<div className="flex flex-1 items-start gap-4">
+						<div
+							className="bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center
+								rounded-xl"
+						>
+							<User className="text-primary h-6 w-6" />
 						</div>
-						<div>
-							<h3 className="text-lg font-semibold">{patient.name}</h3>
-							<p className="text-muted-foreground text-sm">
-								{t("patients.lastVisit")}:{" "}
+						<div className="min-w-0 flex-1">
+							<div className="mb-1 flex items-center gap-2">
+								<h3 className="truncate text-lg font-semibold">{patient.name}</h3>
+							</div>
+							<p className="text-muted-foreground flex items-center gap-2 text-sm">
+								<Calendar className="h-3.5 w-3.5" />
 								{lastVisit ? formatDate(lastVisit.visitTime) : t("patients.noVisits")}
 							</p>
+
+							<div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+								<div className="flex items-center gap-1">
+									<span className="text-muted-foreground">{t("patients.age")}:</span>
+									<span className="font-medium">{patient.age}</span>
+								</div>
+								<div className="flex items-center gap-1">
+									<span className="text-muted-foreground">{t("patients.sex")}:</span>
+									<span className="font-medium">
+										{patient.sex === "M" ? t("patients.male") : t("patients.female")}
+									</span>
+								</div>
+								{patient.phone && (
+									<div className="flex items-center gap-1">
+										<Phone className="text-muted-foreground h-3.5 w-3.5" />
+										<span className="font-medium">{patient.phone}</span>
+									</div>
+								)}
+							</div>
 						</div>
 					</div>
 
-					<div className="flex flex-wrap gap-4 text-sm">
-						<div className="flex items-center gap-1">
-							<span className="text-muted-foreground">{t("patients.age")}:</span>
-							<span className="font-medium">{patient.age}</span>
-						</div>
-						<div className="flex items-center gap-1">
-							<span className="text-muted-foreground">{t("patients.sex")}:</span>
-							<span className="font-medium">
-								{patient.sex === "M" ? t("patients.male") : t("patients.female")}
+					<div className="flex flex-col items-end gap-2">
+						<div className="text-muted-foreground flex items-center gap-1 text-sm">
+							<Calendar className="h-3.5 w-3.5" />
+							<span>
+								{visits.length} {t("patients.visits")}
 							</span>
 						</div>
-						{patient.phone && (
-							<div className="flex items-center gap-1">
-								<Phone className="text-muted-foreground h-3 w-3" />
-								<span className="font-medium">{patient.phone}</span>
-							</div>
-						)}
+						<ChevronRight
+							className="text-muted-foreground h-5 w-5 transition-transform
+								group-hover:translate-x-0.5"
+						/>
 					</div>
-
-					{totalUnpaid > 0 && (
-						<div
-							className="bg-destructive/10 text-destructive mt-3 flex items-center gap-2
-								rounded-md px-3 py-2 text-sm font-medium"
-						>
-							<CreditCard className="h-4 w-4" />
-							{t("patients.unpaid")}: <Currency value={totalUnpaid} />
-						</div>
-					)}
 				</div>
 
-				<div className="text-muted-foreground text-right text-sm">
-					<div className="flex items-center gap-1">
-						<Calendar className="h-3 w-3" />
-						<span>
-							{visits.length} {t("patients.visits")}
+				{totalUnpaid > 0 && (
+					<div
+						className="bg-destructive/10 mt-4 flex items-center gap-2 rounded-xl px-3 py-2
+							text-sm"
+					>
+						<CreditCard className="text-destructive h-4 w-4" />
+						<span className="text-destructive font-medium">
+							{t("patients.unpaid")}: <Currency value={totalUnpaid} />
 						</span>
 					</div>
-				</div>
+				)}
 			</div>
 		</div>
 	);
@@ -156,7 +175,7 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 
 	return (
 		<div className="flex flex-1 flex-col overflow-hidden">
-			<div className="p-6">
+			<div className="border-border/50 border-b p-6">
 				<div className="flex items-start gap-5">
 					<div
 						className="bg-primary/10 flex h-20 w-20 shrink-0 items-center justify-center
@@ -200,7 +219,7 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 
 			<div className="flex-1 overflow-hidden">
 				<Tabs defaultValue="visits" className="flex h-full flex-col">
-					<div className="border-b px-6">
+					<div className="border-border/50 border-b px-6">
 						<TabsList variant="line" className="h-10">
 							<TabsTrigger value="visits">
 								{t("patients.visitsTab")} ({visits.length})
@@ -213,26 +232,23 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 					<TabsContent value="visits" className="m-0 flex-1 overflow-y-auto p-6">
 						<div className="space-y-4">
 							{visits.length === 0 ? (
-								<p className="text-muted-foreground text-sm">{t("patients.noVisits")}</p>
+								<div className="flex flex-col items-center justify-center py-12 text-center">
+									<p className="text-muted-foreground">{t("patients.noVisits")}</p>
+								</div>
 							) : (
 								visits.map((visit) => (
 									<div
 										key={visit.id}
-										className="relative"
 										onMouseEnter={() => setHoveredVisitId(visit.id)}
 										onMouseLeave={() => setHoveredVisitId(null)}
 									>
-										<div
-											className={
-												isRtl
-													? "absolute top-0 right-0 bottom-0 w-1 rounded-r-xl"
-													: "absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
-											}
-											style={{ backgroundColor: getVisitColor(visit.id) }}
+										<VisitCard
+											visit={visit}
+											patientId={patient.id}
+											showBorder
+											borderColor={getVisitColor(visit.id)}
+											isRtl={isRtl}
 										/>
-										<div className={isRtl ? "pr-3" : "pl-3"}>
-											<VisitHistoryItem visit={visit} patientId={patient.id} />
-										</div>
 									</div>
 								))
 							)}
@@ -241,12 +257,15 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 					<TabsContent value="payments" className="m-0 flex-1 overflow-y-auto p-6">
 						<div className="space-y-3">
 							{payments.length === 0 ? (
-								<p className="text-muted-foreground text-sm">{t("patients.noPayments")}</p>
+								<div className="flex flex-col items-center justify-center py-12 text-center">
+									<p className="text-muted-foreground">{t("patients.noPayments")}</p>
+								</div>
 							) : (
 								payments.map((payment) => (
 									<div
 										key={payment.id}
-										className="bg-card flex flex-col gap-2 rounded-lg border p-4"
+										className="border-border/50 hover:border-border rounded-xl border p-4
+											transition-colors"
 									>
 										<div className="flex items-center justify-between">
 											<span className="text-sm font-medium">
@@ -261,7 +280,7 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 											</span>
 										</div>
 										{payment.notes && (
-											<span className="text-muted-foreground text-xs">
+											<span className="text-muted-foreground mt-2 block text-xs">
 												{payment.notes}
 											</span>
 										)}
@@ -274,7 +293,7 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 			</div>
 
 			{hasAnyTeeth && (
-				<div className="border-t p-2">
+				<div className="border-border/50 border-t p-2">
 					<div className="mx-auto w-full max-w-96">
 						<ToothDisplay
 							highlightedTeeth={

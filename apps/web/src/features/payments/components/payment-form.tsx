@@ -55,6 +55,9 @@ export function PaymentForm({
 				queryClient.invalidateQueries({
 					queryKey: trpc.payment.listByVisit.queryKey({ visitId }),
 				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.patient.listWithFilters.queryKey(),
+				});
 				if (patientId) {
 					queryClient.invalidateQueries({
 						queryKey: trpc.payment.listByPatient.queryKey({ patientId }),
