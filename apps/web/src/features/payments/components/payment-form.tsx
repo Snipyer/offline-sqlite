@@ -90,7 +90,8 @@ export function PaymentForm({
 					<AlertDialogHeader>
 						<AlertDialogTitle>{t("payments.addPayment")}</AlertDialogTitle>
 						<AlertDialogDescription>
-							{t("payments.remainingBalance")}: <Currency value={remainingBalance} />
+							{t("payments.remainingBalance")}:{" "}
+							<Currency className="font-bold" value={remainingBalance} />
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<div className="grid gap-4 py-4">
