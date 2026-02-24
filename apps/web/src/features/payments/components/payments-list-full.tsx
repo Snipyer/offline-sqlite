@@ -1,23 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Filter, X, CreditCard, Calendar, DollarSign } from "lucide-react";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Loader from "@/components/loader";
-import {
-	pageContainerVariants,
-	pageItemVariants,
-	sectionFadeVariants,
-	subtleListItemVariants,
-	subtleListLayoutTransition,
-	subtleListVariants,
-} from "@/lib/animations";
+import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { PaginationControls } from "@/components/pagination-controls";
 
 interface PaymentFilters {
 	patientName: string;
@@ -31,22 +24,38 @@ export default function PaymentsList() {
 	const { t } = useTranslation();
 	const [showFilters, setShowFilters] = useState(false);
 	const [filters, setFilters] = useState<PaymentFilters>(emptyFilters);
+	const [page, setPage] = useState(1);
+	const pageSize = 10;
 
 	const payments = useQuery({
 		...trpc.payment.list.queryOptions({
 			patientName: filters.patientName || undefined,
+			page,
+			pageSize,
 		}),
 		enabled: true,
 	});
+
+	useEffect(() => {
+		setPage(1);
+	}, [filters.patientName]);
+
+	useEffect(() => {
+		if (payments.data && page > payments.data.totalPages) {
+			setPage(payments.data.totalPages);
+		}
+	}, [payments.data, page]);
 
 	const clearFilters = () => {
 		setFilters(emptyFilters);
 	};
 
 	const hasActiveFilters = filters.patientName;
+	const listRenderKey = `${filters.patientName}:${payments.data?.page ?? page}`;
 
 	return (
 		<motion.div
+			id="payments-list-top"
 			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
@@ -147,7 +156,7 @@ export default function PaymentsList() {
 
 						{payments.isLoading ? (
 							<Loader className="h-64 pt-0" />
-						) : payments.data?.length === 0 ? (
+						) : (payments.data?.items.length ?? 0) === 0 ? (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
 								<div
 									className="bg-muted/50 mb-4 flex h-20 w-20 items-center justify-center
@@ -165,91 +174,99 @@ export default function PaymentsList() {
 								</p>
 							</div>
 						) : (
-							<motion.div
-								variants={subtleListVariants}
-								initial="hidden"
-								animate="visible"
-								className="space-y-4"
-							>
-								{payments.data?.map((payment) => (
-									<motion.div
-										key={payment.id}
-										variants={subtleListItemVariants}
-										layout
-										transition={{ layout: subtleListLayoutTransition }}
-										className="group border-border/50 hover:border-border bg-muted/30
-											hover:bg-card relative overflow-hidden rounded-2xl border p-5
-											transition-[background-color,border-color,box-shadow]
-											duration-300"
-									>
-										{/* Hover gradient */}
+							<div className="space-y-6">
+								<div key={listRenderKey} className="space-y-4">
+									{payments.data?.items.map((payment) => (
 										<div
-											className="from-primary/5 pointer-events-none absolute inset-0
-												bg-linear-to-br via-transparent to-transparent opacity-0
-												transition-opacity group-hover:opacity-100"
-										/>
+											key={payment.id}
+											className="group border-border/50 hover:border-border bg-muted/30
+												hover:bg-card relative overflow-hidden rounded-2xl border p-5
+												transition-[background-color,border-color,box-shadow]
+												duration-300"
+										>
+											{/* Hover gradient */}
+											<div
+												className="from-primary/5 pointer-events-none absolute inset-0
+													bg-linear-to-br via-transparent to-transparent opacity-0
+													transition-opacity group-hover:opacity-100"
+											/>
 
-										<div className="relative">
-											<div className="flex items-start gap-4">
-												{/* Avatar */}
-												<div
-													className="flex h-14 w-14 shrink-0 items-center
-														justify-center rounded-2xl bg-emerald-500/10"
-												>
-													<CreditCard className="h-6 w-6 text-emerald-500" />
-												</div>
-
-												{/* Main Content */}
-												<div className="min-w-0 flex-1">
-													<h3 className="truncate text-lg font-semibold">
-														{payment.patientName}
-													</h3>
-													<p
-														className="text-muted-foreground mb-2 flex
-															items-center gap-2 text-sm"
+											<div className="relative">
+												<div className="flex items-start gap-4">
+													{/* Avatar */}
+													<div
+														className="flex h-14 w-14 shrink-0 items-center
+															justify-center rounded-2xl bg-emerald-500/10"
 													>
-														<Calendar className="h-3.5 w-3.5" />
-														{formatDate(new Date(payment.recordedAt).getTime())}
-													</p>
-													{payment.notes && (
-														<p
-															className="text-muted-foreground line-clamp-2
-																text-sm"
-														>
-															{payment.notes}
-														</p>
-													)}
-												</div>
+														<CreditCard className="h-6 w-6 text-emerald-500" />
+													</div>
 
-												{/* Right Side - Payment Amount */}
-												<div className="flex shrink-0 flex-col items-end gap-1">
-													{/* Icon and label on same line */}
-													<div className="mb-1 flex items-center gap-1.5">
-														<div
-															className="flex h-6 w-6 items-center
-																justify-center rounded-lg bg-emerald-500/10"
+													{/* Main Content */}
+													<div className="min-w-0 flex-1">
+														<h3 className="truncate text-lg font-semibold">
+															{payment.patientName}
+														</h3>
+														<p
+															className="text-muted-foreground mb-2 flex
+																items-center gap-2 text-sm"
 														>
-															<CreditCard
-																className="h-3.5 w-3.5 text-emerald-600"
-															/>
+															<Calendar className="h-3.5 w-3.5" />
+															{(() => {
+																const recordedAtTime = new Date(
+																	payment.recordedAt,
+																).getTime();
+																return Number.isNaN(recordedAtTime)
+																	? "-"
+																	: formatDate(recordedAtTime);
+															})()}
+														</p>
+														{payment.notes && (
+															<p
+																className="text-muted-foreground line-clamp-2
+																	text-sm"
+															>
+																{payment.notes}
+															</p>
+														)}
+													</div>
+
+													{/* Right Side - Payment Amount */}
+													<div className="flex shrink-0 flex-col items-end gap-1">
+														{/* Icon and label on same line */}
+														<div className="mb-1 flex items-center gap-1.5">
+															<div
+																className="flex h-6 w-6 items-center
+																	justify-center rounded-lg
+																	bg-emerald-500/10"
+															>
+																<CreditCard
+																	className="h-3.5 w-3.5 text-emerald-600"
+																/>
+															</div>
+															<span
+																className="text-xs font-medium
+																	text-emerald-600/70"
+															>
+																{t("payments.cash")}
+															</span>
 														</div>
-														<span
-															className="text-xs font-medium
-																text-emerald-600/70"
-														>
-															{t("payments.cash")}
+														{/* Amount underneath */}
+														<span className="text-xl font-bold text-emerald-600">
+															<Currency value={payment.amount} />
 														</span>
 													</div>
-													{/* Amount underneath */}
-													<span className="text-xl font-bold text-emerald-600">
-														<Currency value={payment.amount} />
-													</span>
 												</div>
 											</div>
 										</div>
-									</motion.div>
-								))}
-							</motion.div>
+									))}
+								</div>
+								<PaginationControls
+									page={payments.data?.page ?? 1}
+									totalPages={payments.data?.totalPages ?? 1}
+									onPageChange={setPage}
+									scrollTarget="payments-list-top"
+								/>
+							</div>
 						)}
 					</CardContent>
 				</Card>

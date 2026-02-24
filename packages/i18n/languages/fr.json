@@ -73,7 +73,10 @@
 		"loading": "Chargement...",
 		"empty": "Aucun élément trouvé",
 		"actions": "Actions",
-		"clear": "Effacer"
+		"clear": "Effacer",
+		"previous": "Précédent",
+		"next": "Suivant",
+		"pageAria": "Aller à la page {{page}}"
 	},
 	"visitTypes": {
 		"title": "Types de visites",

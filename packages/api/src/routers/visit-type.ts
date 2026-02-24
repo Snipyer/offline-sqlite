@@ -1,6 +1,6 @@
 import { db } from "@offline-sqlite/db";
 import { visitType } from "@offline-sqlite/db/schema/dental";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
@@ -15,6 +15,11 @@ const visitTypeUpdateSchema = visitTypeCreateSchema.partial().extend({
 	id: z.string(),
 });
 
+const paginationSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(10),
+});
+
 export const visitTypeRouter = router({
 	list: protectedProcedure.query(async ({ ctx }) => {
 		return await db
@@ -22,6 +27,35 @@ export const visitTypeRouter = router({
 			.from(visitType)
 			.where(eq(visitType.userId, ctx.session.user.id))
 			.orderBy(desc(visitType.createdAt));
+	}),
+
+	listPaginated: protectedProcedure.input(paginationSchema).query(async ({ ctx, input }) => {
+		const offset = (input.page - 1) * input.pageSize;
+
+		const [items, totalResult] = await Promise.all([
+			db
+				.select()
+				.from(visitType)
+				.where(eq(visitType.userId, ctx.session.user.id))
+				.orderBy(desc(visitType.createdAt))
+				.limit(input.pageSize)
+				.offset(offset),
+			db
+				.select({ total: sql<number>`count(*)` })
+				.from(visitType)
+				.where(eq(visitType.userId, ctx.session.user.id)),
+		]);
+
+		const total = Number(totalResult[0]?.total ?? 0);
+		const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
+
+		return {
+			items,
+			total,
+			page: input.page,
+			pageSize: input.pageSize,
+			totalPages,
+		};
 	}),
 
 	getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {

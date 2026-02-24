@@ -34,6 +34,8 @@ const visitFilterSchema = z.object({
 	dateTo: z.number().optional(),
 	patientName: z.string().optional(),
 	visitTypeId: z.string().optional(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(10),
 });
 
 async function getVisitWithPaymentData(
@@ -102,11 +104,23 @@ export const visitRouter = router({
 			visits = visits.filter((v) => visitIds.includes(v.visit.id));
 		}
 
-		const visitsWithActs = await Promise.all(
-			visits.map(async (v) => getVisitWithPaymentData(v.visit, v.patient)),
+		const total = visits.length;
+		const start = (input.page - 1) * input.pageSize;
+		const pagedVisits = visits.slice(start, start + input.pageSize);
+
+		const items = await Promise.all(
+			pagedVisits.map(async (v) => getVisitWithPaymentData(v.visit, v.patient)),
 		);
 
-		return visitsWithActs;
+		const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
+
+		return {
+			items,
+			total,
+			page: input.page,
+			pageSize: input.pageSize,
+			totalPages,
+		};
 	}),
 
 	getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
