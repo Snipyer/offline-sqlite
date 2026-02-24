@@ -172,7 +172,7 @@ export function VisitCard({
 									totalPaid={visit.amountPaid}
 									patientId={patientId}
 								>
-									<Button variant="outline" size="sm" className="mr-2">
+									<Button variant="default" size="sm" className="mr-2 cursor-pointer">
 										{t("payments.pay")}
 									</Button>
 								</PaymentForm>
