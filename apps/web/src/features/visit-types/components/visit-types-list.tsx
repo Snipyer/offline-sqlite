@@ -4,6 +4,7 @@ import { Loader2, Pencil, Plus, Trash2, X, Check, Syringe } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import Loader from "@/components/loader";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -180,12 +181,7 @@ export default function VisitTypes() {
 							)}
 
 							{visitTypes.isLoading ? (
-								<div className="flex h-32 items-center justify-center">
-									<div className="relative">
-										<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
-										<Loader2 className="text-primary relative h-8 w-8 animate-spin" />
-									</div>
-								</div>
+								<Loader className="h-32 pt-0" spinnerClassName="h-8 w-8" />
 							) : visitTypes.data?.length === 0 ? (
 								<div className="flex flex-col items-center justify-center py-16 text-center">
 									<div

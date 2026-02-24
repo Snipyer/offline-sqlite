@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Loader2, User, Users, Filter, X } from "lucide-react";
+import { User, Users, Filter, X } from "lucide-react";
 import { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Loader from "@/components/loader";
 import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
@@ -146,12 +147,7 @@ export function PatientsList() {
 						)}
 
 						{patients.isLoading ? (
-							<div className="flex h-64 items-center justify-center">
-								<div className="relative">
-									<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
-									<Loader2 className="text-primary relative h-10 w-10 animate-spin" />
-								</div>
-							</div>
+							<Loader className="h-64 pt-0" />
 						) : patients.data?.length === 0 ? (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
 								<div

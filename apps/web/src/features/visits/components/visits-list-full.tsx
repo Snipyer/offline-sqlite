@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Loader2, Filter, X, Plus, Calendar, Stethoscope } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
-
+import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import {
 	AlertDialog,
@@ -258,12 +258,7 @@ export default function VisitsList() {
 						)}
 
 						{visits.isLoading ? (
-							<div className="flex h-64 items-center justify-center">
-								<div className="relative">
-									<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
-									<Loader2 className="text-primary relative h-10 w-10 animate-spin" />
-								</div>
-							</div>
+							<Loader className="h-64 pt-0" />
 						) : visits.data?.length === 0 ? (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
 								<div

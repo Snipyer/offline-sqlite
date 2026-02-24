@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Calendar, DollarSign, Clock, CreditCard, Users, Syringe } from "lucide-react";
+import { Calendar, DollarSign, Clock, CreditCard, Users, Syringe } from "lucide-react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Loader from "@/components/loader";
 import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
@@ -31,14 +32,7 @@ function DailySummaryContent() {
 	const summary = useQuery(trpc.dailySummary.get.queryOptions());
 
 	if (summary.isLoading) {
-		return (
-			<div className="flex h-[calc(100vh-8rem)] items-center justify-center">
-				<div className="relative">
-					<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
-					<Loader2 className="text-primary relative h-10 w-10 animate-spin" />
-				</div>
-			</div>
-		);
+		return <Loader />;
 	}
 
 	if (!summary.data) {
