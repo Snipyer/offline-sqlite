@@ -73,7 +73,10 @@
 		"loading": "Loading...",
 		"empty": "No items found",
 		"actions": "Actions",
-		"clear": "Clear"
+		"clear": "Clear",
+		"previous": "Previous",
+		"next": "Next",
+		"pageAria": "Go to page {{page}}"
 	},
 	"visitTypes": {
 		"title": "Visit Types",

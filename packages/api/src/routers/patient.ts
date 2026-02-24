@@ -17,6 +17,8 @@ const patientFilterSchema = z.object({
 	visitTypeId: z.string().optional(),
 	hasUnpaid: z.boolean().optional(),
 	name: z.string().optional(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(10),
 });
 
 const patientCreateSchema = z.object({
@@ -197,7 +199,18 @@ export const patientRouter = router({
 			return b.lastVisit.visitTime - a.lastVisit.visitTime;
 		});
 
-		return filtered;
+		const total = filtered.length;
+		const start = (input.page - 1) * input.pageSize;
+		const items = filtered.slice(start, start + input.pageSize);
+		const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
+
+		return {
+			items,
+			total,
+			page: input.page,
+			pageSize: input.pageSize,
+			totalPages,
+		};
 	}),
 
 	getByIdWithVisits: protectedProcedure

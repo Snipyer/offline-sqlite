@@ -2,7 +2,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Loader2, Pencil, Plus, Trash2, X, Check, Syringe } from "lucide-react";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/loader";
 import {
@@ -15,7 +14,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -28,7 +27,7 @@ import {
 } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
-import { cn } from "@/lib/utils";
+import { PaginationControls } from "@/components/pagination-controls";
 
 export default function VisitTypes() {
 	const { t } = useTranslation();
@@ -36,12 +35,20 @@ export default function VisitTypes() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [formName, setFormName] = useState("");
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const pageSize = 10;
 
-	const visitTypes = useQuery(trpc.visitType.list.queryOptions());
+	const visitTypes = useQuery(
+		trpc.visitType.listPaginated.queryOptions({
+			page,
+			pageSize,
+		}),
+	);
 
 	const createMutation = useMutation(
 		trpc.visitType.create.mutationOptions({
 			onSuccess: () => {
+				setPage(1);
 				visitTypes.refetch();
 				setIsCreating(false);
 				setFormName("");
@@ -62,6 +69,9 @@ export default function VisitTypes() {
 	const deleteMutation = useMutation(
 		trpc.visitType.delete.mutationOptions({
 			onSuccess: () => {
+				if ((visitTypes.data?.items.length ?? 0) <= 1 && page > 1) {
+					setPage((prev) => Math.max(1, prev - 1));
+				}
 				visitTypes.refetch();
 			},
 		}),
@@ -105,6 +115,7 @@ export default function VisitTypes() {
 
 	return (
 		<motion.div
+			id="visit-types-list-top"
 			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
@@ -182,7 +193,7 @@ export default function VisitTypes() {
 
 							{visitTypes.isLoading ? (
 								<Loader className="h-32 pt-0" spinnerClassName="h-8 w-8" />
-							) : visitTypes.data?.length === 0 ? (
+							) : (visitTypes.data?.items.length ?? 0) === 0 ? (
 								<div className="flex flex-col items-center justify-center py-16 text-center">
 									<div
 										className="bg-muted/50 mb-4 flex h-20 w-20 items-center justify-center
@@ -193,95 +204,106 @@ export default function VisitTypes() {
 									<p className="text-muted-foreground text-sm">{t("visitTypes.empty")}</p>
 								</div>
 							) : (
-								<div className="space-y-2">
-									{visitTypes.data?.map((vt, index) =>
-										editingId === vt.id ? (
-											<motion.form
-												key={vt.id}
-												initial={{ opacity: 0 }}
-												animate={{ opacity: 1 }}
-												onSubmit={handleUpdate}
-												className="border-border/50 bg-muted/30 flex items-center
-													gap-2 rounded-xl border p-3"
-											>
-												<Input
-													value={formName}
-													onChange={(e) => setFormName(e.target.value)}
-													autoFocus
-													className="flex-1"
-												/>
-												<Button
-													type="submit"
-													size="icon"
-													className="h-9 w-9 rounded-lg"
-													disabled={updateMutation.isPending || !formName.trim()}
+								<div className="space-y-6">
+									<div className="space-y-2">
+										{visitTypes.data?.items.map((vt, index) =>
+											editingId === vt.id ? (
+												<motion.form
+													key={vt.id}
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													onSubmit={handleUpdate}
+													className="border-border/50 bg-muted/30 flex items-center
+														gap-2 rounded-xl border p-3"
 												>
-													{updateMutation.isPending ? (
-														<Loader2 className="h-4 w-4 animate-spin" />
-													) : (
-														<Check className="h-4 w-4" />
-													)}
-												</Button>
-												<Button
-													type="button"
-													variant="ghost"
-													size="icon"
-													className="h-9 w-9 rounded-lg"
-													onClick={cancelForm}
-												>
-													<X className="h-4 w-4" />
-												</Button>
-											</motion.form>
-										) : (
-											<motion.div
-												key={vt.id}
-												initial={subtleListItemInitial}
-												animate={subtleListItemAnimate}
-												transition={getSubtleListItemTransition(index, 0.1, 0.05)}
-												className="group border-border/50 hover:border-border
-													bg-muted/30 hover:bg-card flex items-center
-													justify-between rounded-xl border p-4
-													transition-[background-color,border-color,box-shadow]
-													duration-300"
-											>
-												<div className="flex items-center gap-3">
-													<div
-														className="flex h-8 w-8 items-center justify-center
-															rounded-lg bg-violet-500/10"
+													<Input
+														value={formName}
+														onChange={(e) => setFormName(e.target.value)}
+														autoFocus
+														className="flex-1"
+													/>
+													<Button
+														type="submit"
+														size="icon"
+														className="h-9 w-9 rounded-lg"
+														disabled={
+															updateMutation.isPending || !formName.trim()
+														}
 													>
-														<span
-															className="text-xs font-semibold text-violet-600"
+														{updateMutation.isPending ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															<Check className="h-4 w-4" />
+														)}
+													</Button>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														className="h-9 w-9 rounded-lg"
+														onClick={cancelForm}
+													>
+														<X className="h-4 w-4" />
+													</Button>
+												</motion.form>
+											) : (
+												<motion.div
+													key={vt.id}
+													initial={subtleListItemInitial}
+													animate={subtleListItemAnimate}
+													transition={getSubtleListItemTransition(index, 0.1, 0.05)}
+													className="group border-border/50 hover:border-border
+														bg-muted/30 hover:bg-card flex items-center
+														justify-between rounded-xl border p-4
+														transition-[background-color,border-color,box-shadow]
+														duration-300"
+												>
+													<div className="flex items-center gap-3">
+														<div
+															className="flex h-8 w-8 items-center
+																justify-center rounded-lg bg-violet-500/10"
 														>
-															{String.fromCharCode(65 + index)}
-														</span>
+															<span
+																className="text-xs font-semibold
+																	text-violet-600"
+															>
+																{String.fromCharCode(65 + index)}
+															</span>
+														</div>
+														<span className="font-medium">{vt.name}</span>
 													</div>
-													<span className="font-medium">{vt.name}</span>
-												</div>
-												<div className="flex gap-1">
-													<Button
-														variant="ghost"
-														size="icon"
-														className="h-8 w-8 rounded-lg"
-														onClick={() => startEdit(vt.id, vt.name)}
-														aria-label={t("visitTypes.editAria")}
-													>
-														<Pencil className="h-4 w-4" />
-													</Button>
-													<Button
-														variant="ghost"
-														size="icon"
-														onClick={() => handleDelete(vt.id)}
-														aria-label={t("visitTypes.deleteAria")}
-														className="text-destructive hover:text-destructive h-8
-															w-8 rounded-lg"
-														disabled={deleteMutation.isPending}
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-											</motion.div>
-										),
-									)}
+													<div className="flex gap-1">
+														<Button
+															variant="ghost"
+															size="icon"
+															className="h-8 w-8 rounded-lg"
+															onClick={() => startEdit(vt.id, vt.name)}
+															aria-label={t("visitTypes.editAria")}
+														>
+															<Pencil className="h-4 w-4" />
+														</Button>
+														<Button
+															variant="ghost"
+															size="icon"
+															onClick={() => handleDelete(vt.id)}
+															aria-label={t("visitTypes.deleteAria")}
+															className="text-destructive hover:text-destructive
+																h-8 w-8 rounded-lg"
+															disabled={deleteMutation.isPending}
+														>
+															<Trash2 className="h-4 w-4" />
+														</Button>
+													</div>
+												</motion.div>
+											),
+										)}
+									</div>
+									<PaginationControls
+										page={visitTypes.data?.page ?? 1}
+										totalPages={visitTypes.data?.totalPages ?? 1}
+										onPageChange={setPage}
+										scrollTarget="visit-types-list-top"
+									/>
 								</div>
 							)}
 						</div>

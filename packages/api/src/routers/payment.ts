@@ -1,6 +1,6 @@
 import { db } from "@offline-sqlite/db";
 import { payment, visit, visitAct, patient, paymentMethodEnum } from "@offline-sqlite/db/schema/dental";
-import { eq, and, desc, like } from "drizzle-orm";
+import { eq, and, desc, like, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
@@ -204,13 +204,23 @@ export const paymentRouter = router({
 		.input(
 			z.object({
 				patientName: z.string().optional(),
+				page: z.number().int().min(1).default(1),
+				pageSize: z.number().int().min(1).max(100).default(10),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
-			let paymentsData;
+			const whereCondition = input.patientName
+				? and(
+						eq(payment.userId, ctx.session.user.id),
+						eq(visit.userId, ctx.session.user.id),
+						like(patient.name, `%${input.patientName}%`),
+					)
+				: and(eq(payment.userId, ctx.session.user.id), eq(visit.userId, ctx.session.user.id));
 
-			if (input.patientName) {
-				paymentsData = await db
+			const offset = (input.page - 1) * input.pageSize;
+
+			const [paymentsData, totalResult] = await Promise.all([
+				db
 					.select({
 						id: payment.id,
 						visitId: payment.visitId,
@@ -226,37 +236,27 @@ export const paymentRouter = router({
 					.from(payment)
 					.innerJoin(visit, eq(payment.visitId, visit.id))
 					.innerJoin(patient, eq(visit.patientId, patient.id))
-					.where(
-						and(
-							eq(payment.userId, ctx.session.user.id),
-							eq(visit.userId, ctx.session.user.id),
-							like(patient.name, `%${input.patientName}%`),
-						),
-					)
-					.orderBy(desc(payment.recordedAt));
-			} else {
-				paymentsData = await db
-					.select({
-						id: payment.id,
-						visitId: payment.visitId,
-						amount: payment.amount,
-						paymentMethod: payment.paymentMethod,
-						notes: payment.notes,
-						recordedAt: payment.recordedAt,
-						createdAt: payment.createdAt,
-						patientId: patient.id,
-						patientName: patient.name,
-						visitTime: visit.visitTime,
-					})
+					.where(whereCondition)
+					.orderBy(desc(payment.recordedAt))
+					.limit(input.pageSize)
+					.offset(offset),
+				db
+					.select({ total: sql<number>`count(*)` })
 					.from(payment)
 					.innerJoin(visit, eq(payment.visitId, visit.id))
 					.innerJoin(patient, eq(visit.patientId, patient.id))
-					.where(
-						and(eq(payment.userId, ctx.session.user.id), eq(visit.userId, ctx.session.user.id)),
-					)
-					.orderBy(desc(payment.recordedAt));
-			}
+					.where(whereCondition),
+			]);
 
-			return paymentsData;
+			const total = Number(totalResult[0]?.total ?? 0);
+			const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
+
+			return {
+				items: paymentsData,
+				total,
+				page: input.page,
+				pageSize: input.pageSize,
+				totalPages,
+			};
 		}),
 });

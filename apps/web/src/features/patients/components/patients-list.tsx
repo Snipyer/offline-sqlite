@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { User, Users, Filter, X } from "lucide-react";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/loader";
@@ -12,7 +11,7 @@ import { useTranslation } from "@offline-sqlite/i18n";
 import { PatientCard } from "@/components/patient-card";
 import { PatientsFilter, type PatientFilters } from "./patients-filter";
 import { PatientSheet } from "./patient-sheet";
-import { cn } from "@/lib/utils";
+import { PaginationControls } from "@/components/pagination-controls";
 
 const emptyFilters: PatientFilters = {
 	sex: "",
@@ -28,6 +27,8 @@ export function PatientsList() {
 	const [showFilters, setShowFilters] = useState(false);
 	const [filters, setFilters] = useState<PatientFilters>(emptyFilters);
 	const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const pageSize = 10;
 
 	const visitTypes = useQuery(trpc.visitType.list.queryOptions());
 
@@ -39,9 +40,15 @@ export function PatientsList() {
 			visitTypeId: filters.visitTypeId || undefined,
 			hasUnpaid: filters.hasUnpaid || undefined,
 			name: filters.name || undefined,
+			page,
+			pageSize,
 		}),
 		enabled: true,
 	});
+
+	useEffect(() => {
+		setPage(1);
+	}, [filters.sex, filters.dateFrom, filters.dateTo, filters.visitTypeId, filters.hasUnpaid, filters.name]);
 
 	const clearFilters = () => {
 		setFilters(emptyFilters);
@@ -58,6 +65,7 @@ export function PatientsList() {
 
 	return (
 		<motion.div
+			id="patients-list-top"
 			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
@@ -148,7 +156,7 @@ export function PatientsList() {
 
 						{patients.isLoading ? (
 							<Loader className="h-64 pt-0" />
-						) : patients.data?.length === 0 ? (
+						) : (patients.data?.items.length ?? 0) === 0 ? (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
 								<div
 									className="bg-muted/50 mb-4 flex h-20 w-20 items-center justify-center
@@ -166,18 +174,26 @@ export function PatientsList() {
 								</p>
 							</div>
 						) : (
-							<div className="space-y-3">
-								{patients.data?.map((data, index) => (
-									<PatientCard
-										key={data.patient.id}
-										patient={data.patient}
-										lastVisit={data.lastVisit}
-										visits={data.visits}
-										totalUnpaid={data.totalUnpaid}
-										onClick={() => setSelectedPatientId(data.patient.id)}
-										index={index}
-									/>
-								))}
+							<div className="space-y-6">
+								<div className="space-y-3">
+									{patients.data?.items.map((data, index) => (
+										<PatientCard
+											key={data.patient.id}
+											patient={data.patient}
+											lastVisit={data.lastVisit}
+											visits={data.visits}
+											totalUnpaid={data.totalUnpaid}
+											onClick={() => setSelectedPatientId(data.patient.id)}
+											index={index}
+										/>
+									))}
+								</div>
+								<PaginationControls
+									page={patients.data?.page ?? 1}
+									totalPages={patients.data?.totalPages ?? 1}
+									onPageChange={setPage}
+									scrollTarget="patients-list-top"
+								/>
 							</div>
 						)}
 					</CardContent>

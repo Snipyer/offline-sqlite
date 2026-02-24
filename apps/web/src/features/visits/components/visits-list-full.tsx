@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Loader2, Filter, X, Plus, Calendar, Stethoscope } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { VisitCard } from "@/components/visit-card";
 import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
-import { cn } from "@/lib/utils";
+import { PaginationControls } from "@/components/pagination-controls";
 
 interface VisitFilters {
 	dateFrom: string;
@@ -43,6 +43,8 @@ export default function VisitsList() {
 	const [showFilters, setShowFilters] = useState(false);
 	const [filters, setFilters] = useState<VisitFilters>(emptyFilters);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const pageSize = 10;
 
 	const visitTypes = useQuery(trpc.visitType.list.queryOptions());
 
@@ -52,9 +54,15 @@ export default function VisitsList() {
 			dateTo: filters.dateTo ? new Date(filters.dateTo).getTime() : undefined,
 			patientName: filters.patientName || undefined,
 			visitTypeId: filters.visitTypeId || undefined,
+			page,
+			pageSize,
 		}),
 		enabled: true,
 	});
+
+	useEffect(() => {
+		setPage(1);
+	}, [filters.dateFrom, filters.dateTo, filters.patientName, filters.visitTypeId]);
 
 	const softDeleteMutation = useMutation(
 		trpc.visit.softDelete.mutationOptions({
@@ -93,6 +101,7 @@ export default function VisitsList() {
 
 	return (
 		<motion.div
+			id="visits-list-top"
 			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
@@ -259,7 +268,7 @@ export default function VisitsList() {
 
 						{visits.isLoading ? (
 							<Loader className="h-64 pt-0" />
-						) : visits.data?.length === 0 ? (
+						) : (visits.data?.items.length ?? 0) === 0 ? (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
 								<div
 									className="bg-muted/50 mb-4 flex h-20 w-20 items-center justify-center
@@ -281,18 +290,26 @@ export default function VisitsList() {
 								</Link>
 							</div>
 						) : (
-							<div className="space-y-4">
-								{visits.data?.map((visit, index) => (
-									<VisitCard
-										key={visit.id}
-										visit={visit}
-										index={index}
-										showPatient
-										editLink={`/visits/${visit.id}/edit`}
-										onDelete={() => handleSoftDelete(visit.id)}
-										onRestore={() => handleRestore(visit.id)}
-									/>
-								))}
+							<div className="space-y-6">
+								<div className="space-y-4">
+									{visits.data?.items.map((visit, index) => (
+										<VisitCard
+											key={visit.id}
+											visit={visit}
+											index={index}
+											showPatient
+											editLink={`/visits/${visit.id}/edit`}
+											onDelete={() => handleSoftDelete(visit.id)}
+											onRestore={() => handleRestore(visit.id)}
+										/>
+									))}
+								</div>
+								<PaginationControls
+									page={visits.data?.page ?? 1}
+									totalPages={visits.data?.totalPages ?? 1}
+									onPageChange={setPage}
+									scrollTarget="visits-list-top"
+								/>
 							</div>
 						)}
 					</CardContent>
