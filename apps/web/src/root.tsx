@@ -92,9 +92,9 @@ export default function App() {
 						disableTransitionOnChange
 						storageKey="vite-ui-theme"
 					>
+						{isTauri() && <Titlebar />}
 						{isAuthenticated ? (
 							<SidebarProvider defaultOpen side={sidebarSide}>
-								{isTauri() && <Titlebar />}
 								<AppSidebar />
 								<SidebarInset className={cn("flex h-svh flex-col", isTauri() && "pt-9")}>
 									<Outlet />
