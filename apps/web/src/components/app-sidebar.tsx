@@ -67,7 +67,7 @@ export function AppSidebar() {
 			side={side}
 			dir={isRtl ? "rtl" : "ltr"}
 			className={cn(
-				"border-border/50 from-background to-muted/20 border-r bg-gradient-to-b",
+				"border-border/50 from-background to-muted/20 border-r bg-linear-to-b",
 				isTauri() && "pt-9",
 			)}
 		>

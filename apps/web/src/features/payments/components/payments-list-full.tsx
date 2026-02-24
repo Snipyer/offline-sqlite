@@ -1,16 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Loader2, Filter, X, CreditCard, User, Calendar, DollarSign } from "lucide-react";
+import { Loader2, Filter, X, CreditCard, Calendar, DollarSign } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import {
+	pageContainerVariants,
+	pageItemVariants,
+	sectionFadeVariants,
+	subtleListItemVariants,
+	subtleListLayoutTransition,
+	subtleListVariants,
+} from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
-import { cn } from "@/lib/utils";
 
 interface PaymentFilters {
 	patientName: string;
@@ -18,29 +24,6 @@ interface PaymentFilters {
 
 const emptyFilters: PaymentFilters = {
 	patientName: "",
-};
-
-const containerVariants = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			staggerChildren: 0.08,
-			delayChildren: 0.1,
-		},
-	},
-};
-
-const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: {
-			duration: 0.5,
-			ease: "easeOut" as const,
-		},
-	},
 };
 
 export default function PaymentsList() {
@@ -63,13 +46,13 @@ export default function PaymentsList() {
 
 	return (
 		<motion.div
-			variants={containerVariants}
+			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
 			className="container mx-auto max-w-5xl px-4 py-8"
 		>
 			{/* Header */}
-			<motion.div variants={itemVariants} className="mb-8">
+			<motion.div variants={pageItemVariants} className="mb-8">
 				<div className="flex items-center gap-4">
 					<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
 						<DollarSign className="text-primary h-6 w-6" />
@@ -81,7 +64,7 @@ export default function PaymentsList() {
 				</div>
 			</motion.div>
 
-			<motion.div variants={itemVariants}>
+			<motion.div variants={sectionFadeVariants}>
 				<Card className="border-border/50 overflow-hidden">
 					<CardHeader className="pb-4">
 						<div className="flex items-center justify-between">
@@ -186,21 +169,27 @@ export default function PaymentsList() {
 								</p>
 							</div>
 						) : (
-							<div className="space-y-4">
-								{payments.data?.map((payment, index) => (
+							<motion.div
+								variants={subtleListVariants}
+								initial="hidden"
+								animate="visible"
+								className="space-y-4"
+							>
+								{payments.data?.map((payment) => (
 									<motion.div
 										key={payment.id}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: 0.2 + index * 0.05 }}
+										variants={subtleListItemVariants}
+										layout
+										transition={{ layout: subtleListLayoutTransition }}
 										className="group border-border/50 hover:border-border bg-muted/30
 											hover:bg-card relative overflow-hidden rounded-2xl border p-5
-											transition-all duration-300"
+											transition-[background-color,border-color,box-shadow]
+											duration-300"
 									>
 										{/* Hover gradient */}
 										<div
 											className="from-primary/5 pointer-events-none absolute inset-0
-												bg-gradient-to-br via-transparent to-transparent opacity-0
+												bg-linear-to-br via-transparent to-transparent opacity-0
 												transition-opacity group-hover:opacity-100"
 										/>
 
@@ -264,7 +253,7 @@ export default function PaymentsList() {
 										</div>
 									</motion.div>
 								))}
-							</div>
+							</motion.div>
 						)}
 					</CardContent>
 				</Card>

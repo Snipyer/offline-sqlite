@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VisitCard } from "@/components/visit-card";
+import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { cn } from "@/lib/utils";
@@ -35,29 +36,6 @@ const emptyFilters: VisitFilters = {
 	dateTo: "",
 	patientName: "",
 	visitTypeId: "",
-};
-
-const containerVariants = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			staggerChildren: 0.08,
-			delayChildren: 0.1,
-		},
-	},
-};
-
-const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: {
-			duration: 0.5,
-			ease: "easeOut" as const,
-		},
-	},
 };
 
 export default function VisitsList() {
@@ -115,13 +93,13 @@ export default function VisitsList() {
 
 	return (
 		<motion.div
-			variants={containerVariants}
+			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
 			className="container mx-auto max-w-5xl px-4 py-8"
 		>
 			{/* Header */}
-			<motion.div variants={itemVariants} className="mb-8">
+			<motion.div variants={pageItemVariants} className="mb-8">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
 						<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
@@ -141,7 +119,7 @@ export default function VisitsList() {
 				</div>
 			</motion.div>
 
-			<motion.div variants={itemVariants}>
+			<motion.div variants={sectionFadeVariants}>
 				<Card className="border-border/50 overflow-hidden">
 					<CardHeader className="pb-4">
 						<div className="flex items-center justify-between">

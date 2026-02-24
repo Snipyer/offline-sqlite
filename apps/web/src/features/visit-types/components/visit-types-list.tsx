@@ -17,32 +17,17 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	getSubtleListItemTransition,
+	pageContainerVariants,
+	pageItemVariants,
+	sectionFadeVariants,
+	subtleListItemAnimate,
+	subtleListItemInitial,
+} from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { cn } from "@/lib/utils";
-
-const containerVariants = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			staggerChildren: 0.08,
-			delayChildren: 0.1,
-		},
-	},
-};
-
-const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: {
-			duration: 0.5,
-			ease: "easeOut" as const,
-		},
-	},
-};
 
 export default function VisitTypes() {
 	const { t } = useTranslation();
@@ -119,13 +104,13 @@ export default function VisitTypes() {
 
 	return (
 		<motion.div
-			variants={containerVariants}
+			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
 			className="container mx-auto max-w-2xl px-4 py-8"
 		>
 			{/* Header */}
-			<motion.div variants={itemVariants} className="mb-8">
+			<motion.div variants={pageItemVariants} className="mb-8">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
 						<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
@@ -145,7 +130,7 @@ export default function VisitTypes() {
 				</div>
 			</motion.div>
 
-			<motion.div variants={itemVariants}>
+			<motion.div variants={sectionFadeVariants}>
 				<Card className="border-border/50 overflow-hidden">
 					<CardContent className="p-6">
 						<div className="space-y-4">
@@ -254,12 +239,13 @@ export default function VisitTypes() {
 										) : (
 											<motion.div
 												key={vt.id}
-												initial={{ opacity: 0, y: 10 }}
-												animate={{ opacity: 1, y: 0 }}
-												transition={{ delay: 0.1 + index * 0.05 }}
+												initial={subtleListItemInitial}
+												animate={subtleListItemAnimate}
+												transition={getSubtleListItemTransition(index, 0.1, 0.05)}
 												className="group border-border/50 hover:border-border
 													bg-muted/30 hover:bg-card flex items-center
-													justify-between rounded-xl border p-4 transition-all
+													justify-between rounded-xl border p-4
+													transition-[background-color,border-color,box-shadow]
 													duration-300"
 											>
 												<div className="flex items-center gap-3">
