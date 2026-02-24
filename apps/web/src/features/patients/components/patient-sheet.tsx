@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useDirection } from "@/components/ui/direction";
 import { trpc } from "@/utils/trpc";
 import { PatientSheetContent } from "./patient-card-content";
+import Loader from "@/components/loader";
 
 interface PatientSheetProps {
 	patientId: string | null;
@@ -34,7 +33,7 @@ export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
 			>
 				{patientDetails.isLoading ? (
 					<div className="flex flex-1 items-center justify-center">
-						<Loader2 className="h-6 w-6 animate-spin" />
+						<Loader />
 					</div>
 				) : patientDetails.data ? (
 					<PatientSheetContent
