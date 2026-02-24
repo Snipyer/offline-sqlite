@@ -307,13 +307,13 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 
 	const actsValue = form.getFieldValue("acts") || [];
 
-	if (isLoading) {
-		return (
-			<div className="mx-auto flex w-full max-w-4xl items-center justify-center py-20">
-				<Loader2 className="h-8 w-8 animate-spin" />
-			</div>
-		);
-	}
+	// if (isLoading) {
+	// 	return (
+	// 		<div className="mx-auto flex h-full w-full max-w-4xl items-center justify-center py-20">
+	// 			<Loader2 className="h-8 w-8 animate-spin" />
+	// 		</div>
+	// 	);
+	// }
 
 	return (
 		<div className="mx-auto w-full max-w-4xl py-8">

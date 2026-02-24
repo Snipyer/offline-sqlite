@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { PatientCard } from "@/components/patient-card";
@@ -19,29 +20,6 @@ const emptyFilters: PatientFilters = {
 	visitTypeId: "",
 	hasUnpaid: false,
 	name: "",
-};
-
-const containerVariants = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			staggerChildren: 0.08,
-			delayChildren: 0.1,
-		},
-	},
-};
-
-const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: {
-			duration: 0.5,
-			ease: "easeOut" as const,
-		},
-	},
 };
 
 export function PatientsList() {
@@ -79,13 +57,13 @@ export function PatientsList() {
 
 	return (
 		<motion.div
-			variants={containerVariants}
+			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
 			className="container mx-auto max-w-5xl px-4 py-8"
 		>
 			{/* Header */}
-			<motion.div variants={itemVariants} className="mb-8">
+			<motion.div variants={pageItemVariants} className="mb-8">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
 						<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
@@ -99,7 +77,7 @@ export function PatientsList() {
 				</div>
 			</motion.div>
 
-			<motion.div variants={itemVariants}>
+			<motion.div variants={sectionFadeVariants}>
 				<Card className="border-border/50 overflow-hidden">
 					<CardHeader className="pb-4">
 						<div className="flex items-center justify-between">
@@ -194,21 +172,15 @@ export function PatientsList() {
 						) : (
 							<div className="space-y-3">
 								{patients.data?.map((data, index) => (
-									<motion.div
+									<PatientCard
 										key={data.patient.id}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: 0.2 + index * 0.05 }}
-									>
-										<PatientCard
-											patient={data.patient}
-											lastVisit={data.lastVisit}
-											visits={data.visits}
-											totalUnpaid={data.totalUnpaid}
-											onClick={() => setSelectedPatientId(data.patient.id)}
-											index={index}
-										/>
-									</motion.div>
+										patient={data.patient}
+										lastVisit={data.lastVisit}
+										visits={data.visits}
+										totalUnpaid={data.totalUnpaid}
+										onClick={() => setSelectedPatientId(data.patient.id)}
+										index={index}
+									/>
 								))}
 							</div>
 						)}

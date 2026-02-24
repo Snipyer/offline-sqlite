@@ -1,5 +1,6 @@
 import { Calendar, CreditCard, Phone, User, ChevronRight, Clock } from "lucide-react";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -63,12 +64,13 @@ export function PatientCard({
 	if (variant === "compact") {
 		return (
 			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: index * 0.05 }}
+				initial={subtleListItemInitial}
+				animate={subtleListItemAnimate}
+				transition={getSubtleListItemTransition(index, 0, 0.05)}
 				className={cn(
 					`group border-border/50 bg-muted/30 hover:border-border hover:bg-card flex cursor-pointer
-					items-center gap-4 rounded-xl border p-3 transition-all duration-300`,
+					items-center gap-4 rounded-xl border p-3
+					transition-[background-color,border-color,box-shadow] duration-300`,
 					className,
 				)}
 				onClick={onClick}
@@ -103,21 +105,21 @@ export function PatientCard({
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ delay: index * 0.05 }}
+			initial={subtleListItemInitial}
+			animate={subtleListItemAnimate}
+			transition={getSubtleListItemTransition(index, 0, 0.05)}
 			className={cn(
 				`group border-border/50 hover:border-border bg-muted/30 hover:bg-card relative cursor-pointer
-				overflow-hidden rounded-2xl border p-5 transition-all duration-300`,
+				overflow-hidden rounded-2xl border p-5 transition-[background-color,border-color,box-shadow]
+				duration-300`,
 				className,
 			)}
 			onClick={onClick}
 		>
 			{/* Hover gradient overlay */}
 			<div
-				className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br
-					via-transparent to-transparent opacity-0 transition-opacity duration-500
-					group-hover:opacity-100"
+				className="from-primary/5 pointer-events-none absolute inset-0 bg-linear-to-br via-transparent
+					to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
 			/>
 
 			<div className="relative">

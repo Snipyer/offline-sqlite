@@ -8,30 +8,15 @@ import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { AuthGuard } from "@/components/auth-guard";
+import {
+	getSubtleListItemTransition,
+	pageContainerVariants,
+	pageItemVariants,
+	sectionFadeVariants,
+	subtleListItemAnimate,
+	subtleListItemInitial,
+} from "@/lib/animations";
 import { cn } from "@/lib/utils";
-
-const containerVariants = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			staggerChildren: 0.1,
-			delayChildren: 0.1,
-		},
-	},
-};
-
-const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: {
-			duration: 0.5,
-			ease: "easeOut" as const,
-		},
-	},
-};
 
 export default function DailySummaryPage() {
 	return (
@@ -74,13 +59,13 @@ function DailySummaryContent() {
 
 	return (
 		<motion.div
-			variants={containerVariants}
+			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
 			className="container mx-auto max-w-6xl px-4 py-8"
 		>
 			{/* Header */}
-			<motion.div variants={itemVariants} className="mb-8">
+			<motion.div variants={pageItemVariants} className="mb-8">
 				<h1 className="mb-1 text-2xl font-semibold tracking-tight">{t("dailySummary.title")}</h1>
 				<p className="text-muted-foreground text-sm">
 					{formatDate(new Date(date).getTime(), "full")}
@@ -89,7 +74,7 @@ function DailySummaryContent() {
 
 			{/* Stats Row - Original 2 Cards */}
 			<div className="mb-8 grid gap-5 sm:grid-cols-2">
-				<motion.div variants={itemVariants}>
+				<motion.div variants={pageItemVariants}>
 					<StatCard
 						icon={Calendar}
 						title={t("dailySummary.todayVisits")}
@@ -108,7 +93,7 @@ function DailySummaryContent() {
 					/>
 				</motion.div>
 
-				<motion.div variants={itemVariants}>
+				<motion.div variants={pageItemVariants}>
 					<StatCard
 						icon={DollarSign}
 						title={t("dailySummary.dailyIncome")}
@@ -128,7 +113,7 @@ function DailySummaryContent() {
 			{/* Content Grid - Original Layout */}
 			<div className="grid gap-6 lg:grid-cols-3">
 				{/* Procedures Breakdown */}
-				<motion.div variants={itemVariants} className="lg:col-span-1">
+				<motion.div variants={sectionFadeVariants} className="lg:col-span-1">
 					<Card className="border-border/50 h-full overflow-hidden">
 						<CardHeader className="pb-3">
 							<div className="flex items-center gap-3">
@@ -153,9 +138,9 @@ function DailySummaryContent() {
 									{Object.entries(proceduresByType).map(([type, count], index) => (
 										<motion.div
 											key={type}
-											initial={{ opacity: 0, x: -10 }}
-											animate={{ opacity: 1, x: 0 }}
-											transition={{ delay: 0.3 + index * 0.05 }}
+											initial={subtleListItemInitial}
+											animate={subtleListItemAnimate}
+											transition={getSubtleListItemTransition(index, 0.3, 0.05)}
 											className="hover:border-border/50 hover:bg-muted/30 flex
 												items-center justify-between rounded-lg border
 												border-transparent p-3 transition-colors"
@@ -179,7 +164,7 @@ function DailySummaryContent() {
 				</motion.div>
 
 				{/* Today's Visits List */}
-				<motion.div variants={itemVariants} className="lg:col-span-2">
+				<motion.div variants={sectionFadeVariants} className="lg:col-span-2">
 					<Card className="border-border/50 h-full overflow-hidden">
 						<CardHeader className="pb-3">
 							<div className="flex items-center gap-3">
@@ -212,17 +197,18 @@ function DailySummaryContent() {
 									{visits.map((visit, index) => (
 										<motion.div
 											key={visit.id}
-											initial={{ opacity: 0, y: 10 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: 0.4 + index * 0.08 }}
+											initial={subtleListItemInitial}
+											animate={subtleListItemAnimate}
+											transition={getSubtleListItemTransition(index, 0.4, 0.08)}
 											className="group border-border/50 hover:border-border bg-muted/30
 												hover:bg-card relative overflow-hidden rounded-xl border p-4
-												transition-all duration-300"
+												transition-[background-color,border-color,box-shadow]
+												duration-300"
 										>
 											{/* Hover gradient */}
 											<div
 												className="from-primary/5 pointer-events-none absolute inset-0
-													bg-gradient-to-br via-transparent to-transparent opacity-0
+													bg-linear-to-br via-transparent to-transparent opacity-0
 													transition-opacity group-hover:opacity-100"
 											/>
 
@@ -346,8 +332,8 @@ function StatCard({
 				duration-300 hover:shadow-sm"
 		>
 			<div
-				className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br
-					via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+				className="from-primary/5 pointer-events-none absolute inset-0 bg-linear-to-br via-transparent
+					to-transparent opacity-0 transition-opacity group-hover:opacity-100"
 			/>
 			<CardHeader className="relative flex flex-row items-center justify-between pb-2">
 				<CardTitle className="text-muted-foreground text-xs font-medium tracking-wider uppercase">

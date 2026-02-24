@@ -3,30 +3,14 @@ import { User, Stethoscope, Users, CreditCard } from "lucide-react";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthGuard } from "@/components/auth-guard";
+import {
+	getSubtleListItemTransition,
+	pageContainerVariants,
+	pageItemVariants,
+	subtleListItemAnimate,
+	subtleListItemInitial,
+} from "@/lib/animations";
 import { cn } from "@/lib/utils";
-
-const containerVariants = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			staggerChildren: 0.1,
-			delayChildren: 0.1,
-		},
-	},
-};
-
-const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: {
-			duration: 0.5,
-			ease: "easeOut" as const,
-		},
-	},
-};
 
 export default function Dashboard() {
 	const { session, isPending } = useAuthGuard();
@@ -48,13 +32,13 @@ export default function Dashboard() {
 
 	return (
 		<motion.div
-			variants={containerVariants}
+			variants={pageContainerVariants}
 			initial="hidden"
 			animate="visible"
 			className="container mx-auto max-w-5xl px-4 py-8"
 		>
 			{/* Header */}
-			<motion.div variants={itemVariants} className="mb-10">
+			<motion.div variants={pageItemVariants} className="mb-10">
 				<div className="flex items-center gap-4">
 					<div className="bg-primary/10 flex h-14 w-14 items-center justify-center rounded-2xl">
 						<User className="text-primary h-7 w-7" />
@@ -142,14 +126,18 @@ function QuickStatCard({
 	const styles = colorStyles[color];
 
 	return (
-		<motion.div variants={itemVariants} transition={{ delay: delay * 0.05 }}>
+		<motion.div
+			initial={subtleListItemInitial}
+			animate={subtleListItemAnimate}
+			transition={getSubtleListItemTransition(delay)}
+		>
 			<Card
 				className="border-border/50 hover:border-border group relative overflow-hidden transition-all
 					duration-300 hover:shadow-sm"
 			>
 				<div
 					className={cn(
-						`absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300
+						`absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-300
 						group-hover:opacity-100`,
 						styles.gradient,
 						"to-transparent",

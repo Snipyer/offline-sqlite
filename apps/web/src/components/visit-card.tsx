@@ -6,6 +6,7 @@ import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector"
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { Button } from "@/components/ui/button";
 import { PaymentForm } from "@/features/payments/components/payment-form";
+import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 export interface Visit {
@@ -64,20 +65,20 @@ export function VisitCard({
 
 	const content = (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ delay: index * 0.05 }}
+			initial={subtleListItemInitial}
+			animate={subtleListItemAnimate}
+			transition={getSubtleListItemTransition(index, 0, 0.05)}
 			className={cn(
 				`group border-border/50 hover:border-border bg-muted/30 hover:bg-card relative overflow-hidden
-				rounded-2xl border p-5 transition-all duration-300`,
+				rounded-2xl border p-5 transition-[background-color,border-color,box-shadow] duration-300`,
 				visit.isDeleted && "opacity-60",
 				className,
 			)}
 		>
 			{/* Hover gradient */}
 			<div
-				className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br
-					via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+				className="from-primary/5 pointer-events-none absolute inset-0 bg-linear-to-br via-transparent
+					to-transparent opacity-0 transition-opacity group-hover:opacity-100"
 			/>
 
 			<div className="relative">
@@ -185,7 +186,6 @@ export function VisitCard({
 											variant="ghost"
 											size="icon"
 											className="h-8 w-8 rounded-lg"
-											onClick={(e) => e.stopPropagation()}
 											aria-label={t("visits.editVisitAction")}
 										>
 											<Pencil className="h-4 w-4" />

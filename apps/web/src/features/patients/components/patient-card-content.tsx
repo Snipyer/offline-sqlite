@@ -1,12 +1,12 @@
-import { Calendar, CreditCard, Phone, MapPin, User, ChevronRight } from "lucide-react";
+import { Calendar, CreditCard, Phone, MapPin, User, ChevronRight, Stethoscope } from "lucide-react";
 import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
 import { getVisitColor } from "@/utils/visit-colors";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { VisitCard } from "@/components/visit-card";
 import { useDirection } from "@base-ui/react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PatientCardProps {
 	patient: {
@@ -36,8 +36,8 @@ export function PatientCard({ patient, lastVisit, visits, totalUnpaid, onClick }
 		>
 			{/* Hover gradient */}
 			<div
-				className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br
-					via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+				className="from-primary/5 pointer-events-none absolute inset-0 bg-linear-to-br via-transparent
+					to-transparent opacity-0 transition-opacity group-hover:opacity-100"
 			/>
 
 			<div className="relative">
@@ -147,6 +147,7 @@ interface PatientSheetProps {
 export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: PatientSheetProps) {
 	const { t } = useTranslation();
 	const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
+	const [activeTab, setActiveTab] = useState<"visits" | "payments">("visits");
 	const direction = useDirection();
 	const isRtl = direction === "rtl";
 
@@ -175,7 +176,7 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 
 	return (
 		<div className="flex flex-1 flex-col overflow-hidden">
-			<div className="border-border/50 border-b p-6">
+			<div className="p-6">
 				<div className="flex items-start gap-5">
 					<div
 						className="bg-primary/10 flex h-20 w-20 shrink-0 items-center justify-center
@@ -218,77 +219,120 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 			</div>
 
 			<div className="flex-1 overflow-hidden">
-				<Tabs defaultValue="visits" className="flex h-full flex-col">
+				<Tabs
+					value={activeTab}
+					onValueChange={(value) => setActiveTab(value as "visits" | "payments")}
+					className="flex h-full flex-col"
+				>
 					<div className="border-border/50 border-b px-6">
 						<TabsList variant="line" className="h-10">
 							<TabsTrigger value="visits">
+								<Stethoscope className="h-4 w-4" />
 								{t("patients.visitsTab")} ({visits.length})
 							</TabsTrigger>
 							<TabsTrigger value="payments">
+								<CreditCard className="h-4 w-4" />
 								{t("patients.paymentsTab")} ({payments.length})
 							</TabsTrigger>
 						</TabsList>
 					</div>
-					<TabsContent value="visits" className="m-0 flex-1 overflow-y-auto p-6">
-						<div className="space-y-4">
-							{visits.length === 0 ? (
-								<div className="flex flex-col items-center justify-center py-12 text-center">
-									<p className="text-muted-foreground">{t("patients.noVisits")}</p>
-								</div>
-							) : (
-								visits.map((visit) => (
-									<div
-										key={visit.id}
-										onMouseEnter={() => setHoveredVisitId(visit.id)}
-										onMouseLeave={() => setHoveredVisitId(null)}
-									>
-										<VisitCard
-											visit={visit}
-											patientId={patient.id}
-											showBorder
-											borderColor={getVisitColor(visit.id)}
-											isRtl={isRtl}
-										/>
-									</div>
-								))
-							)}
-						</div>
-					</TabsContent>
-					<TabsContent value="payments" className="m-0 flex-1 overflow-y-auto p-6">
-						<div className="space-y-3">
-							{payments.length === 0 ? (
-								<div className="flex flex-col items-center justify-center py-12 text-center">
-									<p className="text-muted-foreground">{t("patients.noPayments")}</p>
-								</div>
-							) : (
-								payments.map((payment) => (
-									<div
-										key={payment.id}
-										className="border-border/50 hover:border-border rounded-xl border p-4
-											transition-colors"
-									>
-										<div className="flex items-center justify-between">
-											<span className="text-sm font-medium">
-												<Currency value={payment.amount} />
-											</span>
-											<span className="text-muted-foreground text-xs uppercase">
-												{formatDate(
-													typeof payment.recordedAt === "string"
-														? new Date(payment.recordedAt).getTime()
-														: payment.recordedAt.getTime(),
-												)}
-											</span>
-										</div>
-										{payment.notes && (
-											<span className="text-muted-foreground mt-2 block text-xs">
-												{payment.notes}
-											</span>
+					<div className="relative flex-1 overflow-hidden">
+						<AnimatePresence mode="wait" initial={false}>
+							{activeTab === "visits" ? (
+								<motion.div
+									key="visits"
+									className="absolute inset-0 overflow-y-auto p-6"
+									initial={{ opacity: 0, y: 8 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -8 }}
+									transition={{ duration: 0.2, ease: "easeOut" }}
+								>
+									<div className="space-y-4">
+										{visits.length === 0 ? (
+											<div
+												className="flex flex-col items-center justify-center py-12
+													text-center"
+											>
+												<p className="text-muted-foreground">
+													{t("patients.noVisits")}
+												</p>
+											</div>
+										) : (
+											visits.map((visit) => (
+												<div
+													key={visit.id}
+													onMouseEnter={() => setHoveredVisitId(visit.id)}
+													onMouseLeave={() => setHoveredVisitId(null)}
+												>
+													<VisitCard
+														visit={visit}
+														patientId={patient.id}
+														showBorder
+														borderColor={getVisitColor(visit.id)}
+														isRtl={isRtl}
+													/>
+												</div>
+											))
 										)}
 									</div>
-								))
+								</motion.div>
+							) : (
+								<motion.div
+									key="payments"
+									className="absolute inset-0 overflow-y-auto p-6"
+									initial={{ opacity: 0, y: 8 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -8 }}
+									transition={{ duration: 0.2, ease: "easeOut" }}
+								>
+									<div className="space-y-3">
+										{payments.length === 0 ? (
+											<div
+												className="flex flex-col items-center justify-center py-12
+													text-center"
+											>
+												<p className="text-muted-foreground">
+													{t("patients.noPayments")}
+												</p>
+											</div>
+										) : (
+											payments.map((payment) => (
+												<div
+													key={payment.id}
+													className="border-border/50 hover:border-border rounded-xl
+														border p-4 transition-colors"
+												>
+													<div className="flex items-center justify-between">
+														<span className="text-sm font-medium">
+															<Currency value={payment.amount} />
+														</span>
+														<span
+															className="text-muted-foreground text-xs
+																uppercase"
+														>
+															{formatDate(
+																typeof payment.recordedAt === "string"
+																	? new Date(payment.recordedAt).getTime()
+																	: payment.recordedAt.getTime(),
+															)}
+														</span>
+													</div>
+													{payment.notes && (
+														<span
+															className="text-muted-foreground mt-2 block
+																text-xs"
+														>
+															{payment.notes}
+														</span>
+													)}
+												</div>
+											))
+										)}
+									</div>
+								</motion.div>
 							)}
-						</div>
-					</TabsContent>
+						</AnimatePresence>
+					</div>
 				</Tabs>
 			</div>
 
