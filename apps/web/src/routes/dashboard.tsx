@@ -3,6 +3,7 @@ import { User, Stethoscope, Users, CreditCard } from "lucide-react";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthGuard } from "@/components/auth-guard";
+import Loader from "@/components/loader";
 import {
 	getSubtleListItemTransition,
 	pageContainerVariants,
@@ -17,17 +18,7 @@ export default function Dashboard() {
 	const { t } = useTranslation();
 
 	if (isPending) {
-		return (
-			<div className="flex h-[calc(100vh-8rem)] items-center justify-center">
-				<div className="relative">
-					<div className="bg-primary/5 absolute inset-0 rounded-full blur-3xl" />
-					<div
-						className="border-primary/30 border-t-primary h-8 w-8 animate-spin rounded-full
-							border-2"
-					/>
-				</div>
-			</div>
-		);
+		return <Loader spinnerClassName="h-8 w-8" />;
 	}
 
 	return (
