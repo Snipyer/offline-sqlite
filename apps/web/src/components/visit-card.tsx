@@ -1,7 +1,16 @@
-import { Calendar, AlertCircle, CheckCircle2, Pencil, Trash2, RotateCcw, User } from "lucide-react";
+import {
+	Calendar,
+	AlertCircle,
+	CheckCircle2,
+	Pencil,
+	Trash2,
+	RotateCcw,
+	User,
+	FileText,
+	Syringe,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
-
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { Button } from "@/components/ui/button";
@@ -125,39 +134,37 @@ export function VisitCard({
 							)}
 
 							<p className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-								<Calendar className="h-3.5 w-3.5" />
+								<Calendar className="h-3.5 w-3.5 shrink-0" />
 								{formatDate(visit.visitTime)}
 							</p>
 
 							{/* Treatment Acts Summary */}
 							{visit.acts.length > 0 && (
-								<div className="mb-2 flex flex-wrap gap-2">
-									{visit.acts.slice(0, 3).map((act, idx) => (
+								<div className="mb-2 space-y-1.5">
+									{visit.acts.map((act) => (
 										<div
-											key={idx}
-											className="bg-background/50 flex items-center gap-2 rounded-lg
-												px-2.5 py-1"
+											key={act.id}
+											className="flex w-fit items-center justify-start gap-3 rounded-lg
+												py-1.5"
 										>
-											<span className="text-muted-foreground text-xs">
+											<Syringe className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+											<p className="text-muted-foreground shrink-0 text-xs font-medium">
 												{act.visitType.name}
-											</span>
-											<ToothBadge teeth={act.teeth} />
+											</p>
+											<div className="[&>div]:flex-nowrap [&>div]:justify-end">
+												<ToothBadge teeth={act.teeth} />
+											</div>
 										</div>
 									))}
-									{visit.acts.length > 3 && (
-										<span
-											className="text-muted-foreground bg-background/50 flex
-												items-center rounded-lg px-2.5 py-1 text-xs"
-										>
-											+{visit.acts.length - 3} more
-										</span>
-									)}
 								</div>
 							)}
 
 							{/* Notes */}
 							{visit.notes && (
-								<p className="text-muted-foreground line-clamp-2 text-sm">{visit.notes}</p>
+								<div className="text-muted-foreground flex items-start gap-2 text-sm">
+									<FileText className="h-3.5 w-3.5 shrink-0" />
+									<p className="line-clamp-2 text-sm">{visit.notes}</p>
+								</div>
 							)}
 						</div>
 					</div>
@@ -250,7 +257,7 @@ export function VisitCard({
 										className="flex h-6 w-6 items-center justify-center rounded-lg
 											bg-amber-500/10"
 									>
-										<AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+										<AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600" />
 									</div>
 									<span className="text-xs font-medium text-amber-600/70">
 										{t("visits.remaining")}
@@ -283,7 +290,7 @@ export function VisitCard({
 									className="flex h-6 w-6 items-center justify-center rounded-lg
 										bg-emerald-500/10"
 								>
-									<CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+									<CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
 								</div>
 								<span className="text-xs font-medium text-emerald-600/70">
 									{t("visits.paid")}
