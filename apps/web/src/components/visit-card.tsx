@@ -161,7 +161,7 @@ export function VisitCard({
 
 							{/* Notes */}
 							{visit.notes && (
-								<div className="text-muted-foreground flex items-start gap-2 text-sm">
+								<div className="text-muted-foreground flex items-center gap-2 text-sm">
 									<FileText className="h-3.5 w-3.5 shrink-0" />
 									<p className="line-clamp-2 text-sm">{visit.notes}</p>
 								</div>

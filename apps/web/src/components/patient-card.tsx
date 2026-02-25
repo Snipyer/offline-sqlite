@@ -1,4 +1,14 @@
-import { Calendar, CreditCard, Phone, User, ChevronRight, Clock } from "lucide-react";
+import {
+	Calendar,
+	CalendarDays,
+	CreditCard,
+	Phone,
+	User,
+	ChevronRight,
+	Clock,
+	MapPin,
+	VenusAndMars,
+} from "lucide-react";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 import { cn } from "@/lib/utils";
@@ -149,19 +159,36 @@ export function PatientCard({
 						{/* Patient details row */}
 						<div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
 							<div className="bg-muted flex items-center gap-1.5 rounded-lg px-2.5 py-1">
+								<CalendarDays className="text-muted-foreground h-3.5 w-3.5" />
 								<span className="text-muted-foreground text-xs">{t("patients.age")}</span>
 								<span className="font-medium">{patient.age}</span>
 							</div>
 							<div className="bg-muted flex items-center gap-1.5 rounded-lg px-2.5 py-1">
+								<VenusAndMars className="text-muted-foreground h-3.5 w-3.5" />
 								<span className="text-muted-foreground text-xs">{t("patients.sex")}</span>
 								<span className="font-medium">
 									{patient.sex === "M" ? t("patients.male") : t("patients.female")}
 								</span>
 							</div>
 							{patient.phone && (
-								<div className="flex items-center gap-1.5">
+								<div className="bg-muted flex items-center gap-1.5 rounded-lg px-2.5 py-1">
 									<Phone className="text-muted-foreground h-3.5 w-3.5" />
+									<span className="text-muted-foreground text-xs">
+										{t("patients.phone")}
+									</span>
 									<span className="font-medium">{patient.phone}</span>
+								</div>
+							)}
+							{patient.address && (
+								<div
+									className="bg-muted flex max-w-full items-center gap-1.5 rounded-lg px-2.5
+										py-1"
+								>
+									<MapPin className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+									<span className="text-muted-foreground text-xs">
+										{t("patients.address")}
+									</span>
+									<span className="truncate font-medium">{patient.address}</span>
 								</div>
 							)}
 						</div>
