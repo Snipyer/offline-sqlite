@@ -1,6 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "./index.css";
 import {
 	isRouteErrorResponse,
@@ -107,7 +106,6 @@ export default function App() {
 						<ScrollToTopButton />
 						<Toaster richColors />
 					</ThemeProvider>
-					<ReactQueryDevtools position="bottom" buttonPosition="bottom-left" />
 				</QueryClientProvider>
 			</DirectionProvider>
 		</I18nextProvider>
