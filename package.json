@@ -36,7 +36,6 @@
 	"dependencies": {
 		"@offline-sqlite/env": "workspace:*",
 		"dotenv": "catalog:",
-		"motion": "^12.34.1",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

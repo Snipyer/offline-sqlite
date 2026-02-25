@@ -15,7 +15,8 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Currency, useTranslation } from "@offline-sqlite/i18n";
+import { useTranslation } from "@offline-sqlite/i18n";
+import { Currency } from "@/components/currency";
 import { trpc } from "@/utils/trpc";
 import { toast } from "sonner";
 

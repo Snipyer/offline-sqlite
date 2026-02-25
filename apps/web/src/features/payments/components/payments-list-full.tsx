@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Loader from "@/components/loader";
+import { Currency } from "@/components/currency";
 import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
-import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { PaginationControls } from "@/components/pagination-controls";
 import { ListFilters } from "@/features/list-filters/components/list-filters";
 import {

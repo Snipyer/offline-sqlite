@@ -9,7 +9,8 @@ import {
 	MapPin,
 	VenusAndMars,
 } from "lucide-react";
-import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { Currency } from "@/components/currency";
 import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";

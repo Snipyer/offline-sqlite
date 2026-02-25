@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
-import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { Currency } from "@/components/currency";
 import { Button } from "@/components/ui/button";
 import { PaymentForm } from "@/features/payments/components/payment-form";
 import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";

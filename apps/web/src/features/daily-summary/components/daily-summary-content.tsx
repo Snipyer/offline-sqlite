@@ -3,9 +3,10 @@ import { Calendar, DollarSign, Clock, CreditCard, Users, Syringe } from "lucide-
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Currency } from "@/components/currency";
 import Loader from "@/components/loader";
 import { trpc } from "@/utils/trpc";
-import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
 import {
 	getSubtleListItemTransition,

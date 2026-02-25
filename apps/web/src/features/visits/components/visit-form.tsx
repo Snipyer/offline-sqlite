@@ -25,7 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
 import { ToothSelector } from "@/features/tooth-selector/components/tooth-selector";
 import { trpc } from "@/utils/trpc";
-import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { Currency } from "@/components/currency";
 import { toast } from "sonner";
 
 type Sex = "M" | "F";
