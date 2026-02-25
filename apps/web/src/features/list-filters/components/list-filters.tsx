@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Search } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateRangePicker } from "@/features/list-filters/components/date-range-picker";
 import { type DatePreset, getPresetDateRange } from "@/features/list-filters/utils/date-filters";
+import { useDebouncedCallback } from "@/hooks/use-debounce";
 import { useTranslation } from "@offline-sqlite/i18n";
 
 interface ListFiltersProps {
@@ -23,6 +24,7 @@ interface ListFiltersProps {
 }
 
 const DATE_PRESETS: DatePreset[] = ["yesterday", "lastWeek", "lastMonth"];
+const SEARCH_DEBOUNCE_MS = 500;
 
 export function ListFilters({
 	searchValue,
@@ -38,6 +40,12 @@ export function ListFilters({
 }: ListFiltersProps) {
 	const { t } = useTranslation();
 	const [showMore, setShowMore] = useState(false);
+	const [immediateSearch, setImmediateSearch] = useState(searchValue);
+	const debouncedOnSearchChange = useDebouncedCallback(onSearchChange, SEARCH_DEBOUNCE_MS);
+
+	useEffect(() => {
+		setImmediateSearch(searchValue);
+	}, [searchValue]);
 
 	const handlePresetSelect = (preset: DatePreset) => {
 		if (datePreset === preset) {
@@ -88,8 +96,12 @@ export function ListFilters({
 						-translate-y-1/2"
 				/>
 				<Input
-					value={searchValue}
-					onChange={(event) => onSearchChange(event.target.value)}
+					value={immediateSearch}
+					onChange={(event) => {
+						const nextValue = event.target.value;
+						setImmediateSearch(nextValue);
+						debouncedOnSearchChange(nextValue);
+					}}
 					placeholder={searchPlaceholder}
 					className="min-h-12 pl-9"
 				/>
