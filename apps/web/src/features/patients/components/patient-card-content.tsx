@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
 import { getVisitColor } from "@/utils/visit-colors";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
-import { VisitCard } from "@/components/visit-card";
+import { VisitCard } from "@/features/visits/components/visit-card";
 import { useDirection } from "@base-ui/react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 

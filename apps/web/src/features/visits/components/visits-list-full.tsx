@@ -19,7 +19,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { VisitCard } from "@/components/visit-card";
+import { VisitCard } from "@/features/visits/components/visit-card";
 import { ListFilters } from "@/features/list-filters/components/list-filters";
 import { MultiSelectDropdown } from "@/features/list-filters/components/multi-select-dropdown";
 import {

@@ -11,12 +11,12 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
-import { ToothBadge } from "@/features/tooth-selector/components/tooth-selector";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { Button } from "@/components/ui/button";
 import { PaymentForm } from "@/features/payments/components/payment-form";
 import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 import { cn } from "@/lib/utils";
+import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
 
 export interface Visit {
 	id: string;
@@ -85,7 +85,6 @@ export function VisitCard({
 				className,
 			)}
 		>
-			{/* Hover gradient */}
 			<div
 				className="from-primary/5 pointer-events-none absolute inset-0 bg-linear-to-br via-transparent
 					to-transparent opacity-0 transition-opacity group-hover:opacity-100"
@@ -94,7 +93,6 @@ export function VisitCard({
 			<div className="relative">
 				<div className="flex items-start justify-between gap-4">
 					<div className="flex items-start gap-4">
-						{/* Avatar - shown when patient info is displayed */}
 						{showPatient && visit.patient && (
 							<div
 								className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center
@@ -104,9 +102,7 @@ export function VisitCard({
 							</div>
 						)}
 
-						{/* Main Content */}
 						<div className="min-w-0 flex-1">
-							{/* Patient name (when shown) */}
 							{showPatient && visit.patient && (
 								<div className="mb-1 flex items-center gap-2">
 									<h3 className="truncate text-lg font-semibold">{visit.patient.name}</h3>
@@ -121,7 +117,6 @@ export function VisitCard({
 								</div>
 							)}
 
-							{/* Date - show without patient name */}
 							{(!showPatient || !visit.patient) && visit.isDeleted && (
 								<div className="mb-1 flex items-center gap-2">
 									<span
@@ -138,7 +133,6 @@ export function VisitCard({
 								{formatDate(visit.visitTime)}
 							</p>
 
-							{/* Treatment Acts Summary */}
 							{visit.acts.length > 0 && (
 								<div className="mb-2 space-y-1.5">
 									{visit.acts.map((act) => (
@@ -159,7 +153,6 @@ export function VisitCard({
 								</div>
 							)}
 
-							{/* Notes */}
 							{visit.notes && (
 								<div className="text-muted-foreground flex items-center gap-2 text-sm">
 									<FileText className="h-3.5 w-3.5 shrink-0" />
@@ -169,10 +162,8 @@ export function VisitCard({
 						</div>
 					</div>
 
-					{/* Actions - Top Right */}
 					{showActions && (
 						<div className="flex shrink-0 gap-1">
-							{/* Pay button - only in sheet */}
 							{!visit.isDeleted && patientId && visit.amountLeft > 0 && (
 								<PaymentForm
 									visitId={visit.id}
@@ -186,7 +177,6 @@ export function VisitCard({
 								</PaymentForm>
 							)}
 
-							{/* Edit */}
 							{!visit.isDeleted &&
 								(editLink ? (
 									<Link to={editLink}>
@@ -214,7 +204,6 @@ export function VisitCard({
 									</Button>
 								) : null)}
 
-							{/* Restore/Delete */}
 							{onRestore && visit.isDeleted ? (
 								<Button
 									variant="ghost"
@@ -246,9 +235,7 @@ export function VisitCard({
 					)}
 				</div>
 
-				{/* Bottom Row - Payment Status on Left */}
 				<div className="border-border/50 mt-4 flex items-center justify-between border-t pt-4">
-					{/* Payment Status - Bottom Left */}
 					{visit.amountLeft > 0 ? (
 						<>
 							<div className="flex items-center gap-3">
@@ -306,7 +293,6 @@ export function VisitCard({
 		</motion.div>
 	);
 
-	// If border is shown, wrap with border container
 	if (showBorder && borderColor) {
 		return (
 			<div className="relative">
