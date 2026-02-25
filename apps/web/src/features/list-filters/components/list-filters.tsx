@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,11 @@ export function ListFilters({
 		onDateRangeChange(range);
 	};
 
+	const handleClearSearch = () => {
+		setImmediateSearch("");
+		debouncedOnSearchChange("");
+	};
+
 	return (
 		<div className="mb-6 space-y-4 rounded-xl bg-transparent">
 			<div className="flex flex-wrap items-center justify-between gap-2">
@@ -103,8 +108,20 @@ export function ListFilters({
 						debouncedOnSearchChange(nextValue);
 					}}
 					placeholder={searchPlaceholder}
-					className="min-h-12 pl-9"
+					className="min-h-12 pr-10 pl-9"
 				/>
+				{immediateSearch.length > 0 && (
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon"
+						onClick={handleClearSearch}
+						aria-label={t("listFilters.clearSearch")}
+						className="absolute top-1/2 right-2 h-7 w-7 -translate-y-1/2 cursor-pointer"
+					>
+						<X className="h-4 w-4" />
+					</Button>
+				)}
 			</div>
 
 			{showMore && (

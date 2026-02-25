@@ -89,6 +89,7 @@
 		"sortBy": "ترتيب حسب",
 		"selectDateRange": "اختر نطاق التاريخ",
 		"clearFilters": "مسح عوامل التصفية",
+		"clearSearch": "مسح البحث",
 		"searchNameLocationPhone": "ابحث بالاسم أو الموقع أو الهاتف...",
 		"searchNameLocationPhoneNote": "ابحث بالاسم أو الموقع أو الهاتف أو الملاحظة..."
 	},

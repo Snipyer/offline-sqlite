@@ -89,6 +89,7 @@
 		"sortBy": "Trier par",
 		"selectDateRange": "Sélectionner la période",
 		"clearFilters": "Effacer les filtres",
+		"clearSearch": "Effacer la recherche",
 		"searchNameLocationPhone": "Rechercher par nom, lieu ou téléphone...",
 		"searchNameLocationPhoneNote": "Rechercher par nom, lieu, téléphone ou note..."
 	},
