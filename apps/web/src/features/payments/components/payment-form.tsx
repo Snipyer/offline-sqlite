@@ -42,6 +42,18 @@ export function PaymentForm({
 	const [amount, setAmount] = useState("");
 	const [notes, setNotes] = useState("");
 
+	const resetForm = () => {
+		setAmount("");
+		setNotes("");
+	};
+
+	const handleOpenChange = (nextOpen: boolean) => {
+		setOpen(nextOpen);
+		if (!nextOpen) {
+			resetForm();
+		}
+	};
+
 	const remainingBalance = totalAmount - totalPaid;
 	const amountNumber = Number(amount);
 
@@ -58,11 +70,15 @@ export function PaymentForm({
 				queryClient.invalidateQueries({
 					queryKey: trpc.patient.listWithFilters.queryKey(),
 				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.visit.list.queryKey(),
+				});
 				if (patientId) {
 					queryClient.invalidateQueries({
 						queryKey: trpc.payment.listByPatient.queryKey({ patientId }),
 					});
 				}
+				resetForm();
 				setOpen(false);
 				onSuccess?.();
 			},
@@ -83,7 +99,7 @@ export function PaymentForm({
 	};
 
 	return (
-		<AlertDialog open={open} onOpenChange={setOpen}>
+		<AlertDialog open={open} onOpenChange={handleOpenChange}>
 			<AlertDialogTrigger>{children}</AlertDialogTrigger>
 			<AlertDialogContent>
 				<form onSubmit={handleSubmit}>

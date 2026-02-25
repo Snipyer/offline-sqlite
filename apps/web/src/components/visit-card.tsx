@@ -62,6 +62,7 @@ export function VisitCard({
 	className,
 }: VisitCardProps) {
 	const { t } = useTranslation();
+	const resolvedPatientId = patientId ?? visit.patient?.id;
 
 	const content = (
 		<motion.div
@@ -242,25 +243,39 @@ export function VisitCard({
 				<div className="border-border/50 mt-4 flex items-center justify-between border-t pt-4">
 					{/* Payment Status - Bottom Left */}
 					{visit.amountLeft > 0 ? (
-						<div className="flex items-center gap-3">
-							<div className="flex items-center gap-1.5">
-								<div
-									className="flex h-6 w-6 items-center justify-center rounded-lg
-										bg-amber-500/10"
-								>
-									<AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+						<>
+							<div className="flex items-center gap-3">
+								<div className="flex items-center gap-1.5">
+									<div
+										className="flex h-6 w-6 items-center justify-center rounded-lg
+											bg-amber-500/10"
+									>
+										<AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+									</div>
+									<span className="text-xs font-medium text-amber-600/70">
+										{t("visits.remaining")}
+									</span>
 								</div>
-								<span className="text-xs font-medium text-amber-600/70">
-									{t("visits.remaining")}
+								<span className="text-lg font-bold text-amber-600">
+									<Currency value={visit.amountLeft} />
+								</span>
+								<span className="text-muted-foreground text-sm">
+									/ <Currency value={visit.totalAmount} size="sm" />
 								</span>
 							</div>
-							<span className="text-lg font-bold text-amber-600">
-								<Currency value={visit.amountLeft} />
-							</span>
-							<span className="text-muted-foreground text-sm">
-								/ <Currency value={visit.totalAmount} size="sm" />
-							</span>
-						</div>
+							{showPatient && !visit.isDeleted && resolvedPatientId && (
+								<PaymentForm
+									visitId={visit.id}
+									totalAmount={visit.totalAmount}
+									totalPaid={visit.amountPaid}
+									patientId={resolvedPatientId}
+								>
+									<Button variant="default" size="sm" className="cursor-pointer">
+										{t("payments.pay")}
+									</Button>
+								</PaymentForm>
+							)}
+						</>
 					) : (
 						<div className="flex items-center gap-3">
 							<div className="flex items-center gap-1.5">
