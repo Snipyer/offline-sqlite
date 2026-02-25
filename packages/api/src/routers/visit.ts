@@ -1,6 +1,13 @@
 import { db } from "@offline-sqlite/db";
-import { visit, visitAct, visitActTooth, patient, visitType } from "@offline-sqlite/db/schema/dental";
-import { eq, and, like, gte, lte, desc, sql } from "drizzle-orm";
+import {
+	visit,
+	visitAct,
+	visitActTooth,
+	patient,
+	visitType,
+	payment,
+} from "@offline-sqlite/db/schema/dental";
+import { eq, and, like, gte, lte, desc, asc, sql, or, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
@@ -33,7 +40,10 @@ const visitFilterSchema = z.object({
 	dateFrom: z.number().optional(),
 	dateTo: z.number().optional(),
 	patientName: z.string().optional(),
-	visitTypeId: z.string().optional(),
+	query: z.string().optional(),
+	visitTypeIds: z.array(z.string()).optional(),
+	hasUnpaid: z.boolean().optional(),
+	sortBy: z.enum(["dateDesc", "dateAsc", "patientNameAsc", "patientNameDesc"]).optional(),
 	page: z.number().int().min(1).default(1),
 	pageSize: z.number().int().min(1).max(100).default(10),
 });
@@ -73,6 +83,18 @@ async function getVisitWithPaymentData(
 
 export const visitRouter = router({
 	list: protectedProcedure.input(visitFilterSchema).query(async ({ ctx, input }) => {
+		const textQuery = input.query ?? input.patientName;
+		const sortBy = input.sortBy ?? "dateDesc";
+
+		const orderByClause =
+			sortBy === "dateAsc"
+				? asc(visit.visitTime)
+				: sortBy === "patientNameAsc"
+					? asc(patient.name)
+					: sortBy === "patientNameDesc"
+						? desc(patient.name)
+						: desc(visit.visitTime);
+
 		let visitQuery = db
 			.select({
 				visit: visit,
@@ -86,22 +108,59 @@ export const visitRouter = router({
 					eq(visit.isDeleted, false),
 					input.dateFrom !== undefined ? gte(visit.visitTime, input.dateFrom) : undefined,
 					input.dateTo !== undefined ? lte(visit.visitTime, input.dateTo) : undefined,
-					input.patientName !== undefined && input.patientName.length > 0
-						? like(patient.name, `%${input.patientName}%`)
+					textQuery !== undefined && textQuery.length > 0
+						? or(
+								like(patient.name, `%${textQuery}%`),
+								like(patient.phone, `%${textQuery}%`),
+								like(patient.address, `%${textQuery}%`),
+								like(visit.notes, `%${textQuery}%`),
+							)
 						: undefined,
 				),
 			)
-			.orderBy(desc(visit.visitTime));
+			.orderBy(orderByClause);
 
 		let visits = await visitQuery;
 
-		if (input.visitTypeId !== undefined) {
+		if (input.visitTypeIds !== undefined && input.visitTypeIds.length > 0) {
 			const actsWithType = await db
 				.select({ visitId: visitAct.visitId })
 				.from(visitAct)
-				.where(eq(visitAct.visitTypeId, input.visitTypeId));
+				.where(inArray(visitAct.visitTypeId, input.visitTypeIds));
 			const visitIds = actsWithType.map((a) => a.visitId);
 			visits = visits.filter((v) => visitIds.includes(v.visit.id));
+		}
+
+		if (input.hasUnpaid === true && visits.length > 0) {
+			const visitIds = visits.map((entry) => entry.visit.id);
+
+			const actTotals = await db
+				.select({
+					visitId: visitAct.visitId,
+					totalAmount: sql<number>`coalesce(sum(${visitAct.price}), 0)`,
+				})
+				.from(visitAct)
+				.where(inArray(visitAct.visitId, visitIds))
+				.groupBy(visitAct.visitId);
+
+			const paidTotals = await db
+				.select({
+					visitId: payment.visitId,
+					totalPaid: sql<number>`coalesce(sum(${payment.amount}), 0)`,
+				})
+				.from(payment)
+				.where(and(eq(payment.userId, ctx.session.user.id), inArray(payment.visitId, visitIds)))
+				.groupBy(payment.visitId);
+
+			const totalByVisitId = new Map(actTotals.map((row) => [row.visitId, row.totalAmount]));
+			const paidByVisitId = new Map(paidTotals.map((row) => [row.visitId, row.totalPaid]));
+
+			visits = visits.filter((entry) => {
+				const totalAmount = totalByVisitId.get(entry.visit.id) ?? 0;
+				const totalPaid = paidByVisitId.get(entry.visit.id) ?? 0;
+
+				return totalAmount - totalPaid > 0;
+			});
 		}
 
 		const total = visits.length;

@@ -9,14 +9,17 @@ import { getVisitTotalPaid } from "../utils/payment";
 const generateId = () => crypto.randomUUID();
 
 const sexEnum = z.enum(["M", "F"]);
+const patientSortEnum = z.enum(["lastVisitDesc", "nameAsc", "nameDesc", "unpaidDesc"]);
 
 const patientFilterSchema = z.object({
 	sex: sexEnum.optional(),
 	dateFrom: z.number().optional(),
 	dateTo: z.number().optional(),
-	visitTypeId: z.string().optional(),
+	visitTypeIds: z.array(z.string()).optional(),
 	hasUnpaid: z.boolean().optional(),
 	name: z.string().optional(),
+	query: z.string().optional(),
+	sortBy: patientSortEnum.optional(),
 	page: z.number().int().min(1).default(1),
 	pageSize: z.number().int().min(1).max(100).default(10),
 });
@@ -161,9 +164,16 @@ export const patientRouter = router({
 
 		let filtered = visitsData.filter((v) => v.lastVisit !== null);
 
-		if (input.name) {
-			filtered = filtered.filter((v) =>
-				v.patient.name.toLowerCase().includes(input.name!.toLowerCase()),
+		const textQuery = input.query ?? input.name;
+
+		if (textQuery) {
+			const lowered = textQuery.toLowerCase();
+			filtered = filtered.filter(
+				(v) =>
+					v.patient.name.toLowerCase().includes(lowered) ||
+					(v.patient.phone?.toLowerCase().includes(lowered) ?? false) ||
+					(v.patient.address?.toLowerCase().includes(lowered) ?? false) ||
+					v.visits.some((visit) => visit.notes?.toLowerCase().includes(lowered) ?? false),
 			);
 		}
 
@@ -183,9 +193,11 @@ export const patientRouter = router({
 			);
 		}
 
-		if (input.visitTypeId !== undefined) {
+		if (input.visitTypeIds !== undefined && input.visitTypeIds.length > 0) {
+			const selectedVisitTypeIds = new Set(input.visitTypeIds);
+
 			filtered = filtered.filter((v) =>
-				v.visits.some((visit) => visit.acts.some((act) => act.visitTypeId === input.visitTypeId)),
+				v.visits.some((visit) => visit.acts.some((act) => selectedVisitTypeIds.has(act.visitTypeId))),
 			);
 		}
 
@@ -193,7 +205,21 @@ export const patientRouter = router({
 			filtered = filtered.filter((v) => v.totalUnpaid > 0);
 		}
 
+		const sortBy = input.sortBy ?? "lastVisitDesc";
+
 		filtered.sort((a, b) => {
+			if (sortBy === "nameAsc") {
+				return a.patient.name.localeCompare(b.patient.name);
+			}
+
+			if (sortBy === "nameDesc") {
+				return b.patient.name.localeCompare(a.patient.name);
+			}
+
+			if (sortBy === "unpaidDesc") {
+				return b.totalUnpaid - a.totalUnpaid;
+			}
+
 			if (a.lastVisit === null || a.lastVisit === undefined) return 1;
 			if (b.lastVisit === null || b.lastVisit === undefined) return -1;
 			return b.lastVisit.visitTime - a.lastVisit.visitTime;

@@ -1,31 +1,52 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { User, Users, Filter, X } from "lucide-react";
+import { User, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import Loader from "@/components/loader";
-import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
-import { trpc } from "@/utils/trpc";
-import { useTranslation } from "@offline-sqlite/i18n";
-import { PatientCard } from "@/components/patient-card";
-import { PatientsFilter, type PatientFilters } from "./patients-filter";
-import { PatientSheet } from "./patient-sheet";
 import { PaginationControls } from "@/components/pagination-controls";
+import { PatientCard } from "@/components/patient-card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ListFilters } from "@/features/list-filters/components/list-filters";
+import { MultiSelectDropdown } from "@/features/list-filters/components/multi-select-dropdown";
+import {
+	fromTimestampsToDateRange,
+	toTimestampRange,
+	type DatePreset,
+} from "@/features/list-filters/utils/date-filters";
+import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
+import { useTranslation } from "@offline-sqlite/i18n";
+import { trpc } from "@/utils/trpc";
+
+import { PatientSheet } from "./patient-sheet";
+
+interface PatientFilters {
+	sex: string;
+	dateFrom?: number;
+	dateTo?: number;
+	visitTypeIds: string[];
+	hasUnpaid: boolean;
+	query: string;
+	sortBy: "lastVisitDesc" | "nameAsc" | "nameDesc" | "unpaidDesc";
+}
 
 const emptyFilters: PatientFilters = {
 	sex: "",
-	dateFrom: "",
-	dateTo: "",
-	visitTypeId: "",
+	dateFrom: undefined,
+	dateTo: undefined,
+	visitTypeIds: [],
 	hasUnpaid: false,
-	name: "",
+	query: "",
+	sortBy: "lastVisitDesc",
 };
 
 export function PatientsList() {
 	const { t } = useTranslation();
-	const [showFilters, setShowFilters] = useState(false);
 	const [filters, setFilters] = useState<PatientFilters>(emptyFilters);
+	const [datePreset, setDatePreset] = useState<DatePreset | null>(null);
 	const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const pageSize = 10;
@@ -35,11 +56,12 @@ export function PatientsList() {
 	const patients = useQuery({
 		...trpc.patient.listWithFilters.queryOptions({
 			sex: filters.sex ? (filters.sex as "M" | "F") : undefined,
-			dateFrom: filters.dateFrom ? new Date(filters.dateFrom).getTime() : undefined,
-			dateTo: filters.dateTo ? new Date(filters.dateTo).getTime() : undefined,
-			visitTypeId: filters.visitTypeId || undefined,
+			dateFrom: filters.dateFrom,
+			dateTo: filters.dateTo,
+			visitTypeIds: filters.visitTypeIds.length > 0 ? filters.visitTypeIds : undefined,
 			hasUnpaid: filters.hasUnpaid || undefined,
-			name: filters.name || undefined,
+			query: filters.query || undefined,
+			sortBy: filters.sortBy,
 			page,
 			pageSize,
 		}),
@@ -48,20 +70,45 @@ export function PatientsList() {
 
 	useEffect(() => {
 		setPage(1);
-	}, [filters.sex, filters.dateFrom, filters.dateTo, filters.visitTypeId, filters.hasUnpaid, filters.name]);
+	}, [
+		filters.sex,
+		filters.dateFrom,
+		filters.dateTo,
+		filters.visitTypeIds,
+		filters.hasUnpaid,
+		filters.query,
+		filters.sortBy,
+	]);
 
 	const clearFilters = () => {
 		setFilters(emptyFilters);
+		setDatePreset(null);
 	};
 
 	const hasActiveFilters = Boolean(
 		filters.sex ||
 		filters.dateFrom ||
 		filters.dateTo ||
-		filters.visitTypeId ||
+		filters.visitTypeIds.length > 0 ||
 		filters.hasUnpaid ||
-		filters.name,
+		filters.query ||
+		filters.sortBy !== "lastVisitDesc",
 	);
+
+	const dateRange = fromTimestampsToDateRange(filters.dateFrom, filters.dateTo);
+
+	const patientSortLabelByValue: Record<PatientFilters["sortBy"], string> = {
+		lastVisitDesc: t("patients.sortLastVisitNewest"),
+		nameAsc: t("patients.sortNameAsc"),
+		nameDesc: t("patients.sortNameDesc"),
+		unpaidDesc: t("patients.sortUnpaidHighest"),
+	};
+
+	const visitTypeOptions =
+		visitTypes.data?.map((visitType) => ({
+			value: visitType.id,
+			label: visitType.name,
+		})) ?? [];
 
 	return (
 		<motion.div
@@ -71,7 +118,6 @@ export function PatientsList() {
 			animate="visible"
 			className="container mx-auto max-w-5xl px-4 py-8"
 		>
-			{/* Header */}
 			<motion.div variants={pageItemVariants} className="mb-8">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
@@ -88,71 +134,124 @@ export function PatientsList() {
 
 			<motion.div variants={sectionFadeVariants}>
 				<Card className="border-border/50 overflow-hidden">
-					<CardHeader className="pb-4">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-3">
-								<div
-									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-violet-500/10"
-								>
-									<User className="h-5 w-5 text-violet-500" />
-								</div>
-								<CardTitle className="text-base font-semibold">
-									{t("patients.allPatients")}
-								</CardTitle>
-							</div>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setShowFilters(!showFilters)}
-								className="gap-2"
-							>
-								<Filter className="h-4 w-4" />
-								{t("patients.filters")}
-								{hasActiveFilters && (
-									<span
-										className="bg-primary text-primary-foreground ml-2 rounded-full px-2
-											py-0.5 text-xs"
-									>
-										!
-									</span>
-								)}
-							</Button>
-						</div>
-					</CardHeader>
 					<CardContent>
-						{showFilters && (
-							<motion.div
-								initial={{ opacity: 0, height: 0 }}
-								animate={{ opacity: 1, height: "auto" }}
-								exit={{ opacity: 0, height: 0 }}
-								className="border-border/50 bg-muted/30 mb-6 rounded-xl border p-4"
-							>
-								<div className="mb-4 flex items-center justify-between">
-									<h3 className="font-medium">{t("patients.filterPatients")}</h3>
-									{hasActiveFilters && (
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={clearFilters}
-											className="gap-1"
+						<ListFilters
+							searchValue={filters.query}
+							onSearchChange={(value) => setFilters((prev) => ({ ...prev, query: value }))}
+							searchPlaceholder={t("listFilters.searchNameLocationPhone")}
+							datePreset={datePreset}
+							onDatePresetChange={setDatePreset}
+							dateRange={dateRange}
+							onDateRangeChange={(range) => {
+								const nextRange = toTimestampRange(range);
+								setFilters((prev) => ({
+									...prev,
+									dateFrom: nextRange.dateFrom,
+									dateTo: nextRange.dateTo,
+								}));
+							}}
+							hasActiveFilters={hasActiveFilters}
+							onClearFilters={clearFilters}
+							moreFilters={
+								<>
+									<div>
+										<Label className="text-sm font-light">{t("patients.sex")}</Label>
+										<Select
+											value={filters.sex || "all"}
+											onValueChange={(value) => {
+												const nextValue = value ?? "all";
+												setFilters((prev) => ({
+													...prev,
+													sex: nextValue === "all" ? "" : nextValue,
+												}));
+											}}
 										>
-											<X className="h-3 w-3" />
-											{t("patients.clearFilters")}
+											<SelectTrigger className="mt-1.5 w-full">
+												<SelectValue>
+													{filters.sex === "M"
+														? t("patients.male")
+														: filters.sex === "F"
+															? t("patients.female")
+															: t("patients.allSexes")}
+												</SelectValue>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="all">{t("patients.allSexes")}</SelectItem>
+												<SelectItem value="M">{t("patients.male")}</SelectItem>
+												<SelectItem value="F">{t("patients.female")}</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+
+									<div>
+										<Label className="text-sm font-light">
+											{t("patients.visitType")}
+										</Label>
+										<MultiSelectDropdown
+											value={filters.visitTypeIds}
+											onValueChange={(visitTypeIds) =>
+												setFilters((prev) => ({ ...prev, visitTypeIds }))
+											}
+											options={visitTypeOptions}
+											placeholder={t("patients.allTypes")}
+										/>
+									</div>
+
+									<div>
+										<Label className="text-sm font-light">
+											{t("listFilters.sortBy")}
+										</Label>
+										<Select
+											value={filters.sortBy}
+											onValueChange={(value) => {
+												const nextValue = (value ??
+													"lastVisitDesc") as PatientFilters["sortBy"];
+												setFilters((prev) => ({
+													...prev,
+													sortBy: nextValue,
+												}));
+											}}
+										>
+											<SelectTrigger className="mt-1.5 w-full">
+												<SelectValue>
+													{patientSortLabelByValue[filters.sortBy]}
+												</SelectValue>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="lastVisitDesc">
+													{t("patients.sortLastVisitNewest")}
+												</SelectItem>
+												<SelectItem value="nameAsc">
+													{t("patients.sortNameAsc")}
+												</SelectItem>
+												<SelectItem value="nameDesc">
+													{t("patients.sortNameDesc")}
+												</SelectItem>
+												<SelectItem value="unpaidDesc">
+													{t("patients.sortUnpaidHighest")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+
+									<div className="mt-3 flex items-end sm:col-span-2 lg:col-span-1">
+										<Button
+											type="button"
+											variant={filters.hasUnpaid ? "default" : "outline"}
+											size="default"
+											onClick={() =>
+												setFilters((prev) => ({
+													...prev,
+													hasUnpaid: !prev.hasUnpaid,
+												}))
+											}
+										>
+											{t("patients.hasUnpaid")}
 										</Button>
-									)}
-								</div>
-								<PatientsFilter
-									filters={filters}
-									onFilterChange={setFilters}
-									visitTypes={visitTypes.data ?? []}
-									hasActiveFilters={hasActiveFilters}
-									onClearFilters={clearFilters}
-									showFilters={showFilters}
-									onToggleFilters={() => setShowFilters(!showFilters)}
-								/>
-							</motion.div>
-						)}
+									</div>
+								</>
+							}
+						/>
 
 						{patients.isLoading ? (
 							<Loader className="h-64 pt-0" />

@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Loader2, Pencil, Plus, Trash2, X, Check, Syringe } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/loader";
 import {
@@ -17,6 +17,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
 	getSubtleListItemTransition,
 	pageContainerVariants,
@@ -35,15 +36,25 @@ export default function VisitTypes() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [formName, setFormName] = useState("");
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [query, setQuery] = useState("");
+	const [sortBy, setSortBy] = useState<"createdDesc" | "createdAsc" | "nameAsc" | "nameDesc">(
+		"createdDesc",
+	);
 	const [page, setPage] = useState(1);
 	const pageSize = 10;
 
 	const visitTypes = useQuery(
 		trpc.visitType.listPaginated.queryOptions({
+			query: query || undefined,
+			sortBy,
 			page,
 			pageSize,
 		}),
 	);
+
+	useEffect(() => {
+		setPage(1);
+	}, [query, sortBy]);
 
 	const createMutation = useMutation(
 		trpc.visitType.create.mutationOptions({
@@ -113,6 +124,20 @@ export default function VisitTypes() {
 		setFormName("");
 	};
 
+	const clearFilters = () => {
+		setQuery("");
+		setSortBy("createdDesc");
+	};
+
+	const hasActiveFilters = query.trim().length > 0 || sortBy !== "createdDesc";
+
+	const visitTypeSortLabelByValue: Record<typeof sortBy, string> = {
+		createdDesc: t("visitTypes.sortNewest"),
+		createdAsc: t("visitTypes.sortOldest"),
+		nameAsc: t("visitTypes.sortNameAsc"),
+		nameDesc: t("visitTypes.sortNameDesc"),
+	};
+
 	return (
 		<motion.div
 			id="visit-types-list-top"
@@ -146,6 +171,52 @@ export default function VisitTypes() {
 				<Card className="border-border/50 overflow-hidden">
 					<CardContent className="p-6">
 						<div className="space-y-4">
+							<div className="mb-6 grid gap-4 sm:grid-cols-2">
+								<div>
+									<Label className="text-sm font-light">
+										{t("visitTypes.searchLabel")}
+									</Label>
+									<Input
+										value={query}
+										onChange={(event) => setQuery(event.target.value)}
+										placeholder={t("visitTypes.searchPlaceholder")}
+										className="mt-1.5"
+									/>
+								</div>
+								<div>
+									<Label className="text-sm font-light">{t("listFilters.sortBy")}</Label>
+									<Select
+										value={sortBy}
+										onValueChange={(value) => setSortBy(value as typeof sortBy)}
+									>
+										<SelectTrigger className="mt-1.5 w-full">
+											<SelectValue>{visitTypeSortLabelByValue[sortBy]}</SelectValue>
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="createdDesc">
+												{t("visitTypes.sortNewest")}
+											</SelectItem>
+											<SelectItem value="createdAsc">
+												{t("visitTypes.sortOldest")}
+											</SelectItem>
+											<SelectItem value="nameAsc">
+												{t("visitTypes.sortNameAsc")}
+											</SelectItem>
+											<SelectItem value="nameDesc">
+												{t("visitTypes.sortNameDesc")}
+											</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+								{hasActiveFilters && (
+									<div className="sm:col-span-2">
+										<Button variant="ghost" size="sm" onClick={clearFilters}>
+											{t("listFilters.clearFilters")}
+										</Button>
+									</div>
+								)}
+							</div>
+
 							{isCreating && (
 								<motion.form
 									initial={{ opacity: 0, height: 0 }}

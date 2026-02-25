@@ -1,6 +1,6 @@
 import { db } from "@offline-sqlite/db";
 import { payment, visit, visitAct, patient, paymentMethodEnum } from "@offline-sqlite/db/schema/dental";
-import { eq, and, desc, like, sql } from "drizzle-orm";
+import { eq, and, desc, asc, like, sql, gte, lte, or } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
@@ -204,18 +204,58 @@ export const paymentRouter = router({
 		.input(
 			z.object({
 				patientName: z.string().optional(),
+				query: z.string().optional(),
+				dateFrom: z.number().optional(),
+				dateTo: z.number().optional(),
+				minAmount: z.number().int().min(0).optional(),
+				maxAmount: z.number().int().min(0).optional(),
+				sortBy: z
+					.enum([
+						"dateDesc",
+						"dateAsc",
+						"amountDesc",
+						"amountAsc",
+						"patientNameAsc",
+						"patientNameDesc",
+					])
+					.optional(),
 				page: z.number().int().min(1).default(1),
 				pageSize: z.number().int().min(1).max(100).default(10),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
-			const whereCondition = input.patientName
-				? and(
-						eq(payment.userId, ctx.session.user.id),
-						eq(visit.userId, ctx.session.user.id),
-						like(patient.name, `%${input.patientName}%`),
-					)
-				: and(eq(payment.userId, ctx.session.user.id), eq(visit.userId, ctx.session.user.id));
+			const textQuery = input.query ?? input.patientName;
+			const sortBy = input.sortBy ?? "dateDesc";
+
+			const orderByClause =
+				sortBy === "dateAsc"
+					? asc(payment.recordedAt)
+					: sortBy === "amountDesc"
+						? desc(payment.amount)
+						: sortBy === "amountAsc"
+							? asc(payment.amount)
+							: sortBy === "patientNameAsc"
+								? asc(patient.name)
+								: sortBy === "patientNameDesc"
+									? desc(patient.name)
+									: desc(payment.recordedAt);
+
+			const whereCondition = and(
+				eq(payment.userId, ctx.session.user.id),
+				eq(visit.userId, ctx.session.user.id),
+				input.dateFrom !== undefined ? gte(payment.recordedAt, new Date(input.dateFrom)) : undefined,
+				input.dateTo !== undefined ? lte(payment.recordedAt, new Date(input.dateTo)) : undefined,
+				input.minAmount !== undefined ? gte(payment.amount, input.minAmount) : undefined,
+				input.maxAmount !== undefined ? lte(payment.amount, input.maxAmount) : undefined,
+				textQuery && textQuery.length > 0
+					? or(
+							like(patient.name, `%${textQuery}%`),
+							like(patient.phone, `%${textQuery}%`),
+							like(patient.address, `%${textQuery}%`),
+							like(payment.notes, `%${textQuery}%`),
+						)
+					: undefined,
+			);
 
 			const offset = (input.page - 1) * input.pageSize;
 
@@ -237,7 +277,7 @@ export const paymentRouter = router({
 					.innerJoin(visit, eq(payment.visitId, visit.id))
 					.innerJoin(patient, eq(visit.patientId, patient.id))
 					.where(whereCondition)
-					.orderBy(desc(payment.recordedAt))
+					.orderBy(orderByClause)
 					.limit(input.pageSize)
 					.offset(offset),
 				db

@@ -1,35 +1,56 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Filter, X, CreditCard, Calendar, DollarSign } from "lucide-react";
+import { CreditCard, Calendar, DollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Loader from "@/components/loader";
 import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { trpc } from "@/utils/trpc";
 import { Currency, formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { PaginationControls } from "@/components/pagination-controls";
+import { ListFilters } from "@/features/list-filters/components/list-filters";
+import {
+	fromTimestampsToDateRange,
+	toTimestampRange,
+	type DatePreset,
+} from "@/features/list-filters/utils/date-filters";
 
 interface PaymentFilters {
-	patientName: string;
+	query: string;
+	dateFrom?: number;
+	dateTo?: number;
+	minAmount: string;
+	maxAmount: string;
+	sortBy: "dateDesc" | "dateAsc" | "amountDesc" | "amountAsc" | "patientNameAsc" | "patientNameDesc";
 }
 
 const emptyFilters: PaymentFilters = {
-	patientName: "",
+	query: "",
+	dateFrom: undefined,
+	dateTo: undefined,
+	minAmount: "",
+	maxAmount: "",
+	sortBy: "dateDesc",
 };
 
 export default function PaymentsList() {
 	const { t } = useTranslation();
-	const [showFilters, setShowFilters] = useState(false);
 	const [filters, setFilters] = useState<PaymentFilters>(emptyFilters);
+	const [datePreset, setDatePreset] = useState<DatePreset | null>(null);
 	const [page, setPage] = useState(1);
 	const pageSize = 10;
 
 	const payments = useQuery({
 		...trpc.payment.list.queryOptions({
-			patientName: filters.patientName || undefined,
+			query: filters.query || undefined,
+			dateFrom: filters.dateFrom,
+			dateTo: filters.dateTo,
+			minAmount: filters.minAmount ? Number(filters.minAmount) : undefined,
+			maxAmount: filters.maxAmount ? Number(filters.maxAmount) : undefined,
+			sortBy: filters.sortBy,
 			page,
 			pageSize,
 		}),
@@ -38,7 +59,14 @@ export default function PaymentsList() {
 
 	useEffect(() => {
 		setPage(1);
-	}, [filters.patientName]);
+	}, [
+		filters.query,
+		filters.dateFrom,
+		filters.dateTo,
+		filters.minAmount,
+		filters.maxAmount,
+		filters.sortBy,
+	]);
 
 	useEffect(() => {
 		if (payments.data && page > payments.data.totalPages) {
@@ -48,10 +76,27 @@ export default function PaymentsList() {
 
 	const clearFilters = () => {
 		setFilters(emptyFilters);
+		setDatePreset(null);
 	};
 
-	const hasActiveFilters = filters.patientName;
-	const listRenderKey = `${filters.patientName}:${payments.data?.page ?? page}`;
+	const hasActiveFilters =
+		filters.query ||
+		filters.dateFrom ||
+		filters.dateTo ||
+		filters.minAmount ||
+		filters.maxAmount ||
+		filters.sortBy !== "dateDesc";
+	const dateRange = fromTimestampsToDateRange(filters.dateFrom, filters.dateTo);
+	const listRenderKey = `${filters.query}:${filters.minAmount}:${filters.maxAmount}:${filters.sortBy}:${payments.data?.page ?? page}`;
+
+	const paymentSortLabelByValue: Record<PaymentFilters["sortBy"], string> = {
+		dateDesc: t("payments.sortDateNewest"),
+		dateAsc: t("payments.sortDateOldest"),
+		amountDesc: t("payments.sortAmountHigh"),
+		amountAsc: t("payments.sortAmountLow"),
+		patientNameAsc: t("payments.sortPatientNameAsc"),
+		patientNameDesc: t("payments.sortPatientNameDesc"),
+	};
 
 	return (
 		<motion.div
@@ -76,83 +121,105 @@ export default function PaymentsList() {
 
 			<motion.div variants={sectionFadeVariants}>
 				<Card className="border-border/50 overflow-hidden">
-					<CardHeader className="pb-4">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-3">
-								<div
-									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-emerald-500/10"
-								>
-									<CreditCard className="h-5 w-5 text-emerald-500" />
-								</div>
-								<CardTitle className="text-base font-semibold">
-									{t("payments.allPayments")}
-								</CardTitle>
-							</div>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setShowFilters(!showFilters)}
-								className="gap-2"
-							>
-								<Filter className="h-4 w-4" />
-								{t("payments.filters")}
-								{hasActiveFilters && (
-									<span
-										className="bg-primary text-primary-foreground ml-2 rounded-full px-2
-											py-0.5 text-xs"
-									>
-										!
-									</span>
-								)}
-							</Button>
-						</div>
-					</CardHeader>
 					<CardContent>
-						{showFilters && (
-							<motion.div
-								initial={{ opacity: 0, height: 0 }}
-								animate={{ opacity: 1, height: "auto" }}
-								exit={{ opacity: 0, height: 0 }}
-								className="border-border/50 bg-muted/30 mb-6 rounded-xl border p-4"
-							>
-								<div className="mb-4 flex items-center justify-between">
-									<h3 className="font-medium">{t("payments.filterPayments")}</h3>
-									{hasActiveFilters && (
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={clearFilters}
-											className="gap-1"
-										>
-											<X className="h-3 w-3" />
-											{t("payments.clearFilters")}
-										</Button>
-									)}
-								</div>
-								<div className="grid gap-4 sm:grid-cols-2">
+						<ListFilters
+							searchValue={filters.query}
+							onSearchChange={(value) => setFilters((prev) => ({ ...prev, query: value }))}
+							searchPlaceholder={t("listFilters.searchNameLocationPhoneNote")}
+							datePreset={datePreset}
+							onDatePresetChange={setDatePreset}
+							dateRange={dateRange}
+							onDateRangeChange={(range) => {
+								const nextRange = toTimestampRange(range);
+								setFilters((prev) => ({
+									...prev,
+									dateFrom: nextRange.dateFrom,
+									dateTo: nextRange.dateTo,
+								}));
+							}}
+							hasActiveFilters={Boolean(hasActiveFilters)}
+							onClearFilters={clearFilters}
+							moreFilters={
+								<>
 									<div>
-										<Label
-											className="text-muted-foreground text-xs font-medium
-												tracking-wider uppercase"
-										>
-											{t("payments.patient")}
+										<Label className="text-sm font-light">
+											{t("payments.minAmount")}
 										</Label>
 										<Input
-											value={filters.patientName}
-											onChange={(e) =>
+											type="number"
+											inputMode="numeric"
+											min={0}
+											value={filters.minAmount}
+											onChange={(event) =>
 												setFilters((prev) => ({
 													...prev,
-													patientName: e.target.value,
+													minAmount: event.target.value,
 												}))
 											}
-											placeholder={t("payments.searchPatient")}
 											className="mt-1.5"
 										/>
 									</div>
-								</div>
-							</motion.div>
-						)}
+									<div>
+										<Label className="text-sm font-light">
+											{t("payments.maxAmount")}
+										</Label>
+										<Input
+											type="number"
+											inputMode="numeric"
+											min={0}
+											value={filters.maxAmount}
+											onChange={(event) =>
+												setFilters((prev) => ({
+													...prev,
+													maxAmount: event.target.value,
+												}))
+											}
+											className="mt-1.5"
+										/>
+									</div>
+									<div>
+										<Label className="text-sm font-light">
+											{t("listFilters.sortBy")}
+										</Label>
+										<Select
+											value={filters.sortBy}
+											onValueChange={(value) =>
+												setFilters((prev) => ({
+													...prev,
+													sortBy: value as PaymentFilters["sortBy"],
+												}))
+											}
+										>
+											<SelectTrigger className="mt-1.5 w-full">
+												<SelectValue>
+													{paymentSortLabelByValue[filters.sortBy]}
+												</SelectValue>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="dateDesc">
+													{t("payments.sortDateNewest")}
+												</SelectItem>
+												<SelectItem value="dateAsc">
+													{t("payments.sortDateOldest")}
+												</SelectItem>
+												<SelectItem value="amountDesc">
+													{t("payments.sortAmountHigh")}
+												</SelectItem>
+												<SelectItem value="amountAsc">
+													{t("payments.sortAmountLow")}
+												</SelectItem>
+												<SelectItem value="patientNameAsc">
+													{t("payments.sortPatientNameAsc")}
+												</SelectItem>
+												<SelectItem value="patientNameDesc">
+													{t("payments.sortPatientNameDesc")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								</>
+							}
+						/>
 
 						{payments.isLoading ? (
 							<Loader className="h-64 pt-0" />
