@@ -76,7 +76,8 @@
 		"clear": "Clear",
 		"previous": "Previous",
 		"next": "Next",
-		"pageAria": "Go to page {{page}}"
+		"pageAria": "Go to page {{page}}",
+		"scrollToTop": "Scroll to top"
 	},
 	"listFilters": {
 		"yesterday": "Yesterday",

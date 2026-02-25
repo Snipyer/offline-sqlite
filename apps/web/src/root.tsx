@@ -23,6 +23,7 @@ import { cn } from "./lib/utils";
 import { AppSidebar } from "./components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
 import { authClient } from "./lib/auth-client";
+import { ScrollToTopButton } from "./components/scroll-to-top-button";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -103,9 +104,10 @@ export default function App() {
 						) : (
 							<Outlet />
 						)}
+						<ScrollToTopButton />
 						<Toaster richColors />
 					</ThemeProvider>
-					<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+					<ReactQueryDevtools position="bottom" buttonPosition="bottom-left" />
 				</QueryClientProvider>
 			</DirectionProvider>
 		</I18nextProvider>

@@ -76,7 +76,8 @@
 		"clear": "مسح",
 		"previous": "السابق",
 		"next": "التالي",
-		"pageAria": "الانتقال إلى الصفحة {{page}}"
+		"pageAria": "الانتقال إلى الصفحة {{page}}",
+		"scrollToTop": "التمرير إلى الأعلى"
 	},
 	"listFilters": {
 		"yesterday": "أمس",

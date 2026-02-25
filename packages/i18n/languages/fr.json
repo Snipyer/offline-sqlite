@@ -76,7 +76,8 @@
 		"clear": "Effacer",
 		"previous": "Précédent",
 		"next": "Suivant",
-		"pageAria": "Aller à la page {{page}}"
+		"pageAria": "Aller à la page {{page}}",
+		"scrollToTop": "Remonter en haut"
 	},
 	"listFilters": {
 		"yesterday": "Hier",
