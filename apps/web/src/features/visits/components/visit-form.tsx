@@ -119,7 +119,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 
 	const form = useForm({
 		defaultValues: {
-			patientId: "",
+			patientId: "new",
 			visitTime: new Date().toISOString().slice(0, 16),
 			notes: "",
 			acts: [
@@ -293,7 +293,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	};
 
 	const handleClearPatient = () => {
-		form.setFieldValue("patientId", "");
+		form.setFieldValue("patientId", "new");
 		setPatientSearch("");
 		setPatientFormData(emptyPatientData);
 	};
