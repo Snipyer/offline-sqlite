@@ -8,6 +8,27 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
+// ── Sidecar launch token verification (anti-extraction) ─────────
+if (process.env.TAURI_ENVIRONMENT === "true" && process.env.NODE_ENV === "production") {
+	const token = process.env.__TAURI_LAUNCH_TOKEN__;
+	const hash = process.env.__TAURI_LAUNCH_HASH__;
+	const secret = "offline-sqlite-sidecar-secret-v1";
+
+	if (!token || !hash) {
+		console.error("This server can only run inside the desktop application.");
+		process.exit(1);
+	}
+
+	const hasher = new Bun.CryptoHasher("sha256");
+	hasher.update(`${token}${secret}`);
+	const expectedHash = hasher.digest("hex");
+
+	if (hash !== expectedHash) {
+		console.error("Launch token verification failed.");
+		process.exit(1);
+	}
+}
+
 // Run migrations on startup (only if MIGRATIONS_FOLDER is set)
 if (process.env.MIGRATIONS_FOLDER) {
 	await runMigrations(process.env.MIGRATIONS_FOLDER);

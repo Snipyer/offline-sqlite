@@ -6,9 +6,16 @@ use tauri::Manager;
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 
+mod licensing;
+
+use licensing::types::{ActivationResult, LicenseState, TrialInfo};
+
 struct AppState {
     sidecar_child: Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
+    license_state: Mutex<LicenseState>,
 }
+
+// ── Tauri commands ──────────────────────────────────────
 
 #[tauri::command]
 async fn check_server_health() -> Result<bool, String> {
@@ -18,6 +25,121 @@ async fn check_server_health() -> Result<bool, String> {
     }
 }
 
+#[tauri::command]
+fn get_license_status(state: tauri::State<'_, AppState>) -> Result<LicenseState, String> {
+    let guard = state.license_state.lock().map_err(|e| e.to_string())?;
+    Ok(guard.clone())
+}
+
+#[tauri::command]
+async fn activate_license(
+    key: String,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<ActivationResult, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {e}"))?;
+
+    let result = licensing::activation::activate_license(key, &app_data_dir).await?;
+
+    // Update in-memory state
+    if result.success {
+        let mut guard = state.license_state.lock().map_err(|e| e.to_string())?;
+        *guard = result.license_state.clone();
+
+        // Start the sidecar now that we have a valid license
+        let app_clone = app.clone();
+        tauri::async_runtime::spawn(async move {
+            match start_server(app_clone).await {
+                Ok(_) => log::info!("Server sidecar started after activation"),
+                Err(e) => log::error!("Failed to start server after activation: {}", e),
+            }
+        });
+    }
+
+    Ok(result)
+}
+
+#[tauri::command]
+async fn deactivate_license(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {e}"))?;
+
+    licensing::activation::deactivate_license(&app_data_dir).await?;
+
+    let mut guard = state.license_state.lock().map_err(|e| e.to_string())?;
+    *guard = LicenseState::None;
+
+    Ok(())
+}
+
+#[tauri::command]
+fn start_trial(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<TrialInfo, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {e}"))?;
+
+    let info = licensing::trial::start_trial(&app_data_dir)?;
+
+    // Update in-memory state
+    let mut guard = state.license_state.lock().map_err(|e| e.to_string())?;
+    *guard = LicenseState::Trial {
+        days_remaining: info.days_remaining,
+    };
+
+    // Start sidecar for trial
+    let app_clone = app.clone();
+    tauri::async_runtime::spawn(async move {
+        match start_server(app_clone).await {
+            Ok(_) => log::info!("Server sidecar started for trial"),
+            Err(e) => log::error!("Failed to start server for trial: {}", e),
+        }
+    });
+
+    Ok(info)
+}
+
+#[tauri::command]
+fn get_trial_status(app: tauri::AppHandle) -> Result<TrialInfo, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {e}"))?;
+
+    licensing::trial::get_trial_status(&app_data_dir)
+}
+
+#[tauri::command]
+fn deactivate_trial(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {e}"))?;
+
+    licensing::trial::deactivate_trial(&app_data_dir)?;
+
+    let mut guard = state.license_state.lock().map_err(|e| e.to_string())?;
+    *guard = LicenseState::None;
+
+    Ok(())
+}
+
+// ── App entry point ─────────────────────────────────────
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -26,16 +148,55 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .manage(AppState {
             sidecar_child: Mutex::new(None),
+            license_state: Mutex::new(LicenseState::None),
         })
-        .invoke_handler(tauri::generate_handler![check_server_health])
+        .invoke_handler(tauri::generate_handler![
+            check_server_health,
+            get_license_status,
+            activate_license,
+            deactivate_license,
+            start_trial,
+            get_trial_status,
+            deactivate_trial,
+        ])
         .setup(|app| {
             let app_handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                match start_server(app_handle.clone()).await {
-                    Ok(_) => log::info!("Server sidecar started successfully"),
-                    Err(e) => log::error!("Failed to start server sidecar: {}", e),
+
+            // ── Anti-debug check (production only) ──
+            #[cfg(not(debug_assertions))]
+            licensing::anti_debug::check_debugger();
+
+            // ── License check before starting server ──
+            let app_data_dir = app_handle
+                .path()
+                .app_data_dir()
+                .expect("Failed to get app data dir");
+            std::fs::create_dir_all(&app_data_dir).ok();
+
+            let license_state = licensing::activation::check_license_on_startup(&app_data_dir);
+            log::info!("License state on startup: {:?}", license_state);
+
+            // Store the state for the frontend to query
+            if let Some(state) = app_handle.try_state::<AppState>() {
+                *state.license_state.lock().unwrap() = license_state.clone();
+            }
+
+            match &license_state {
+                LicenseState::Valid { .. } | LicenseState::Trial { .. } => {
+                    // Start sidecar server
+                    let handle = app_handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        match start_server(handle).await {
+                            Ok(_) => log::info!("Server sidecar started successfully"),
+                            Err(e) => log::error!("Failed to start server sidecar: {}", e),
+                        }
+                    });
                 }
-            });
+                _ => {
+                    // Don't start the server — frontend will show activation screen
+                    log::info!("No valid license — server not started. Waiting for activation.");
+                }
+            }
 
             Ok(())
         })
@@ -143,6 +304,19 @@ async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
         .env("DATABASE_URL", &database_url)
         .env("NODE_ENV", &env_mode)
         .env("TAURI_ENVIRONMENT", "true");
+
+    // ── Sidecar launch token (anti-extraction) ──
+    {
+        use sha2::{Digest, Sha256};
+        let launch_token = hex::encode(rand::random::<[u8; 32]>());
+        let embedded_secret = "offline-sqlite-sidecar-secret-v1";
+        let mut hasher = Sha256::new();
+        hasher.update(format!("{}{}", launch_token, embedded_secret));
+        let launch_hash = hex::encode(hasher.finalize());
+        sidecar = sidecar
+            .env("__TAURI_LAUNCH_TOKEN__", &launch_token)
+            .env("__TAURI_LAUNCH_HASH__", &launch_hash);
+    }
 
     // Only set migrations folder in production
     if let Some(migrations) = migrations_path {

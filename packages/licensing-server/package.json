@@ -1,0 +1,21 @@
+{
+	"name": "@offline-sqlite/licensing-server",
+	"private": true,
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"dev": "bun run --hot src/index.ts",
+		"start": "bun run src/index.ts",
+		"check-types": "tsc -b"
+	},
+	"dependencies": {
+		"@noble/curves": "^1.8.2",
+		"drizzle-orm": "catalog:",
+		"hono": "catalog:"
+	},
+	"devDependencies": {
+		"@offline-sqlite/config": "workspace:*",
+		"@types/bun": "catalog:",
+		"typescript": "^5"
+	}
+}

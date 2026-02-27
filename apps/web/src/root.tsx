@@ -1,6 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import "./index.css";
+import { initAntiDebug } from "./utils/anti-debug";
 import {
 	isRouteErrorResponse,
 	Links,
@@ -23,6 +24,11 @@ import { AppSidebar } from "./components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
 import { authClient } from "./lib/auth-client";
 import { ScrollToTopButton } from "./components/scroll-to-top-button";
+import ActivationScreen from "./features/licensing/components/activation-screen";
+import TrialBanner from "./features/licensing/components/trial-banner";
+import TrialExpired from "./features/licensing/components/trial-expired";
+import { useLicense } from "./features/licensing/hooks/use-license";
+import Loader from "./components/loader";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -81,6 +87,21 @@ export default function App() {
 	const isAuthPage = location.pathname === "/login";
 	const isAuthenticated = !!session;
 
+	// Initialize anti-debug measures in production Tauri builds
+	useEffect(() => {
+		if (isTauri()) initAntiDebug();
+	}, []);
+
+	// License gate — only active inside Tauri (desktop) builds
+	const isTauriEnv = isTauri();
+	const { licenseState, loading: licenseLoading } = useLicense();
+
+	// In Tauri mode, block the app behind a license check
+	const showLicenseGate =
+		isTauriEnv && !licenseLoading && licenseState.state !== "valid" && licenseState.state !== "trial";
+
+	const showTrialBanner = isTauriEnv && licenseState.state === "trial" && licenseState.days_remaining > 0;
+
 	return (
 		<I18nextProvider i18n={i18n}>
 			<DirectionProvider direction={direction}>
@@ -92,16 +113,45 @@ export default function App() {
 						disableTransitionOnChange
 						storageKey="vite-ui-theme"
 					>
-						{isTauri() && <Titlebar />}
-						{isAuthenticated ? (
-							<SidebarProvider defaultOpen side={sidebarSide}>
-								<AppSidebar />
-								<SidebarInset className={cn("flex h-svh flex-col", isTauri() && "pt-9")}>
+						{isTauriEnv && <Titlebar />}
+
+						{/* License loading state */}
+						{isTauriEnv && licenseLoading && <Loader />}
+
+						{/* License gate — show activation or trial-expired screen */}
+						{showLicenseGate && (
+							<>
+								{licenseState.state === "trial_expired" ? (
+									<TrialExpired />
+								) : (
+									<ActivationScreen />
+								)}
+							</>
+						)}
+
+						{/* Main app — shown only when license is OK (or not Tauri) */}
+						{(!isTauriEnv || (!licenseLoading && !showLicenseGate)) && (
+							<>
+								{showTrialBanner && (
+									<TrialBanner
+										daysRemaining={
+											licenseState.state === "trial" ? licenseState.days_remaining : 0
+										}
+									/>
+								)}
+								{isAuthenticated ? (
+									<SidebarProvider defaultOpen side={sidebarSide}>
+										<AppSidebar />
+										<SidebarInset
+											className={cn("flex h-svh flex-col", isTauriEnv && "pt-9")}
+										>
+											<Outlet />
+										</SidebarInset>
+									</SidebarProvider>
+								) : (
 									<Outlet />
-								</SidebarInset>
-							</SidebarProvider>
-						) : (
-							<Outlet />
+								)}
+							</>
 						)}
 						<ScrollToTopButton />
 						<Toaster richColors />
