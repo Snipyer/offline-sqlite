@@ -62,6 +62,7 @@
 		"@types/react-dom": "^19.2.3",
 		"react-router-devtools": "^1.1.0",
 		"tailwindcss": "^4.1.18",
+		"terser": "^5.46.0",
 		"typescript": "^5.8.3",
 		"vite": "^7.2.7",
 		"vite-tsconfig-paths": "^5.1.4",

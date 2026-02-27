@@ -2,6 +2,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ArrowLeft, ArrowRight, Minus, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useNavigationType } from "react-router";
+import { LicenseStatusDialog } from "@/features/licensing/components/license-status-dialog";
 
 export function Titlebar() {
 	const navigate = useNavigate();
@@ -93,6 +94,7 @@ export function Titlebar() {
 			</div>
 
 			<div className="flex items-center">
+				<LicenseStatusDialog />
 				<div className="bg-border mx-2 h-4 w-px" />
 
 				<button

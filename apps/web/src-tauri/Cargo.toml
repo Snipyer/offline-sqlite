@@ -28,3 +28,14 @@ tauri-plugin-shell = "2"
 tauri-plugin-http = "2"
 dotenv = "0.15"
 reqwest = { version = "0.12", features = ["json"] }
+
+# Licensing & cryptography
+ed25519-dalek = { version = "2", features = ["std"] }
+aes-gcm = "0.10"
+sha2 = "0.10"
+hkdf = "0.12"
+rand = "0.8"
+base64 = "0.22"
+hex = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
+sysinfo = "0.31"

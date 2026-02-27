@@ -52,3 +52,7 @@ temp
 
 # Database
 *.db
+
+# License private keys (NEVER commit)
+keys/license_priv.key
+keys/
