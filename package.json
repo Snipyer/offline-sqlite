@@ -45,11 +45,11 @@
 	"devDependencies": {
 		"@offline-sqlite/config": "workspace:*",
 		"@types/bun": "catalog:",
-		"turbo": "^2.6.3",
 		"prettier": "^3.6.2",
 		"prettier-plugin-classnames": "^0.9.0",
 		"prettier-plugin-merge": "^0.9.0",
 		"prettier-plugin-tailwindcss": "^0.7.2",
+		"turbo": "^2.8.12",
 		"typescript": "^5"
 	},
 	"packageManager": "bun@1.3.8"
