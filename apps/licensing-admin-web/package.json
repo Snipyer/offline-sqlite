@@ -9,22 +9,29 @@
 		"check-types": "react-router typegen && tsc"
 	},
 	"dependencies": {
+		"@tanstack/react-form": "^1.27.3",
 		"@offline-sqlite/env": "workspace:*",
-		"@offline-sqlite/i18n": "workspace:*",
 		"@react-router/fs-routes": "^7.10.1",
 		"@react-router/node": "^7.10.1",
 		"@react-router/serve": "^7.10.1",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.511.0",
 		"react": "19.2.3",
 		"react-dom": "19.2.3",
 		"react-router": "^7.10.1",
+		"tailwind-merge": "^3.3.0",
+		"zod": "catalog:",
 		"isbot": "^5"
 	},
 	"devDependencies": {
 		"@offline-sqlite/config": "workspace:*",
 		"@react-router/dev": "^7.10.1",
+		"@tailwindcss/vite": "^4.1.18",
 		"@types/node": "^20",
 		"@types/react": "~19.2.7",
 		"@types/react-dom": "^19.2.3",
+		"tailwindcss": "^4.1.18",
 		"typescript": "^5.8.3",
 		"vite": "^7.2.7",
 		"vite-tsconfig-paths": "^5.1.4"
