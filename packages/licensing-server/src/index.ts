@@ -5,26 +5,28 @@ import { logger } from "hono/logger";
 import activate from "./routes/activate";
 import deactivate from "./routes/deactivate";
 import validate from "./routes/validate";
-import admin from "./routes/admin";
+import { ensureDatabase } from "./db";
+import type { AppBindings } from "./types";
 
-const app = new Hono();
+const app = new Hono<{ Bindings: AppBindings }>();
 
 app.use(logger());
-app.use("/*", cors());
+app.use("/*", async (c, next) => {
+	const origin = c.env.CORS_ORIGIN;
+	return cors({ origin: origin ? origin.split(",") : "*" })(c, next);
+});
+
+app.use("/api/*", async (c, next) => {
+	await ensureDatabase(c.env);
+	await next();
+});
 
 // Public endpoints (called by client apps)
 app.route("/api/activate", activate);
 app.route("/api/deactivate", deactivate);
 app.route("/api/validate", validate);
 
-// Admin endpoints (protect with basic auth or API key in production)
-app.route("/api/admin", admin);
+app.get("/", (c) => c.json({ service: "licensing-public-api", ok: true }));
+app.get("/health", (c) => c.json({ ok: true, service: "licensing-public-api" }));
 
-app.get("/", (c) => c.text("License Server OK"));
-
-const port = Number(process.env.PORT ?? 4000);
-
-export default {
-	port,
-	fetch: app.fetch,
-};
+export default app;

@@ -1,0 +1,32 @@
+{
+	"name": "licensing-admin-web",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "react-router build",
+		"dev": "react-router dev",
+		"start": "react-router-serve ./build/server/index.js",
+		"check-types": "react-router typegen && tsc"
+	},
+	"dependencies": {
+		"@offline-sqlite/env": "workspace:*",
+		"@offline-sqlite/i18n": "workspace:*",
+		"@react-router/fs-routes": "^7.10.1",
+		"@react-router/node": "^7.10.1",
+		"@react-router/serve": "^7.10.1",
+		"react": "19.2.3",
+		"react-dom": "19.2.3",
+		"react-router": "^7.10.1",
+		"isbot": "^5"
+	},
+	"devDependencies": {
+		"@offline-sqlite/config": "workspace:*",
+		"@react-router/dev": "^7.10.1",
+		"@types/node": "^20",
+		"@types/react": "~19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"typescript": "^5.8.3",
+		"vite": "^7.2.7",
+		"vite-tsconfig-paths": "^5.1.4"
+	}
+}

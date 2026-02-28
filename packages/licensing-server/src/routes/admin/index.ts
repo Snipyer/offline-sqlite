@@ -1,12 +1,18 @@
-import { Hono } from "hono";
-import { db } from "../db";
-import { activations, licenses } from "../db/schema";
 import { eq } from "drizzle-orm";
+import { Hono } from "hono";
+import { requireAdminAccess } from "../../auth/access";
+import { ensureDatabase, getDb } from "../../db";
+import { activations, licenses } from "../../db/schema";
+import type { AppBindings } from "../../types";
 
-const admin = new Hono();
+const admin = new Hono<{ Bindings: AppBindings }>();
 
-/** Create a license record (required before activation can succeed) */
+admin.use("/*", requireAdminAccess);
+
 admin.post("/licenses", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
+
 	const body = await c.req.json<{
 		id?: string;
 		email?: string;
@@ -44,29 +50,30 @@ admin.post("/licenses", async (c) => {
 	return c.json({ success: true, id: body.id }, 201);
 });
 
-/** List all licenses */
 admin.get("/licenses", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
 	const result = await db.select().from(licenses);
 	return c.json(result);
 });
 
-/** Get license details + activations */
 admin.get("/licenses/:id", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
 	const id = c.req.param("id");
 	const [license] = await db.select().from(licenses).where(eq(licenses.id, id)).limit(1);
 	if (!license) return c.json({ error: "Not found" }, 404);
 
 	const acts = await db.select().from(activations).where(eq(activations.licenseId, id));
-
 	return c.json({ license, activations: acts });
 });
 
-/** Revoke a license */
 admin.post("/licenses/:id/revoke", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
 	const id = c.req.param("id");
-	await db.update(licenses).set({ isRevoked: true }).where(eq(licenses.id, id));
 
-	// Also deactivate all activations
+	await db.update(licenses).set({ isRevoked: true }).where(eq(licenses.id, id));
 	await db
 		.update(activations)
 		.set({ isActive: false, deactivatedAt: new Date().toISOString() })
@@ -75,9 +82,11 @@ admin.post("/licenses/:id/revoke", async (c) => {
 	return c.json({ success: true });
 });
 
-/** Manually reset activations for a license (support use-case) */
 admin.post("/licenses/:id/reset", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
 	const id = c.req.param("id");
+
 	await db
 		.update(activations)
 		.set({ isActive: false, deactivatedAt: new Date().toISOString() })

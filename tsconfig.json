@@ -1,3 +1,7 @@
 {
-	"extends": "@offline-sqlite/config/tsconfig.base.json"
+	"extends": "@offline-sqlite/config/tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"jsx": "react-jsx"
+	}
 }

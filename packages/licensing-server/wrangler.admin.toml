@@ -1,0 +1,11 @@
+name = "offline-sqlite-licensing-admin-api"
+main = "src/admin-worker.ts"
+compatibility_date = "2026-02-27"
+
+[[d1_databases]]
+binding = "LICENSE_DB"
+database_name = "offline-sqlite-licensing"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[vars]
+CORS_ORIGIN = "*"

@@ -79,6 +79,52 @@
 		"pageAria": "الانتقال إلى الصفحة {{page}}",
 		"scrollToTop": "التمرير إلى الأعلى"
 	},
+	"licensingAdmin": {
+		"title": "إدارة التراخيص",
+		"subtitle": "إدارة سجلات التراخيص والتحكم في التفعيل",
+		"plan": {
+			"perpetual": "دائم",
+			"subscription": "اشتراك"
+		},
+		"create": {
+			"title": "إنشاء ترخيص",
+			"generatorOutput": "الصق مخرجات generate-license.ts كاملة (Payload + License Key)",
+			"id": "معرّف الترخيص",
+			"email": "بريد العميل",
+			"keyPayload": "مفتاح ترخيص موقّع (LKEY-...)",
+			"expiresAt": "تاريخ الانتهاء ISO (اختياري)",
+			"submit": "إنشاء الترخيص"
+		},
+		"list": {
+			"title": "التراخيص",
+			"id": "المعرّف",
+			"email": "البريد",
+			"plan": "الخطة",
+			"revoked": "ملغى",
+			"actions": "إجراءات",
+			"yes": "نعم",
+			"no": "لا"
+		},
+		"actions": {
+			"refresh": "تحديث",
+			"reset": "إعادة ضبط",
+			"revoke": "إلغاء"
+		},
+		"status": {
+			"ready": "جاهز",
+			"loaded": "تم تحميل {{count}} ترخيص",
+			"created": "تم إنشاء الترخيص",
+			"actionDone": "اكتملت عملية {{action}} للترخيص {{id}}",
+			"requestFailed": "فشل الطلب",
+			"loadFailed": "فشل تحميل التراخيص",
+			"createFailed": "فشل إنشاء الترخيص",
+			"actionFailed": "فشل تنفيذ الإجراء على الترخيص",
+			"invalidPastedOutput": "مخرجات الملصق غير صالحة: يجب أن تحتوي على Payload و License Key",
+			"invalidPayloadJson": "صيغة JSON في Payload غير صالحة",
+			"invalidLicenseKey": "مخرجات الملصق غير صالحة: لم يتم العثور على License Key",
+			"missingPayloadFields": "الـ Payload ينقصه حقول مطلوبة: id أو email أو plan أو created_at"
+		}
+	},
 	"listFilters": {
 		"yesterday": "أمس",
 		"lastWeek": "آخر أسبوع",
