@@ -1,12 +1,31 @@
 import { Hono } from "hono";
-import { db } from "../db";
+import { ensureDatabase, getDb } from "../db";
 import { activations, licenses } from "../db/schema";
-import { signPayload, verifyLicenseKey } from "../crypto/sign";
+import { SigningConfigError, signPayload, verifyLicenseKey } from "../crypto/sign";
 import { eq, and } from "drizzle-orm";
+import type { AppBindings } from "../types";
 
-const activate = new Hono();
+const activate = new Hono<{ Bindings: AppBindings }>();
+
+function configErrorResponse(err: unknown) {
+	const referenceId = crypto.randomUUID();
+	const details =
+		err instanceof SigningConfigError
+			? `[${err.code}] ${err.internalDetails}`
+			: err instanceof Error
+				? err.message
+				: String(err);
+	console.error(`[activate][config][${referenceId}] ${details}`);
+
+	return {
+		error: `Activation service unavailable. Please contact support with reference ${referenceId}.`,
+	};
+}
 
 activate.post("/", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
+
 	const body = await c.req.json<{
 		license_key: string;
 		fingerprint: string;
@@ -18,8 +37,11 @@ activate.post("/", async (c) => {
 	// 1. Verify key signature
 	let payload: any;
 	try {
-		payload = verifyLicenseKey(body.license_key);
+		payload = verifyLicenseKey(body.license_key, c.env);
 	} catch (err: any) {
+		if (err instanceof SigningConfigError) {
+			return c.json(configErrorResponse(err), 500);
+		}
 		return c.json({ error: err.message }, 400);
 	}
 
@@ -92,7 +114,15 @@ activate.post("/", async (c) => {
 		expires_at: license.expiresAt ?? null,
 	};
 
-	const signedToken = signPayload(tokenPayload);
+	let signedToken: string;
+	try {
+		signedToken = signPayload(tokenPayload, c.env);
+	} catch (err: any) {
+		if (err instanceof SigningConfigError) {
+			return c.json(configErrorResponse(err), 500);
+		}
+		throw err;
+	}
 
 	return c.json({
 		activation_token: signedToken,

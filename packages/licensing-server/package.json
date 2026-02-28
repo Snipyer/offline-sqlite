@@ -4,8 +4,12 @@
 	"type": "module",
 	"main": "src/index.ts",
 	"scripts": {
-		"dev": "bun run --hot src/index.ts",
-		"start": "bun run src/index.ts",
+		"dev": "wrangler dev --config wrangler.public.toml --port 8787 --inspector-port 9230",
+		"dev:public": "wrangler dev --config wrangler.public.toml --port 8787 --inspector-port 9230",
+		"dev:admin": "wrangler dev --config wrangler.admin.toml --port 8788 --inspector-port 9231",
+		"deploy": "wrangler deploy --config wrangler.public.toml",
+		"deploy:public": "wrangler deploy --config wrangler.public.toml",
+		"deploy:admin": "wrangler deploy --config wrangler.admin.toml",
 		"check-types": "tsc -b"
 	},
 	"dependencies": {
@@ -15,7 +19,8 @@
 	},
 	"devDependencies": {
 		"@offline-sqlite/config": "workspace:*",
-		"@types/bun": "catalog:",
+		"@cloudflare/workers-types": "^4.20260224.0",
+		"wrangler": "^4.7.1",
 		"typescript": "^5"
 	}
 }

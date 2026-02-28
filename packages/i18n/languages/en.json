@@ -79,6 +79,52 @@
 		"pageAria": "Go to page {{page}}",
 		"scrollToTop": "Scroll to top"
 	},
+	"licensingAdmin": {
+		"title": "Licensing Admin",
+		"subtitle": "Manage license records and activation controls",
+		"plan": {
+			"perpetual": "perpetual",
+			"subscription": "subscription"
+		},
+		"create": {
+			"title": "Create License",
+			"generatorOutput": "Paste full generate-license.ts output (Payload + License Key)",
+			"id": "License ID",
+			"email": "Customer Email",
+			"keyPayload": "Signed License Key (LKEY-...)",
+			"expiresAt": "Expiry ISO date (optional)",
+			"submit": "Create License"
+		},
+		"list": {
+			"title": "Licenses",
+			"id": "ID",
+			"email": "Email",
+			"plan": "Plan",
+			"revoked": "Revoked",
+			"actions": "Actions",
+			"yes": "yes",
+			"no": "no"
+		},
+		"actions": {
+			"refresh": "Refresh",
+			"reset": "Reset",
+			"revoke": "Revoke"
+		},
+		"status": {
+			"ready": "Ready",
+			"loaded": "Loaded {{count}} licenses",
+			"created": "License created",
+			"actionDone": "License {{id}} {{action}} completed",
+			"requestFailed": "Request failed",
+			"loadFailed": "Failed to load licenses",
+			"createFailed": "Failed to create license",
+			"actionFailed": "Failed to run license action",
+			"invalidPastedOutput": "Invalid pasted output: expected Payload and License Key sections",
+			"invalidPayloadJson": "Invalid Payload JSON in pasted output",
+			"invalidLicenseKey": "Invalid pasted output: License Key was not found",
+			"missingPayloadFields": "Payload is missing required fields: id, email, plan, or created_at"
+		}
+	},
 	"listFilters": {
 		"yesterday": "Yesterday",
 		"lastWeek": "Last Week",

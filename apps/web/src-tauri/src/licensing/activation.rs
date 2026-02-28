@@ -8,7 +8,7 @@ use std::path::PathBuf;
 /// env var at compile time for production.
 fn license_server_url() -> String {
     option_env!("LICENSE_SERVER_URL")
-        .unwrap_or("http://localhost:4000")
+        .unwrap_or("http://localhost:8787")
         .to_string()
 }
 

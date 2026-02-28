@@ -79,6 +79,52 @@
 		"pageAria": "Aller à la page {{page}}",
 		"scrollToTop": "Remonter en haut"
 	},
+	"licensingAdmin": {
+		"title": "Administration des licences",
+		"subtitle": "Gérez les licences et les contrôles d'activation",
+		"plan": {
+			"perpetual": "perpétuelle",
+			"subscription": "abonnement"
+		},
+		"create": {
+			"title": "Créer une licence",
+			"generatorOutput": "Collez la sortie complète de generate-license.ts (Payload + License Key)",
+			"id": "ID de licence",
+			"email": "E-mail client",
+			"keyPayload": "Clé signée (LKEY-...)",
+			"expiresAt": "Date d'expiration ISO (optionnel)",
+			"submit": "Créer la licence"
+		},
+		"list": {
+			"title": "Licences",
+			"id": "ID",
+			"email": "E-mail",
+			"plan": "Forfait",
+			"revoked": "Révoquée",
+			"actions": "Actions",
+			"yes": "oui",
+			"no": "non"
+		},
+		"actions": {
+			"refresh": "Actualiser",
+			"reset": "Réinitialiser",
+			"revoke": "Révoquer"
+		},
+		"status": {
+			"ready": "Prêt",
+			"loaded": "{{count}} licences chargées",
+			"created": "Licence créée",
+			"actionDone": "Licence {{id}} {{action}} terminée",
+			"requestFailed": "Échec de la requête",
+			"loadFailed": "Échec du chargement des licences",
+			"createFailed": "Échec de la création de la licence",
+			"actionFailed": "Échec de l'action sur la licence",
+			"invalidPastedOutput": "Sortie collée invalide : sections Payload et License Key attendues",
+			"invalidPayloadJson": "JSON Payload invalide dans la sortie collée",
+			"invalidLicenseKey": "Sortie collée invalide : License Key introuvable",
+			"missingPayloadFields": "Le payload n'a pas les champs requis : id, email, plan ou created_at"
+		}
+	},
 	"listFilters": {
 		"yesterday": "Hier",
 		"lastWeek": "Semaine dernière",

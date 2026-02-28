@@ -1,11 +1,15 @@
 import { Hono } from "hono";
-import { db } from "../db";
+import { ensureDatabase, getDb } from "../db";
 import { activations } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import type { AppBindings } from "../types";
 
-const deactivate = new Hono();
+const deactivate = new Hono<{ Bindings: AppBindings }>();
 
 deactivate.post("/", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
+
 	const body = await c.req.json<{
 		license_id: string;
 		fingerprint: string;

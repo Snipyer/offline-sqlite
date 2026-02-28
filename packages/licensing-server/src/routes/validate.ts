@@ -1,15 +1,19 @@
 import { Hono } from "hono";
-import { db } from "../db";
+import { ensureDatabase, getDb } from "../db";
 import { activations, licenses } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import type { AppBindings } from "../types";
 
-const validate = new Hono();
+const validate = new Hono<{ Bindings: AppBindings }>();
 
 /**
  * Optional endpoint: clients with internet access can call this to refresh
  * their local activation token (e.g. to pick up a subscription renewal).
  */
 validate.post("/", async (c) => {
+	await ensureDatabase(c.env);
+	const db = getDb(c.env);
+
 	const body = await c.req.json<{
 		license_id: string;
 		fingerprint: string;
