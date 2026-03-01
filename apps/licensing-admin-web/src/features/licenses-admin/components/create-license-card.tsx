@@ -11,7 +11,6 @@ import { FieldErrors } from "./field-errors";
 
 type CreateLicenseCardProps = {
 	endpoint: string;
-	adminApiKey: string;
 	busy: boolean;
 	isFormVisible: boolean;
 	onToggleForm: () => void;
@@ -22,7 +21,6 @@ type CreateLicenseCardProps = {
 
 export function CreateLicenseCard({
 	endpoint,
-	adminApiKey,
 	busy,
 	isFormVisible,
 	onToggleForm,
@@ -70,7 +68,7 @@ export function CreateLicenseCard({
 					};
 				}
 
-				await createLicense(endpoint, adminApiKey, valuesToSubmit);
+				await createLicense(endpoint, valuesToSubmit);
 				onMessage("License created");
 				form.reset();
 				await onCreated();

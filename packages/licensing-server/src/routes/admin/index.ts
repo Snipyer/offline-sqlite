@@ -1,36 +1,71 @@
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
+import type { Context } from "hono";
 import { requireAdminAccess } from "../../auth/access";
-import { ensureDatabase, getDb } from "../../db";
-import { activations, licenses } from "../../db/schema";
+import { getDb } from "../../db";
+import { activations, adminAuditLog, licenses } from "../../db/schema";
+import { adminLicenseIdParam, createLicenseAdminSchema } from "../../validation";
 import type { AppBindings } from "../../types";
+
+type AdminContext = Context<{ Bindings: AppBindings }>;
 
 const admin = new Hono<{ Bindings: AppBindings }>();
 
 admin.use("/*", requireAdminAccess);
 
+// ── Helpers ──────────────────────────────────────────
+
+function getActor(c: AdminContext): string {
+	return c.req.header("cf-access-authenticated-user-email") ?? "dev-api-key";
+}
+
+async function logAudit(
+	env: AppBindings,
+	actor: string,
+	action: string,
+	targetId: string | null,
+	details?: Record<string, unknown>,
+) {
+	try {
+		const db = getDb(env);
+		await db.insert(adminAuditLog).values({
+			id: `audit_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`,
+			actor,
+			action,
+			targetId,
+			details: details ? JSON.stringify(details) : null,
+			performedAt: new Date().toISOString(),
+		});
+	} catch (err) {
+		// Audit logging must never break the request — log and continue.
+		console.error("[audit] Failed to write audit log:", err instanceof Error ? err.message : err);
+	}
+}
+
+function parseIdParam(c: AdminContext) {
+	const raw = c.req.param("id");
+	const parsed = adminLicenseIdParam.safeParse(raw);
+	if (!parsed.success) return null;
+	return parsed.data;
+}
+
+// ── Routes ───────────────────────────────────────────
+
 admin.post("/licenses", async (c) => {
-	await ensureDatabase(c.env);
 	const db = getDb(c.env);
 
-	const body = await c.req.json<{
-		id?: string;
-		email?: string;
-		plan?: "perpetual" | "subscription" | string;
-		key_payload?: string;
-		created_at?: string;
-		expires_at?: string | null;
-		max_transfers?: number;
-	}>();
-
-	if (!body.id || !body.email || !body.plan || !body.key_payload || !body.created_at) {
-		return c.json(
-			{
-				error: "Missing required fields. Required: id, email, plan, key_payload, created_at",
-			},
-			400,
-		);
+	let rawBody: unknown;
+	try {
+		rawBody = await c.req.json();
+	} catch {
+		return c.json({ error: "Invalid JSON body" }, 400);
 	}
+
+	const parsed = createLicenseAdminSchema.safeParse(rawBody);
+	if (!parsed.success) {
+		return c.json({ error: "Invalid request body", details: parsed.error.issues }, 400);
+	}
+	const body = parsed.data;
 
 	const [existing] = await db.select().from(licenses).where(eq(licenses.id, body.id)).limit(1);
 	if (existing) {
@@ -47,20 +82,33 @@ admin.post("/licenses", async (c) => {
 		maxTransfers: body.max_transfers ?? 3,
 	});
 
+	await logAudit(c.env, getActor(c), "create_license", body.id, { email: body.email, plan: body.plan });
+
 	return c.json({ success: true, id: body.id }, 201);
 });
 
 admin.get("/licenses", async (c) => {
-	await ensureDatabase(c.env);
 	const db = getDb(c.env);
-	const result = await db.select().from(licenses);
+	// Intentionally omit keyPayload from list responses to reduce exposure.
+	const result = await db
+		.select({
+			id: licenses.id,
+			email: licenses.email,
+			plan: licenses.plan,
+			createdAt: licenses.createdAt,
+			expiresAt: licenses.expiresAt,
+			maxTransfers: licenses.maxTransfers,
+			isRevoked: licenses.isRevoked,
+		})
+		.from(licenses);
 	return c.json(result);
 });
 
 admin.get("/licenses/:id", async (c) => {
-	await ensureDatabase(c.env);
+	const id = parseIdParam(c);
+	if (!id) return c.json({ error: "Invalid license ID" }, 400);
+
 	const db = getDb(c.env);
-	const id = c.req.param("id");
 	const [license] = await db.select().from(licenses).where(eq(licenses.id, id)).limit(1);
 	if (!license) return c.json({ error: "Not found" }, 404);
 
@@ -69,9 +117,10 @@ admin.get("/licenses/:id", async (c) => {
 });
 
 admin.post("/licenses/:id/revoke", async (c) => {
-	await ensureDatabase(c.env);
+	const id = parseIdParam(c);
+	if (!id) return c.json({ error: "Invalid license ID" }, 400);
+
 	const db = getDb(c.env);
-	const id = c.req.param("id");
 
 	await db.update(licenses).set({ isRevoked: true }).where(eq(licenses.id, id));
 	await db
@@ -79,18 +128,23 @@ admin.post("/licenses/:id/revoke", async (c) => {
 		.set({ isActive: false, deactivatedAt: new Date().toISOString() })
 		.where(eq(activations.licenseId, id));
 
+	await logAudit(c.env, getActor(c), "revoke_license", id);
+
 	return c.json({ success: true });
 });
 
 admin.post("/licenses/:id/reset", async (c) => {
-	await ensureDatabase(c.env);
+	const id = parseIdParam(c);
+	if (!id) return c.json({ error: "Invalid license ID" }, 400);
+
 	const db = getDb(c.env);
-	const id = c.req.param("id");
 
 	await db
 		.update(activations)
 		.set({ isActive: false, deactivatedAt: new Date().toISOString() })
 		.where(eq(activations.licenseId, id));
+
+	await logAudit(c.env, getActor(c), "reset_activations", id);
 
 	return c.json({ success: true, message: "All activations reset" });
 });

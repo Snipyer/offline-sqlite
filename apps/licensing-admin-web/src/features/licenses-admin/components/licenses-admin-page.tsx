@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { fetchLicenses, getLicensingAdminApiKey, getLicensingAdminEndpoint, runLicenseAction } from "../api";
+import { fetchLicenses, getLicensingAdminEndpoint, runLicenseAction } from "../api";
 import type { LicenseAction, LicenseRecord } from "../types";
 import { CreateLicenseCard } from "./create-license-card";
 import { LicensesTableCard } from "./licenses-table-card";
@@ -14,12 +14,11 @@ export default function LicensesAdminPage() {
 	const [isCreateFormVisible, setIsCreateFormVisible] = useState(false);
 
 	const endpoint = useMemo(() => getLicensingAdminEndpoint(), []);
-	const adminApiKey = useMemo(() => getLicensingAdminApiKey(), []);
 
 	async function refreshLicenses() {
 		setBusy(true);
 		try {
-			const records = await fetchLicenses(endpoint, adminApiKey);
+			const records = await fetchLicenses(endpoint);
 			setLicenses(records);
 			setMessage(`Loaded ${records.length} licenses`);
 		} catch (error) {
@@ -36,9 +35,9 @@ export default function LicensesAdminPage() {
 	async function handleRunAction(id: string, action: LicenseAction) {
 		setBusy(true);
 		try {
-			await runLicenseAction(endpoint, adminApiKey, id, action);
+			await runLicenseAction(endpoint, id, action);
 			setMessage(`Action ${action} completed for ${id}`);
-			const records = await fetchLicenses(endpoint, adminApiKey);
+			const records = await fetchLicenses(endpoint);
 			setLicenses(records);
 		} catch (error) {
 			setMessage(error instanceof Error ? error.message : "Action failed");
@@ -61,7 +60,6 @@ export default function LicensesAdminPage() {
 
 			<CreateLicenseCard
 				endpoint={endpoint}
-				adminApiKey={adminApiKey}
 				busy={busy}
 				isFormVisible={isCreateFormVisible}
 				onToggleForm={() => setIsCreateFormVisible((current) => !current)}

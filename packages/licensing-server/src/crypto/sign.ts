@@ -42,8 +42,8 @@ function denormalizeBase64url(input: string): string {
 	return value;
 }
 
-let cachedPrivKeyByB64 = new Map<string, Uint8Array>();
-
+// Private key bytes are decoded fresh each request — no module-level cache.
+// This avoids lingering secrets in isolate heap memory across requests.
 function getPrivateKey(env: AppBindings): Uint8Array {
 	const raw = env.LICENSE_PRIVATE_KEY_B64;
 	if (!raw) {
@@ -53,9 +53,6 @@ function getPrivateKey(env: AppBindings): Uint8Array {
 		});
 	}
 
-	const cached = cachedPrivKeyByB64.get(raw);
-	if (cached) return cached;
-
 	const key = base64ToBytes(raw);
 	if (key.length !== 32) {
 		throw new SigningConfigError({
@@ -64,7 +61,29 @@ function getPrivateKey(env: AppBindings): Uint8Array {
 		});
 	}
 
-	cachedPrivKeyByB64.set(raw, key);
+	return key;
+}
+
+/**
+ * Resolve the Ed25519 public key.
+ * Requires the explicit LICENSE_PUBLIC_KEY_B64 binding so the private key
+ * never needs to be loaded when only verification is required.
+ */
+function getPublicKey(env: AppBindings): Uint8Array {
+	if (!env.LICENSE_PUBLIC_KEY_B64) {
+		throw new SigningConfigError({
+			code: "missing_key",
+			internalDetails:
+				"LICENSE_PUBLIC_KEY_B64 is not set — configure it to avoid loading the private key for verification",
+		});
+	}
+	const key = base64ToBytes(env.LICENSE_PUBLIC_KEY_B64);
+	if (key.length !== 32) {
+		throw new SigningConfigError({
+			code: "invalid_key_length",
+			internalDetails: `Decoded public key length is ${key.length}, expected 32 bytes`,
+		});
+	}
 	return key;
 }
 
@@ -91,14 +110,15 @@ export function signPayload(payload: unknown, env: AppBindings): string {
 export function verifyLicenseKey(keyStr: string, env: AppBindings): unknown {
 	const stripped = keyStr.replace(/^LKEY-/, "");
 	const [payloadB64, sigB64] = stripped.split(".");
-	if (!payloadB64 || !sigB64) throw new Error("Invalid license key format");
+	// Return a generic error for all validation failures to avoid leaking details.
+	if (!payloadB64 || !sigB64) throw new Error("Invalid license key");
 
 	const payloadBytes = base64urlDecode(payloadB64);
 	const sigBytes = base64urlDecode(sigB64);
-	const pubKey = ed25519.getPublicKey(getPrivateKey(env));
+	const pubKey = getPublicKey(env);
 
 	const valid = ed25519.verify(sigBytes, payloadBytes, pubKey);
-	if (!valid) throw new Error("Invalid license key signature");
+	if (!valid) throw new Error("Invalid license key");
 
 	return JSON.parse(new TextDecoder().decode(payloadBytes));
 }

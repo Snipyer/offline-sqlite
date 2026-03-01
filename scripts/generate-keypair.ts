@@ -29,6 +29,13 @@ const pubKey = ed25519.getPublicKey(privKey);
 writeFileSync(resolve(privDir, "license_priv.key"), Buffer.from(privKey));
 writeFileSync(resolve(pubDir, "license_pub.key"), Buffer.from(pubKey));
 
+const privKeyB64 = Buffer.from(privKey).toString("base64");
+const pubKeyB64 = Buffer.from(pubKey).toString("base64");
+
 console.log("✓ Ed25519 keypair generated");
 console.log(`  Private key: keys/license_priv.key  (${privKey.length} bytes) — DO NOT COMMIT`);
 console.log(`  Public  key: apps/web/src-tauri/keys/license_pub.key  (${pubKey.length} bytes)`);
+console.log();
+console.log("Environment variables for Cloudflare Workers (.dev.vars / wrangler secrets):");
+console.log(`  LICENSE_PRIVATE_KEY_B64=${privKeyB64}`);
+console.log(`  LICENSE_PUBLIC_KEY_B64=${pubKeyB64}`);

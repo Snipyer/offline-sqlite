@@ -1,7 +1,10 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { bodyLimit } from "hono/body-limit";
 import adminRoutes from "./routes/admin";
+import { ensureDatabase } from "./db";
+import { rateLimit } from "./middleware/rate-limit";
 import type { AppBindings } from "./types";
 
 const app = new Hono<{ Bindings: AppBindings }>();
@@ -13,12 +16,12 @@ app.use("/*", async (c, next) => {
 				.map((value) => value.trim())
 				.filter(Boolean)
 		: [];
-	const allowsAnyOrigin = configuredOrigins.includes("*");
 
 	return cors({
 		origin: (requestOrigin) => {
-			if (!requestOrigin) return "*";
-			if (allowsAnyOrigin || configuredOrigins.length === 0) return requestOrigin;
+			// Reject cross-origin if no origins configured
+			if (!requestOrigin || configuredOrigins.length === 0) return "";
+			if (configuredOrigins.includes("*")) return requestOrigin;
 			return configuredOrigins.includes(requestOrigin) ? requestOrigin : "";
 		},
 		allowMethods: ["GET", "POST", "OPTIONS"],
@@ -26,6 +29,17 @@ app.use("/*", async (c, next) => {
 		exposeHeaders: ["Content-Length"],
 		credentials: true,
 	})(c, next);
+});
+
+// Body size limit: 50 KB
+app.use("/api/*", bodyLimit({ maxSize: 50 * 1024 }));
+
+// Rate limiting: 30 requests per minute per IP
+app.use("/api/*", rateLimit({ windowMs: 60_000, max: 30 }));
+
+app.use("/api/*", async (c, next) => {
+	await ensureDatabase(c.env);
+	await next();
 });
 
 app.route("/api/admin", adminRoutes);
