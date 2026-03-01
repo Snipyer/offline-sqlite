@@ -15,7 +15,8 @@
 	"dependencies": {
 		"@noble/curves": "^1.8.2",
 		"drizzle-orm": "catalog:",
-		"hono": "catalog:"
+		"hono": "catalog:",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@offline-sqlite/config": "workspace:*",

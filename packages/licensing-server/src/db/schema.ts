@@ -30,3 +30,12 @@ export const trialRecords = sqliteTable("trial_records", {
 	startedAt: text("started_at").notNull(),
 	expiresAt: text("expires_at").notNull(),
 });
+
+export const adminAuditLog = sqliteTable("admin_audit_log", {
+	id: text("id").primaryKey(),
+	actor: text("actor").notNull(),
+	action: text("action").notNull(), // "create_license" | "revoke_license" | "reset_activations"
+	targetId: text("target_id"),
+	details: text("details"), // JSON
+	performedAt: text("performed_at").notNull(),
+});

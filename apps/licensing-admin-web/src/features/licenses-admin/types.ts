@@ -4,7 +4,8 @@ export type LicenseRecord = {
 	id: string;
 	email: string;
 	plan: LicensePlan;
-	keyPayload: string;
+	/** Only returned on single-license detail requests, omitted from list queries. */
+	keyPayload?: string;
 	createdAt: string;
 	expiresAt: string | null;
 	isRevoked: boolean;

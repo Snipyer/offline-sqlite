@@ -17,15 +17,18 @@ export function getLicensingAdminEndpoint() {
 	return `${baseUrl}/api/admin`;
 }
 
-export function getLicensingAdminApiKey() {
-	return adminEnv.VITE_LICENSING_ADMIN_API_KEY?.trim() || "";
-}
+/** Injected by Vite `define` — only has a value in development builds. */
+declare const __DEV_ADMIN_API_KEY__: string;
 
-async function adminFetch(endpoint: string, adminApiKey: string, path: string, init?: RequestInit) {
+async function adminFetch(endpoint: string, path: string, init?: RequestInit) {
 	const headers = new Headers(init?.headers);
 	headers.set("content-type", "application/json");
-	if (adminApiKey) {
-		headers.set("x-admin-api-key", adminApiKey);
+
+	// In development only, send the API key header for local auth fallback.
+	// __DEV_ADMIN_API_KEY__ is replaced with "" in production builds by Vite,
+	// so the key can never leak into shipped bundles.
+	if (import.meta.env.DEV && __DEV_ADMIN_API_KEY__) {
+		headers.set("x-admin-api-key", __DEV_ADMIN_API_KEY__);
 	}
 
 	const response = await fetch(`${endpoint}${path}`, {
@@ -40,14 +43,14 @@ async function adminFetch(endpoint: string, adminApiKey: string, path: string, i
 	return payload;
 }
 
-export async function fetchLicenses(endpoint: string, adminApiKey: string) {
-	return (await adminFetch(endpoint, adminApiKey, "/licenses", {
+export async function fetchLicenses(endpoint: string) {
+	return (await adminFetch(endpoint, "/licenses", {
 		method: "GET",
 	})) as LicenseRecord[];
 }
 
-export async function createLicense(endpoint: string, adminApiKey: string, input: CreateLicenseInput) {
-	await adminFetch(endpoint, adminApiKey, "/licenses", {
+export async function createLicense(endpoint: string, input: CreateLicenseInput) {
+	await adminFetch(endpoint, "/licenses", {
 		method: "POST",
 		body: JSON.stringify({
 			id: input.id,
@@ -61,11 +64,6 @@ export async function createLicense(endpoint: string, adminApiKey: string, input
 	});
 }
 
-export async function runLicenseAction(
-	endpoint: string,
-	adminApiKey: string,
-	licenseId: string,
-	action: LicenseAction,
-) {
-	await adminFetch(endpoint, adminApiKey, `/licenses/${licenseId}/${action}`, { method: "POST" });
+export async function runLicenseAction(endpoint: string, licenseId: string, action: LicenseAction) {
+	await adminFetch(endpoint, `/licenses/${licenseId}/${action}`, { method: "POST" });
 }

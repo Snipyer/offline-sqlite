@@ -23,7 +23,8 @@ export function LicensesTableCard({ licenses, busy, onRunAction }: LicensesTable
 	const [statusFilter, setStatusFilter] = useState<"all" | "active" | "revoked">("all");
 	const [copiedLicenseId, setCopiedLicenseId] = useState<string | null>(null);
 
-	async function handleCopyLicense(licenseId: string, licenseKey: string) {
+	async function handleCopyLicense(licenseId: string, licenseKey: string | undefined) {
+		if (!licenseKey) return;
 		try {
 			await navigator.clipboard.writeText(licenseKey);
 			setCopiedLicenseId(licenseId);

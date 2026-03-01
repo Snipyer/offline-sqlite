@@ -3,19 +3,16 @@ import { ensureDatabase, getDb } from "../db";
 import { activations, licenses } from "../db/schema";
 import { SigningConfigError, signPayload, verifyLicenseKey } from "../crypto/sign";
 import { eq, and } from "drizzle-orm";
+import { activateSchema } from "../validation";
 import type { AppBindings } from "../types";
 
 const activate = new Hono<{ Bindings: AppBindings }>();
 
 function configErrorResponse(err: unknown) {
 	const referenceId = crypto.randomUUID();
-	const details =
-		err instanceof SigningConfigError
-			? `[${err.code}] ${err.internalDetails}`
-			: err instanceof Error
-				? err.message
-				: String(err);
-	console.error(`[activate][config][${referenceId}] ${details}`);
+	// Only log the error code — never internal details which may reveal system state.
+	const logCode = err instanceof SigningConfigError ? err.code : "internal_error";
+	console.error(`[activate][config][${referenceId}] ${logCode}`);
 
 	return {
 		error: `Activation service unavailable. Please contact support with reference ${referenceId}.`,
@@ -26,13 +23,18 @@ activate.post("/", async (c) => {
 	await ensureDatabase(c.env);
 	const db = getDb(c.env);
 
-	const body = await c.req.json<{
-		license_key: string;
-		fingerprint: string;
-		fingerprint_signals?: string[];
-		app_version?: string;
-		os?: string;
-	}>();
+	let rawBody: unknown;
+	try {
+		rawBody = await c.req.json();
+	} catch {
+		return c.json({ error: "Invalid JSON body" }, 400);
+	}
+
+	const parsed = activateSchema.safeParse(rawBody);
+	if (!parsed.success) {
+		return c.json({ error: "Invalid request body" }, 400);
+	}
+	const body = parsed.data;
 
 	// 1. Verify key signature
 	let payload: any;
@@ -42,7 +44,8 @@ activate.post("/", async (c) => {
 		if (err instanceof SigningConfigError) {
 			return c.json(configErrorResponse(err), 500);
 		}
-		return c.json({ error: err.message }, 400);
+		// Return a generic error to avoid leaking verification details.
+		return c.json({ error: "Invalid license key" }, 400);
 	}
 
 	// 2. Check license exists in DB and is not revoked

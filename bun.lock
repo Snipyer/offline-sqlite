@@ -212,6 +212,7 @@
         "@noble/curves": "^1.8.2",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^4.20260224.0",

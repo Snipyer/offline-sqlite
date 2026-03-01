@@ -8,4 +8,16 @@ database_name = "offline-sqlite-licensing"
 database_id = "REPLACE_WITH_D1_DATABASE_ID"
 
 [vars]
-CORS_ORIGIN = "*"
+# IMPORTANT: Set to your admin web domain in production (e.g. "https://admin.example.com")
+# Use "http://localhost:8080" for local development. Never use "*" in production.
+CORS_ORIGIN = "http://localhost:8080"
+# ENVIRONMENT is intentionally NOT set here (defaults to non-production / dev).
+# Deploy with `wrangler deploy --env production` to activate production guards.
+
+[env.production]
+name = "offline-sqlite-licensing-admin-api-production"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+# Override CORS_ORIGIN with your real admin web domain:
+# CORS_ORIGIN = "https://admin.example.com"

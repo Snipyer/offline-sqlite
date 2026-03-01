@@ -13,8 +13,12 @@ VITE_LICENSING_ADMIN_API_URL=https://your-admin-api.example.com
 Optional for local development (when using `ADMIN_DEV_API_KEY` in the admin worker):
 
 ```bash
-VITE_LICENSING_ADMIN_API_KEY=your-local-admin-dev-api-key
+LICENSING_ADMIN_API_KEY=your-local-admin-dev-api-key
 ```
+
+> **Note:** This variable intentionally does **not** use the `VITE_` prefix to
+> prevent Vite from embedding it in production bundles. It is injected into dev
+> builds only via the `define` option in `vite.config.ts`.
 
 If omitted, the app falls back to `window.location.origin`.
 

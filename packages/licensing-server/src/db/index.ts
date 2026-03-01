@@ -29,6 +29,14 @@ const DB_BOOTSTRAP_STATEMENTS = [
     started_at TEXT NOT NULL,
     expires_at TEXT NOT NULL
   )`,
+	`CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id TEXT PRIMARY KEY,
+    actor TEXT NOT NULL,
+    action TEXT NOT NULL,
+    target_id TEXT,
+    details TEXT,
+    performed_at TEXT NOT NULL
+  )`,
 ];
 
 let initialized = false;

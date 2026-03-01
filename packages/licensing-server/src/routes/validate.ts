@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { ensureDatabase, getDb } from "../db";
 import { activations, licenses } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import { validateSchema } from "../validation";
 import type { AppBindings } from "../types";
 
 const validate = new Hono<{ Bindings: AppBindings }>();
@@ -14,10 +15,18 @@ validate.post("/", async (c) => {
 	await ensureDatabase(c.env);
 	const db = getDb(c.env);
 
-	const body = await c.req.json<{
-		license_id: string;
-		fingerprint: string;
-	}>();
+	let rawBody: unknown;
+	try {
+		rawBody = await c.req.json();
+	} catch {
+		return c.json({ error: "Invalid JSON body" }, 400);
+	}
+
+	const parsed = validateSchema.safeParse(rawBody);
+	if (!parsed.success) {
+		return c.json({ error: "Invalid request body" }, 400);
+	}
+	const body = parsed.data;
 
 	const [license] = await db.select().from(licenses).where(eq(licenses.id, body.license_id)).limit(1);
 
