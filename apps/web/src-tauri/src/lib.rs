@@ -142,7 +142,7 @@ fn deactivate_trial(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_http::init())
@@ -201,18 +201,32 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
-                if let Some(state) = window.app_handle().try_state::<AppState>() {
-                    if let Ok(mut child_guard) = state.sidecar_child.lock() {
-                        if let Some(child) = child_guard.take() {
-                            log::info!("Killing server sidecar process");
-                            let _ = child.kill();
-                        }
-                    }
-                }
+                kill_sidecar_if_running(window.app_handle(), "window close requested");
             }
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| match event {
+        tauri::RunEvent::ExitRequested { .. } => {
+            kill_sidecar_if_running(app_handle, "app exit requested");
+        }
+        tauri::RunEvent::Exit => {
+            kill_sidecar_if_running(app_handle, "app exit");
+        }
+        _ => {}
+    });
+}
+
+fn kill_sidecar_if_running(app_handle: &tauri::AppHandle, reason: &str) {
+    if let Some(state) = app_handle.try_state::<AppState>() {
+        if let Ok(mut child_guard) = state.sidecar_child.lock() {
+            if let Some(child) = child_guard.take() {
+                log::info!("Killing server sidecar process ({})", reason);
+                let _ = child.kill();
+            }
+        }
+    }
 }
 
 /// Check if we're running from the source directory (development) or as a bundled app
@@ -224,13 +238,21 @@ fn is_running_from_source() -> bool {
 }
 
 async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(state) = app.try_state::<AppState>() {
+        let child_guard = state.sidecar_child.lock().map_err(|e| e.to_string())?;
+        if child_guard.is_some() {
+            log::info!("Server sidecar already running. Skipping spawn.");
+            return Ok(());
+        }
+    }
+
     let is_debug_build = cfg!(debug_assertions);
     let from_source = is_running_from_source();
-    
+
     // When running from source in debug mode: use source directory for database
     // When running as a bundled app (debug or release): use app_data_dir with migrations
     let is_dev = is_debug_build && from_source;
-    
+
     // Only load .env files when running from source
     // In bundled apps, env vars must be set at compile time or in system environment
     let env_vars = if is_dev {
@@ -263,7 +285,10 @@ async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         // src-tauri is at apps/web/src-tauri, so go up 3 levels to reach project root
         let project_root = manifest_dir.join("..").join("..").join("..");
-        let db_path = project_root.canonicalize().unwrap_or(project_root.clone()).join("local.db");
+        let db_path = project_root
+            .canonicalize()
+            .unwrap_or(project_root.clone())
+            .join("local.db");
         log::info!("Development mode: using database at {:?}", db_path);
         (db_path.display().to_string(), None)
     } else {
@@ -377,7 +402,10 @@ const CORS_ORIGIN_CT: Option<&'static str> = option_env!("CORS_ORIGIN");
 impl EnvVars {
     fn from_env() -> Result<Self, String> {
         Ok(Self {
-            better_auth_secret: get_env_or_compile_time("BETTER_AUTH_SECRET", BETTER_AUTH_SECRET_CT)?,
+            better_auth_secret: get_env_or_compile_time(
+                "BETTER_AUTH_SECRET",
+                BETTER_AUTH_SECRET_CT,
+            )?,
             better_auth_url: get_env_or_compile_time("BETTER_AUTH_URL", BETTER_AUTH_URL_CT)?,
             cors_origin: get_env_or_compile_time("CORS_ORIGIN", CORS_ORIGIN_CT)?,
         })
@@ -389,7 +417,11 @@ fn load_dotenv_files() -> EnvVars {
 
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let web_env = manifest_dir.join(".env");
-    let server_env = manifest_dir.join("..").join("..").join("server").join(".env");
+    let server_env = manifest_dir
+        .join("..")
+        .join("..")
+        .join("server")
+        .join(".env");
 
     if web_env.exists() {
         log::info!("Loading .env from: {:?}", web_env);
@@ -412,7 +444,10 @@ fn load_dotenv_files() -> EnvVars {
     }
 }
 
-fn get_env_or_compile_time(key: &str, compile_time: Option<&'static str>) -> Result<String, String> {
+fn get_env_or_compile_time(
+    key: &str,
+    compile_time: Option<&'static str>,
+) -> Result<String, String> {
     if let Ok(value) = env::var(key) {
         return Ok(value);
     }
@@ -439,7 +474,10 @@ fn resolve_bundled_migrations_dir(resource_dir: &Path) -> Option<PathBuf> {
     None
 }
 
-fn copy_dir_all(src: impl AsRef<std::path::Path>, dst: impl AsRef<std::path::Path>) -> std::io::Result<()> {
+fn copy_dir_all(
+    src: impl AsRef<std::path::Path>,
+    dst: impl AsRef<std::path::Path>,
+) -> std::io::Result<()> {
     std::fs::create_dir_all(&dst)?;
     for entry in std::fs::read_dir(src)? {
         let entry = entry?;
