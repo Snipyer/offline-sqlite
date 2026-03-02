@@ -10,7 +10,7 @@
 		"tauri": "tauri",
 		"copy:migrations": "rm -rf src-tauri/server-data && mkdir -p src-tauri/server-data && cp -r ../../packages/db/src/migrations src-tauri/server-data/",
 		"desktop:dev": "bun run kill-5173 && bun run copy:migrations && bun run build:server && bun run dev & wait-on http://localhost:5173 && tauri dev",
-		"desktop:build": "bun run copy:migrations && bun run build:server && tauri build",
+		"desktop:build": "bun run copy:migrations && bun run build:server && tauri build --bundles deb",
 		"desktop:build:win": "bun run copy:migrations && bun run build:server:win && tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc",
 		"build:server": "cd ../server && bun build:sidecar:linux",
 		"build:server:win": "cd ../server && bun build:sidecar:windows",

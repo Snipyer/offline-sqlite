@@ -1,6 +1,6 @@
 use dotenv::dotenv;
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use tauri::Manager;
 use tauri_plugin_shell::process::CommandEvent;
@@ -250,12 +250,15 @@ async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
     std::fs::create_dir_all(&app_data_dir)
         .map_err(|e| format!("Failed to create data directory: {}", e))?;
 
+    log::info!("App data dir: {:?}", app_data_dir);
+
     let env_mode = if is_dev { "development" } else { "production" };
 
     log::info!("env: {}", env_mode);
 
     // When running from source: use absolute path to project root local.db
-    // When running as bundled app: use app_data_dir for the database and copy bundled migrations there
+    // When running as bundled app: use app_data_dir for database and migrations,
+    // seeded from bundled resources.
     let (database_url, migrations_path) = if is_dev {
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         // src-tauri is at apps/web/src-tauri, so go up 3 levels to reach project root
@@ -269,18 +272,23 @@ async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
             .path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource dir: {}", e))?;
-        let bundled_migrations = resource_dir.join("server-data").join("migrations");
         let app_migrations = app_data_dir.join("migrations");
 
-        if bundled_migrations.exists() {
-            if !app_migrations.exists() {
-                log::info!("Copying migrations from {:?} to {:?}", bundled_migrations, app_migrations);
-                copy_dir_all(&bundled_migrations, &app_migrations)
-                    .map_err(|e| format!("Failed to copy migrations: {}", e))?;
-            } else {
-                log::info!("Migrations already present at {:?}", app_migrations);
-            }
-        }
+        log::info!("Resource dir: {:?}", resource_dir);
+        let bundled_migrations = resolve_bundled_migrations_dir(&resource_dir).ok_or_else(|| {
+            format!(
+                "Could not find bundled migrations in resource dir {:?}. Tried server-data/migrations and migrations",
+                resource_dir
+            )
+        })?;
+
+        log::info!(
+            "Syncing bundled migrations from {:?} to {:?}",
+            bundled_migrations,
+            app_migrations
+        );
+        copy_dir_all(&bundled_migrations, &app_migrations)
+            .map_err(|e| format!("Failed to copy migrations to app data dir: {}", e))?;
 
         if is_debug_build {
             log::info!("Debug bundled mode: using database at {:?}", db_path);
@@ -414,6 +422,21 @@ fn get_env_or_compile_time(key: &str, compile_time: Option<&'static str>) -> Res
     }
 
     Err(format!("{key} not set"))
+}
+
+fn resolve_bundled_migrations_dir(resource_dir: &Path) -> Option<PathBuf> {
+    let candidates = [
+        resource_dir.join("server-data").join("migrations"),
+        resource_dir.join("migrations"),
+    ];
+
+    for candidate in candidates {
+        if candidate.exists() {
+            return Some(candidate);
+        }
+    }
+
+    None
 }
 
 fn copy_dir_all(src: impl AsRef<std::path::Path>, dst: impl AsRef<std::path::Path>) -> std::io::Result<()> {
