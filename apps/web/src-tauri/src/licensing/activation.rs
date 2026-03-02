@@ -5,11 +5,28 @@ use super::validation;
 use std::path::PathBuf;
 
 /// The URL of the license activation server. Override with `LICENSE_SERVER_URL`
-/// env var at compile time for production.
-fn license_server_url() -> String {
-    option_env!("LICENSE_SERVER_URL")
-        .unwrap_or("http://localhost:8787")
-        .to_string()
+/// at runtime or compile time.
+fn license_server_url() -> Result<String, String> {
+    if let Ok(url) = std::env::var("LICENSE_SERVER_URL") {
+        let trimmed = url.trim();
+        if !trimmed.is_empty() {
+            return Ok(trimmed.to_string());
+        }
+    }
+
+    if let Some(url) = option_env!("LICENSE_SERVER_URL") {
+        let trimmed = url.trim();
+        if !trimmed.is_empty() {
+            return Ok(trimmed.to_string());
+        }
+    }
+
+    if cfg!(debug_assertions) {
+        return Ok("http://localhost:8787".to_string());
+    }
+
+    Err("Missing LICENSE_SERVER_URL. Set it in apps/web/.env.production for release builds."
+        .to_string())
 }
 
 /// Activate a license key. Validates signature locally first, then contacts the
@@ -35,7 +52,7 @@ pub async fn activate_license(
     });
 
     let response = client
-        .post(format!("{}/api/activate", license_server_url()))
+        .post(format!("{}/api/activate", license_server_url()?))
         .json(&body)
         .timeout(std::time::Duration::from_secs(30))
         .send()
@@ -94,12 +111,14 @@ pub async fn deactivate_license(app_data_dir: &PathBuf) -> Result<(), String> {
             });
 
             // Best-effort: don't fail if the server is unreachable
-            let _ = client
-                .post(format!("{}/api/deactivate", license_server_url()))
-                .json(&body)
-                .timeout(std::time::Duration::from_secs(10))
-                .send()
-                .await;
+            if let Ok(server_url) = license_server_url() {
+                let _ = client
+                    .post(format!("{}/api/deactivate", server_url))
+                    .json(&body)
+                    .timeout(std::time::Duration::from_secs(10))
+                    .send()
+                    .await;
+            }
         }
     }
 
