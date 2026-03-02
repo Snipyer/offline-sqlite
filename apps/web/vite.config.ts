@@ -6,6 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
 	plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
 	build: {
+		target: "es2020",
 		// Use terser for stronger minification in production
 		minify: "terser",
 		terserOptions: {
@@ -16,9 +17,6 @@ export default defineConfig({
 			},
 			mangle: {
 				toplevel: true,
-				properties: {
-					regex: /^_/, // mangle private properties starting with _
-				},
 			},
 			format: {
 				comments: false,

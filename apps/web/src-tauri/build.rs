@@ -17,12 +17,12 @@ fn main() {
     println!("cargo:rerun-if-changed={}", web_env_production.display());
     println!("cargo:rerun-if-changed={}", server_env.display());
 
-    if web_env.exists() {
+    if profile == "release" {
+        if web_env_production.exists() {
+            let _ = dotenv::from_path(&web_env_production);
+        }
+    } else if web_env.exists() {
         let _ = dotenv::from_path(&web_env);
-    }
-
-    if profile == "release" && web_env_production.exists() {
-        let _ = dotenv::from_path(&web_env_production);
     }
 
     if server_env.exists() {
