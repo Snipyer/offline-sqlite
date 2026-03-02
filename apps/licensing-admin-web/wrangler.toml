@@ -1,0 +1,24 @@
+name = "licensing-admin-web"
+compatibility_date = "2026-02-27"
+pages_build_output_dir = "build/client"
+
+[vars]
+# Optional local-development fallback URL when not using service binding.
+VITE_LICENSING_ADMIN_API_URL = ""
+LICENSING_ADMIN_API_URL = ""
+ADMIN_ALLOWED_EMAIL = ""
+
+[[services]]
+binding = "LICENSING_ADMIN_API"
+service = "offline-sqlite-licensing-admin-api"
+
+[env.production]
+
+[[env.production.services]]
+binding = "LICENSING_ADMIN_API"
+service = "offline-sqlite-licensing-admin-api-production"
+
+[env.production.vars]
+VITE_LICENSING_ADMIN_API_URL = ""
+LICENSING_ADMIN_API_URL = ""
+ADMIN_ALLOWED_EMAIL = "snipyergaming@gmail.com"

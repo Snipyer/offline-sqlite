@@ -35,7 +35,8 @@
 		"cf:dev": "turbo -F licensing-admin-web dev",
 		"cf:dev:public": "turbo -F @offline-sqlite/licensing-server dev:public",
 		"cf:dev:admin": "turbo -F @offline-sqlite/licensing-server dev:admin",
-		"cf:dev:all": "turbo run @offline-sqlite/licensing-server#dev:public @offline-sqlite/licensing-server#dev:admin licensing-admin-web#dev"
+		"cf:dev:all": "turbo run @offline-sqlite/licensing-server#dev:public @offline-sqlite/licensing-server#dev:admin licensing-admin-web#dev",
+		"cf:deploy:licensing": "bash ./scripts/deploy-licensing-cloudflare.sh"
 	},
 	"dependencies": {
 		"@offline-sqlite/env": "workspace:*",

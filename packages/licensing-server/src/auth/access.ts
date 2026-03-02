@@ -3,6 +3,10 @@ import type { AppBindings } from "../types";
 
 type AccessContext = Context<{ Bindings: AppBindings }>;
 
+function normalizeEmail(email: string): string {
+	return email.trim().toLowerCase();
+}
+
 /**
  * Timing-safe comparison using SHA-256 digests to prevent timing attacks.
  */
@@ -22,13 +26,35 @@ async function timingSafeEqual(a: string, b: string): Promise<boolean> {
 }
 
 export async function requireAdminAccess(c: AccessContext, next: Next) {
-	// Cloudflare Access (production auth)
+	const allowedEmail = c.env.ADMIN_ALLOWED_EMAIL ? normalizeEmail(c.env.ADMIN_ALLOWED_EMAIL) : null;
+	const proxiedEmail = c.req.header("x-admin-user-email");
 	const accessEmail = c.req.header("cf-access-authenticated-user-email");
-	if (accessEmail) {
+
+	if (proxiedEmail) {
+		if (!allowedEmail) {
+			return c.json({ error: "Server misconfiguration: missing ADMIN_ALLOWED_EMAIL" }, 500);
+		}
+
+		if (normalizeEmail(proxiedEmail) !== allowedEmail) {
+			return c.json({ error: "Forbidden" }, 403);
+		}
+
 		return next();
 	}
 
-	// Block API key fallback in production — only Cloudflare Access is accepted.
+	if (accessEmail) {
+		if (!allowedEmail) {
+			return c.json({ error: "Server misconfiguration: missing ADMIN_ALLOWED_EMAIL" }, 500);
+		}
+
+		if (normalizeEmail(accessEmail) !== allowedEmail) {
+			return c.json({ error: "Forbidden" }, 403);
+		}
+
+		return next();
+	}
+
+	// Block API key fallback in production — only Access identity or trusted proxy is accepted.
 	if (c.env.ENVIRONMENT === "production") {
 		return c.json({ error: "Unauthorized" }, 401);
 	}

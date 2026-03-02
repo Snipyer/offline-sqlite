@@ -13,7 +13,12 @@ type CreateLicenseInput = {
 };
 
 export function getLicensingAdminEndpoint() {
-	const baseUrl = adminEnv.VITE_LICENSING_ADMIN_API_URL ?? window.location.origin;
+	if (import.meta.env.PROD) {
+		return "/api/admin";
+	}
+
+	const baseUrl = adminEnv.VITE_LICENSING_ADMIN_API_URL;
+	if (!baseUrl) return "/api/admin";
 	return `${baseUrl}/api/admin`;
 }
 
@@ -22,7 +27,9 @@ declare const __DEV_ADMIN_API_KEY__: string;
 
 async function adminFetch(endpoint: string, path: string, init?: RequestInit) {
 	const headers = new Headers(init?.headers);
-	headers.set("content-type", "application/json");
+	if (init?.body && !headers.has("content-type")) {
+		headers.set("content-type", "application/json");
+	}
 
 	// In development only, send the API key header for local auth fallback.
 	// __DEV_ADMIN_API_KEY__ is replaced with "" in production builds by Vite,

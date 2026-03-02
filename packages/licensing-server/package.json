@@ -8,8 +8,8 @@
 		"dev:public": "wrangler dev --config wrangler.public.toml --port 8787 --inspector-port 9230",
 		"dev:admin": "wrangler dev --config wrangler.admin.toml --port 8788 --inspector-port 9231",
 		"deploy": "wrangler deploy --config wrangler.public.toml",
-		"deploy:public": "wrangler deploy --config wrangler.public.toml",
-		"deploy:admin": "wrangler deploy --config wrangler.admin.toml",
+		"deploy:public": "wrangler deploy --config wrangler.public.toml --env production",
+		"deploy:admin": "wrangler deploy --config wrangler.admin.toml --env production",
 		"check-types": "tsc -b"
 	},
 	"dependencies": {

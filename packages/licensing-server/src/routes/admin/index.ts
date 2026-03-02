@@ -16,7 +16,11 @@ admin.use("/*", requireAdminAccess);
 // ── Helpers ──────────────────────────────────────────
 
 function getActor(c: AdminContext): string {
-	return c.req.header("cf-access-authenticated-user-email") ?? "dev-api-key";
+	return (
+		c.req.header("x-admin-user-email") ??
+		c.req.header("cf-access-authenticated-user-email") ??
+		"dev-api-key"
+	);
 }
 
 async function logAudit(

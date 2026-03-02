@@ -5,7 +5,7 @@ compatibility_date = "2026-02-27"
 [[d1_databases]]
 binding = "LICENSE_DB"
 database_name = "offline-sqlite-licensing"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "ffdcdfc3-9b8a-4954-a598-80dad7455ad7"
 
 [vars]
 # IMPORTANT: Set to your app's origin(s) in production (comma-separated).
@@ -17,7 +17,12 @@ CORS_ORIGIN = "http://localhost:5173,tauri://localhost"
 [env.production]
 name = "offline-sqlite-licensing-public-production"
 
+[[env.production.d1_databases]]
+binding = "LICENSE_DB"
+database_name = "offline-sqlite-licensing"
+database_id = "ffdcdfc3-9b8a-4954-a598-80dad7455ad7"
+
 [env.production.vars]
 ENVIRONMENT = "production"
 # Override CORS_ORIGIN with your real app origins:
-# CORS_ORIGIN = "https://app.example.com"
+CORS_ORIGIN = "https://app.example.com"
