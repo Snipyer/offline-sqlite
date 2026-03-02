@@ -11,6 +11,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useLicense } from "../hooks/use-license";
+import { LicenseServerStatusChip } from "./license-server-status-chip";
 import { Button } from "@/components/ui/button";
 import { ShieldQuestion } from "lucide-react";
 
@@ -115,6 +116,9 @@ export function LicenseStatusDialog() {
 				</Button>
 			</AlertDialogTrigger>
 			<AlertDialogContent>
+				<div className="mb-4 flex justify-center">
+					<LicenseServerStatusChip />
+				</div>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{t("licensing.statusDialogTitle")}</AlertDialogTitle>
 					<AlertDialogDescription className="wrap-break-word">
