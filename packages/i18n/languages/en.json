@@ -402,6 +402,8 @@
 		"debugDeactivateTrial": "Debug: Deactivate trial",
 		"trialExpiredTitle": "Your Trial Has Expired",
 		"trialExpiredSubtitle": "You have used all 7 trial days. Enter a license key to continue.",
-		"purchaseLicense": "Purchase a License"
+		"purchaseLicense": "Purchase a License",
+		"serverOnline": "Online",
+		"serverOffline": "Offline"
 	}
 }

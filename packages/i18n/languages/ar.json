@@ -402,6 +402,8 @@
 		"debugDeactivateTrial": "تصحيح: إلغاء تفعيل التجربة",
 		"trialExpiredTitle": "انتهت فترة التجربة",
 		"trialExpiredSubtitle": "لقد استخدمت جميع أيام التجربة السبعة. أدخل مفتاح ترخيص للمتابعة.",
-		"purchaseLicense": "شراء ترخيص"
+		"purchaseLicense": "شراء ترخيص",
+		"serverOnline": "متصل",
+		"serverOffline": "غير متصل"
 	}
 }

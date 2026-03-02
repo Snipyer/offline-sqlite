@@ -402,6 +402,8 @@
 		"debugDeactivateTrial": "Debug : désactiver l'essai",
 		"trialExpiredTitle": "Votre essai a expiré",
 		"trialExpiredSubtitle": "Vous avez utilisé les 7 jours d'essai. Entrez une clé de licence pour continuer.",
-		"purchaseLicense": "Acheter une licence"
+		"purchaseLicense": "Acheter une licence",
+		"serverOnline": "En ligne",
+		"serverOffline": "Hors ligne"
 	}
 }

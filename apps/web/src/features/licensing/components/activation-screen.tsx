@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Loader from "@/components/loader";
 import { useLicense } from "../hooks/use-license";
+import { LicenseServerStatusChip } from "./license-server-status-chip";
 
 /**
  * Full-screen activation / trial screen shown when no valid license is found.
@@ -94,7 +95,10 @@ export default function ActivationScreen() {
 				</div>
 
 				{/* Activation form */}
-				<div className="bg-card/50 rounded-2xl border p-6 shadow-xl backdrop-blur-sm">
+				<div className="bg-card/50 relative rounded-2xl border p-6 shadow-xl backdrop-blur-sm">
+					<div className="mb-2 flex justify-center">
+						<LicenseServerStatusChip />
+					</div>
 					<form
 						onSubmit={(e) => {
 							e.preventDefault();

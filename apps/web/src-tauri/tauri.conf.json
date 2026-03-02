@@ -12,8 +12,8 @@
 		"windows": [
 			{
 				"title": "offline-sqlite",
-				"width": 800,
-				"height": 600,
+				"width": 1200,
+				"height": 800,
 				"resizable": true,
 				"fullscreen": false,
 				"decorations": false
@@ -38,7 +38,11 @@
 			"icons/icon.icns",
 			"icons/icon.ico"
 		],
-		"externalBin": ["binaries/server"],
-		"resources": ["server-data"]
+		"externalBin": [
+			"binaries/server"
+		],
+		"resources": [
+			"server-data"
+		]
 	}
 }
