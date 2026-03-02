@@ -195,13 +195,23 @@ curl http://localhost:4000/api/admin/licenses
 
 ---
 
-### 5. Configure the Tauri App to Point to Local Server
+### 5. Configure the Tauri App Licensing API URL (Dev vs Production)
 
-The Rust activation module resolves the server URL at **compile time** via the `LICENSE_SERVER_URL` environment variable. For local testing:
+The Rust activation module reads `LICENSE_SERVER_URL` (runtime first, then compile-time).
 
-```bash
-export LICENSE_SERVER_URL=http://localhost:4000
+- Development: set `apps/web/.env`:
+
+```dotenv
+LICENSE_SERVER_URL=http://localhost:4000
 ```
+
+- Production build: set `apps/web/.env.production` to your deployed public worker URL, for example:
+
+```dotenv
+LICENSE_SERVER_URL=https://offline-sqlite-licensing-public-production.<your-subdomain>.workers.dev
+```
+
+`src-tauri/build.rs` loads `.env` for all builds and additionally loads `.env.production` for release builds.
 
 Then build/run the Tauri app:
 

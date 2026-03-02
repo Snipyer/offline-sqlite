@@ -162,8 +162,7 @@ pub fn run() {
         .setup(|app| {
             let app_handle = app.handle().clone();
 
-            // ── Anti-debug check (production only) ──
-            #[cfg(not(debug_assertions))]
+            // ── Anti-debug check (no-op in debug builds) ──
             licensing::anti_debug::check_debugger();
 
             // ── License check before starting server ──

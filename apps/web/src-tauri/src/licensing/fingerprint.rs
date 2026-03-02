@@ -24,13 +24,6 @@ pub fn generate_fingerprint() -> (String, Vec<String>) {
     (fingerprint, individual_hashes)
 }
 
-/// Fuzzy-compare two sets of signal hashes. Returns true if at least
-/// `threshold` of the stored hashes are found in the current set.
-pub fn fingerprint_matches(stored: &[String], current: &[String], threshold: usize) -> bool {
-    let matched = stored.iter().filter(|s| current.contains(s)).count();
-    matched >= threshold
-}
-
 // ── signal collection ───────────────────────────────────
 fn collect_signals() -> Vec<Option<String>> {
     vec![

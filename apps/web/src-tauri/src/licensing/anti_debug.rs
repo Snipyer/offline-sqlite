@@ -43,6 +43,10 @@ pub fn is_debugger_present() -> bool {
 /// Run the anti-debug check and log a warning if a debugger is detected.
 /// In release builds, introduce a random delay to make it harder to locate.
 pub fn check_debugger() {
+	if cfg!(debug_assertions) {
+		return;
+	}
+
     if !is_debugger_present() {
         return;
     }

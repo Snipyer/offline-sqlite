@@ -42,6 +42,7 @@ export function useLicense() {
 		const result = await tauriInvoke<ActivationResult>("activate_license", { key });
 		if (result.success) {
 			setLicenseState(result.license_state);
+			window.location.reload();
 		}
 		return result;
 	}, []);
@@ -49,11 +50,13 @@ export function useLicense() {
 	const deactivateLicense = useCallback(async () => {
 		await tauriInvoke<void>("deactivate_license");
 		setLicenseState({ state: "none" });
+		window.location.reload();
 	}, []);
 
 	const startTrial = useCallback(async (): Promise<TrialInfo> => {
 		const info = await tauriInvoke<TrialInfo>("start_trial");
 		setLicenseState({ state: "trial", days_remaining: info.days_remaining });
+		window.location.reload();
 		return info;
 	}, []);
 
@@ -64,6 +67,7 @@ export function useLicense() {
 	const deactivateTrial = useCallback(async () => {
 		await tauriInvoke<void>("deactivate_trial");
 		setLicenseState({ state: "none" });
+		window.location.reload();
 	}, []);
 
 	return {

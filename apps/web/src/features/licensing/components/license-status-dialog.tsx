@@ -38,6 +38,10 @@ export function LicenseStatusDialog() {
 	const { t } = useTranslation();
 	const { licenseState, loading, deactivateLicense, deactivateTrial } = useLicense();
 
+	const rowClassName = "flex items-start justify-between gap-4";
+	const labelClassName = "text-muted-foreground min-w-0";
+	const valueClassName = "min-w-0 break-words text-right font-medium";
+
 	const renderDetails = () => {
 		if (loading) {
 			return <div className="text-muted-foreground text-sm">{t("common.loading")}</div>;
@@ -46,21 +50,21 @@ export function LicenseStatusDialog() {
 		if (licenseState.state === "valid") {
 			return (
 				<div className="space-y-2 text-sm">
-					<div className="flex items-center justify-between gap-4">
-						<span className="text-muted-foreground">{t("licensing.statusLabel")}</span>
-						<span className="font-medium">{getStatusLabel(licenseState.state, t)}</span>
+					<div className={rowClassName}>
+						<span className={labelClassName}>{t("licensing.statusLabel")}</span>
+						<span className={valueClassName}>{getStatusLabel(licenseState.state, t)}</span>
 					</div>
-					<div className="flex items-center justify-between gap-4">
-						<span className="text-muted-foreground">{t("licensing.planLabel")}</span>
-						<span className="font-medium">
+					<div className={rowClassName}>
+						<span className={labelClassName}>{t("licensing.planLabel")}</span>
+						<span className={valueClassName}>
 							{licenseState.plan === "perpetual"
 								? t("licensing.planPerpetual")
 								: t("licensing.planSubscription")}
 						</span>
 					</div>
-					<div className="flex items-center justify-between gap-4">
-						<span className="text-muted-foreground">{t("licensing.expiresAtLabel")}</span>
-						<span className="font-medium">
+					<div className={rowClassName}>
+						<span className={labelClassName}>{t("licensing.expiresAtLabel")}</span>
+						<span className={valueClassName}>
 							{licenseState.expires_at
 								? new Date(licenseState.expires_at).toLocaleDateString()
 								: t("licensing.neverExpires")}
@@ -73,13 +77,13 @@ export function LicenseStatusDialog() {
 		if (licenseState.state === "trial") {
 			return (
 				<div className="space-y-2 text-sm">
-					<div className="flex items-center justify-between gap-4">
-						<span className="text-muted-foreground">{t("licensing.statusLabel")}</span>
-						<span className="font-medium">{getStatusLabel(licenseState.state, t)}</span>
+					<div className={rowClassName}>
+						<span className={labelClassName}>{t("licensing.statusLabel")}</span>
+						<span className={valueClassName}>{getStatusLabel(licenseState.state, t)}</span>
 					</div>
-					<div className="flex items-center justify-between gap-4">
-						<span className="text-muted-foreground">{t("licensing.daysRemainingLabel")}</span>
-						<span className="font-medium">
+					<div className={rowClassName}>
+						<span className={labelClassName}>{t("licensing.daysRemainingLabel")}</span>
+						<span className={valueClassName}>
 							{t("licensing.daysRemaining", { days: licenseState.days_remaining })}
 						</span>
 					</div>
@@ -89,9 +93,9 @@ export function LicenseStatusDialog() {
 
 		return (
 			<div className="space-y-2 text-sm">
-				<div className="flex items-center justify-between gap-4">
-					<span className="text-muted-foreground">{t("licensing.statusLabel")}</span>
-					<span className="font-medium">{getStatusLabel(licenseState.state, t)}</span>
+				<div className={rowClassName}>
+					<span className={labelClassName}>{t("licensing.statusLabel")}</span>
+					<span className={valueClassName}>{getStatusLabel(licenseState.state, t)}</span>
 				</div>
 			</div>
 		);
@@ -113,19 +117,31 @@ export function LicenseStatusDialog() {
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{t("licensing.statusDialogTitle")}</AlertDialogTitle>
-					<AlertDialogDescription>{t("licensing.statusDialogDescription")}</AlertDialogDescription>
+					<AlertDialogDescription className="wrap-break-word">
+						{t("licensing.statusDialogDescription")}
+					</AlertDialogDescription>
 				</AlertDialogHeader>
 				{renderDetails()}
-				<AlertDialogFooter>
-					<div className="mr-auto flex gap-2">
-						<Button type="button" variant="outline" onClick={() => void deactivateLicense()}>
+				<AlertDialogFooter className="items-stretch sm:flex-col sm:items-stretch sm:justify-start">
+					<div className="flex w-full flex-col gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => void deactivateLicense()}
+							className="whitespace-normal"
+						>
 							{t("licensing.debugDeactivateLicense")}
 						</Button>
-						<Button type="button" variant="outline" onClick={() => void deactivateTrial()}>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => void deactivateTrial()}
+							className="whitespace-normal"
+						>
 							{t("licensing.debugDeactivateTrial")}
 						</Button>
 					</div>
-					<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+					<AlertDialogCancel className="w-full sm:w-full">{t("common.cancel")}</AlertDialogCancel>
 				</AlertDialogFooter>
 			</AlertDialogContent>
 		</AlertDialog>
