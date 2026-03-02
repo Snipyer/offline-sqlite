@@ -5,6 +5,8 @@ export type AppBindings = {
 	LICENSE_PUBLIC_KEY_B64: string;
 	/** API key fallback for local development — must NOT be set in production. */
 	ADMIN_DEV_API_KEY?: string;
+	/** Single allowed admin email for production access checks. */
+	ADMIN_ALLOWED_EMAIL?: string;
 	CORS_ORIGIN?: string;
 	/** Set to "production" in deployed environments to disable dev-only fallbacks. */
 	ENVIRONMENT?: string;

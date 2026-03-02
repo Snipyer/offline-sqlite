@@ -6,7 +6,8 @@
 		"build": "react-router build",
 		"dev": "react-router dev",
 		"start": "react-router-serve ./build/server/index.js",
-		"check-types": "react-router typegen && tsc"
+		"check-types": "react-router typegen && tsc",
+		"deploy": "bun run build && bunx wrangler pages deploy build/client --project-name=licensing-admin-web --branch master"
 	},
 	"dependencies": {
 		"@tanstack/react-form": "^1.27.3",
