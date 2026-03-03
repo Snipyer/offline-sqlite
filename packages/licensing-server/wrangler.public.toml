@@ -25,4 +25,19 @@ database_id = "ffdcdfc3-9b8a-4954-a598-80dad7455ad7"
 [env.production.vars]
 ENVIRONMENT = "production"
 # Override CORS_ORIGIN with your real app origins:
-CORS_ORIGIN = "https://app.example.com"
+CORS_ORIGIN = "http://tauri.localhost"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
