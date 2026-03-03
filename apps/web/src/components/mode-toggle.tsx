@@ -1,7 +1,8 @@
+import type { VariantProps } from "class-variance-authority";
 import { Moon, Sun, Monitor } from "lucide-react";
 
 import { useTheme } from "@/components/theme-provider";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,7 +12,14 @@ import {
 import { useTranslation } from "@offline-sqlite/i18n";
 import { cn } from "@/lib/utils";
 
-export function ModeToggle() {
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
+
+interface ModeToggleProps {
+	triggerVariant?: ButtonVariant;
+	triggerClassName?: string;
+}
+
+export function ModeToggle({ triggerVariant = "outline", triggerClassName }: ModeToggleProps) {
 	const { setTheme, theme } = useTheme();
 	const { t } = useTranslation();
 
@@ -20,10 +28,13 @@ export function ModeToggle() {
 			<DropdownMenuTrigger
 				render={
 					<Button
-						variant="outline"
+						variant={triggerVariant}
 						size="icon"
-						className="border-border/50 bg-background/50 hover:border-border hover:bg-muted h-9
-							w-9 rounded-xl transition-all duration-200"
+						className={cn(
+							`border-border/50 bg-background/50 hover:border-border hover:bg-muted h-9 w-9
+							rounded-xl transition-all duration-200`,
+							triggerClassName,
+						)}
 					>
 						<Sun
 							className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"

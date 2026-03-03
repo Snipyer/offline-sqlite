@@ -109,7 +109,8 @@ export function LicenseStatusDialog() {
 					type="button"
 					variant="ghost"
 					size="icon"
-					className="titlebar-button"
+					className="titlebar-button bg-background/50 hover:border-border hover:bg-muted h-9 w-9
+						rounded-xl transition-all duration-200"
 					aria-label={t("licensing.statusDialogOpenAria")}
 				>
 					<ShieldQuestion size={16} />

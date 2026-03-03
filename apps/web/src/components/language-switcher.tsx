@@ -1,3 +1,4 @@
+import type { VariantProps } from "class-variance-authority";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -10,11 +11,20 @@ import {
 	toSupportedLanguage,
 	useTranslation,
 } from "@offline-sqlite/i18n";
-import { Button } from "./ui/button";
-import { Globe } from "lucide-react";
+import { Button, buttonVariants } from "./ui/button";
 import { cn } from "@/lib/utils";
 
-export default function LanguageSwitcher() {
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
+
+interface LanguageSwitcherProps {
+	triggerVariant?: ButtonVariant;
+	triggerClassName?: string;
+}
+
+export default function LanguageSwitcher({
+	triggerVariant = "outline",
+	triggerClassName,
+}: LanguageSwitcherProps) {
 	const { i18n, t } = useTranslation();
 	const currentLanguage = toSupportedLanguage(String(i18n.resolvedLanguage ?? i18n.language ?? "en"));
 
@@ -29,10 +39,13 @@ export default function LanguageSwitcher() {
 			<DropdownMenuTrigger
 				render={
 					<Button
-						variant="outline"
+						variant={triggerVariant}
 						size="icon"
-						className="border-border/50 bg-background/50 hover:border-border hover:bg-muted h-9
-							w-9 rounded-xl transition-all duration-200"
+						className={cn(
+							`border-border/50 bg-background/50 hover:border-border hover:bg-muted h-9 w-9
+							rounded-xl transition-all duration-200`,
+							triggerClassName,
+						)}
 					>
 						<span className="text-xs font-medium">{languageShortLabels[currentLanguage]}</span>
 					</Button>

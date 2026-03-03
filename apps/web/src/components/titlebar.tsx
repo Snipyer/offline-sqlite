@@ -2,13 +2,18 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ArrowLeft, ArrowRight, Minus, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useNavigationType } from "react-router";
+import { authClient } from "@/lib/auth-client";
 import { LicenseStatusDialog } from "@/features/licensing/components/license-status-dialog";
+import LanguageSwitcher from "@/components/language-switcher";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export function Titlebar() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const navigationType = useNavigationType();
 	const appWindow = getCurrentWindow();
+	const { data: session } = authClient.useSession();
+	const isAuthenticated = !!session;
 	const [historyPosition, setHistoryPosition] = useState(() => {
 		const initialKey = location.key || "initial";
 
@@ -94,6 +99,18 @@ export function Titlebar() {
 			</div>
 
 			<div className="flex items-center">
+				{!isAuthenticated && (
+					<>
+						<LanguageSwitcher
+							triggerVariant="ghost"
+							triggerClassName="titlebar-button border-border/0"
+						/>
+						<ModeToggle
+							triggerVariant="ghost"
+							triggerClassName="titlebar-button border-border/0"
+						/>
+					</>
+				)}
 				<LicenseStatusDialog />
 				<div className="bg-border mx-2 h-4 w-px" />
 
