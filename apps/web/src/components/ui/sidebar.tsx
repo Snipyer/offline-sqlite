@@ -128,7 +128,7 @@ function SidebarProvider({
 					} as React.CSSProperties
 				}
 				className={cn(
-					"group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
+					"group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-full w-full",
 					className,
 				)}
 				{...props}
@@ -287,7 +287,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
 			className={cn(
 				`hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear
 				group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0
-				after:start-1/2 after:w-[2px] sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2`,
+				after:start-1/2 after:w-0.5 sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2`,
 				`in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize
 				rtl:in-data-[side=left]:cursor-e-resize rtl:in-data-[side=right]:cursor-w-resize`,
 				`[[data-side=left][data-state=collapsed]_&]:cursor-e-resize
@@ -297,7 +297,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
 				`hover:group-data-[collapsible=offcanvas]:bg-sidebar
 				group-data-[collapsible=offcanvas]:translate-x-0
 				group-data-[collapsible=offcanvas]:after:start-full
-				rtl:group-data-[collapsible=offcanvas]:-translate-x-0`,
+				rtl:group-data-[collapsible=offcanvas]:translate-x-0`,
 				"[[data-side=left][data-collapsible=offcanvas]_&]:-end-2",
 				"[[data-side=right][data-collapsible=offcanvas]_&]:-start-2",
 				className,
@@ -316,8 +316,11 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
 			data-slot="sidebar-inset"
 			data-side={side}
 			className={cn(
-				"bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2 relative flex w-full flex-1 flex-col",
-				className
+				`bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:m-2
+				md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl
+				md:peer-data-[variant=inset]:shadow-sm
+				md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2`,
+				className,
 			)}
 			{...props}
 		/>
@@ -567,7 +570,7 @@ function SidebarMenuAction({
 				className: cn(
 					"text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground absolute end-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-none p-0 outline-hidden transition-transform group-data-[collapsible=icon]:hidden peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1 after:absolute after:-inset-2 focus-visible:ring-2 md:after:hidden [&>svg]:size-4 [&>svg]:shrink-0",
 					showOnHover &&
-					"peer-data-active/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 aria-expanded:opacity-100 md:opacity-0",
+						"peer-data-active/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 aria-expanded:opacity-100 md:opacity-0",
 					className,
 				),
 			},

@@ -84,7 +84,6 @@ export default function App() {
 	const sidebarSide = direction === "rtl" ? "right" : "left";
 	const location = useLocation();
 	const { data: session } = authClient.useSession();
-	const isAuthPage = location.pathname === "/login";
 	const isAuthenticated = !!session;
 
 	// Initialize anti-debug measures in production Tauri builds
@@ -113,48 +112,52 @@ export default function App() {
 						disableTransitionOnChange
 						storageKey="vite-ui-theme"
 					>
-						{isTauriEnv && <Titlebar />}
+						<div className="flex h-screen flex-col">
+							{isTauriEnv && <Titlebar />}
 
-						{/* License loading state */}
-						{isTauriEnv && licenseLoading && <Loader />}
+							{/* License loading state */}
+							{isTauriEnv && licenseLoading && <Loader />}
 
-						{/* License gate — show activation or trial-expired screen */}
-						{showLicenseGate && (
-							<>
-								{licenseState.state === "trial_expired" ? (
-									<TrialExpired />
-								) : (
-									<ActivationScreen />
-								)}
-							</>
-						)}
+							{/* License gate — show activation or trial-expired screen */}
+							{showLicenseGate && (
+								<>
+									{licenseState.state === "trial_expired" ? (
+										<TrialExpired />
+									) : (
+										<ActivationScreen />
+									)}
+								</>
+							)}
 
-						{/* Main app — shown only when license is OK (or not Tauri) */}
-						{(!isTauriEnv || (!licenseLoading && !showLicenseGate)) && (
-							<>
-								{showTrialBanner && (
-									<TrialBanner
-										daysRemaining={
-											licenseState.state === "trial" ? licenseState.days_remaining : 0
-										}
-									/>
-								)}
-								{isAuthenticated ? (
-									<SidebarProvider defaultOpen side={sidebarSide}>
-										<AppSidebar />
-										<SidebarInset
-											className={cn("flex h-svh flex-col", isTauriEnv && "pt-9")}
-										>
+							{/* Main app — shown only when license is OK (or not Tauri) */}
+							{(!isTauriEnv || (!licenseLoading && !showLicenseGate)) && (
+								<>
+									{showTrialBanner && (
+										<TrialBanner
+											daysRemaining={
+												licenseState.state === "trial"
+													? licenseState.days_remaining
+													: 0
+											}
+										/>
+									)}
+									<div className={cn("app-content")}>
+										{isAuthenticated ? (
+											<SidebarProvider defaultOpen side={sidebarSide}>
+												<AppSidebar />
+												<SidebarInset>
+													<Outlet />
+												</SidebarInset>
+											</SidebarProvider>
+										) : (
 											<Outlet />
-										</SidebarInset>
-									</SidebarProvider>
-								) : (
-									<Outlet />
-								)}
-							</>
-						)}
-						<ScrollToTopButton />
-						<Toaster richColors />
+										)}
+									</div>
+								</>
+							)}
+							<ScrollToTopButton />
+							<Toaster richColors />
+						</div>
 					</ThemeProvider>
 				</QueryClientProvider>
 			</DirectionProvider>

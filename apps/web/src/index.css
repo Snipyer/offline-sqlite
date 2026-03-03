@@ -10,6 +10,10 @@
 	.titlebar-button {
 		@apply text-muted-foreground hover:bg-accent hover:text-accent-foreground inline-flex h-9 w-10 items-center justify-center transition-colors;
 	}
+
+	.app-content {
+		@apply flex flex-1 flex-col overflow-y-auto;
+	}
 }
 
 @custom-variant dark (&:is(.dark *));

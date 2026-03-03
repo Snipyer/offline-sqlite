@@ -58,8 +58,8 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
 
 	return (
 		<div
-			className="from-background via-background to-primary/5 flex min-h-svh items-center justify-center
-				bg-gradient-to-br p-4"
+			className="from-background via-background to-primary/5 flex min-h-full items-center justify-center
+				bg-linear-to-br p-4"
 		>
 			<div className="w-full max-w-md">
 				<div className="mb-8 text-center">

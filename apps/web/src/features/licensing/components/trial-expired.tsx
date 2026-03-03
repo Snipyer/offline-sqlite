@@ -38,7 +38,7 @@ export default function TrialExpired() {
 
 	return (
 		<div
-			className="from-background via-background to-destructive/5 flex min-h-svh items-center
+			className="from-background via-background to-destructive/5 flex min-h-full items-center
 				justify-center bg-linear-to-br p-4"
 		>
 			<div className="w-full max-w-md">
