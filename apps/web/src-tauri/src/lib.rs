@@ -26,6 +26,35 @@ async fn check_server_health() -> Result<bool, String> {
 }
 
 #[tauri::command]
+async fn check_license_server_health(license_server_url: String) -> Result<bool, String> {
+    let health_url = format!("{}/health", license_server_url);
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let platform = std::env::consts::OS;
+    let app_version = env!("CARGO_PKG_VERSION");
+
+    let response = client
+        .head(&health_url)
+        .header("X-Client-Platform", platform)
+        .header("X-Client-Version", app_version)
+        .header("X-Client-Type", "desktop-app")
+        .send()
+        .await;
+
+    match response {
+        Ok(resp) => Ok(resp.status().is_success()),
+        Err(e) => {
+            log::error!("License server health check failed: {}", e);
+            Ok(false)
+        }
+    }
+}
+
+#[tauri::command]
 fn get_license_status(state: tauri::State<'_, AppState>) -> Result<LicenseState, String> {
     let guard = state.license_state.lock().map_err(|e| e.to_string())?;
     Ok(guard.clone())
@@ -152,6 +181,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             check_server_health,
+            check_license_server_health,
             get_license_status,
             activate_license,
             deactivate_license,

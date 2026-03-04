@@ -1,5 +1,6 @@
 import { env } from "@offline-sqlite/env/web";
 import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 
 type ServerStatus = "online" | "offline" | "checking";
 
@@ -16,17 +17,10 @@ export function useLicenseServerStatus() {
 			}
 
 			try {
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-				const response = await fetch(`${serverUrl}/health`, {
-					method: "HEAD",
-					cache: "no-cache",
-					signal: controller.signal,
+				const isOnline = await invoke<boolean>("check_license_server_health", {
+					licenseServerUrl: serverUrl,
 				});
-
-				clearTimeout(timeoutId);
-				setStatus(response.ok ? "online" : "offline");
+				setStatus(isOnline ? "online" : "offline");
 			} catch {
 				setStatus("offline");
 			}
