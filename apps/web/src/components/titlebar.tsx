@@ -95,6 +95,7 @@ export function Titlebar() {
 					font-medium"
 				data-tauri-drag-region
 			>
+				<img src="/square_tauri_icon.png" alt="" className="h-4 w-4 mb-1" />
 				<span>offline-sqlite</span>
 			</div>
 
