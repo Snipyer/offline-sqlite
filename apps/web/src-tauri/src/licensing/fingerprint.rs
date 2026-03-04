@@ -1,6 +1,19 @@
 use sha2::{Digest, Sha256};
-use sysinfo::System;
 use std::fs;
+use sysinfo::System;
+
+const CREATE_NO_WINDOW_FLAG: u32 = 0x08000000;
+
+#[cfg(target_os = "windows")]
+fn hide_window(cmd: &mut std::process::Command) -> &mut std::process::Command {
+    use std::os::windows::process::CommandExt;
+    cmd.creation_flags(CREATE_NO_WINDOW_FLAG)
+}
+
+#[cfg(not(target_os = "windows"))]
+fn hide_window(cmd: &mut std::process::Command) -> &mut std::process::Command {
+    cmd
+}
 
 /// Generate a SHA-256 hardware fingerprint from multiple system signals.
 /// Returns the hex-encoded hash **and** the individual signal hashes (for fuzzy matching).
@@ -54,7 +67,9 @@ fn get_hostname() -> Option<String> {
 fn get_os_install_id() -> Option<String> {
     #[cfg(target_os = "linux")]
     {
-        fs::read_to_string("/etc/machine-id").ok().map(|s| s.trim().to_string())
+        fs::read_to_string("/etc/machine-id")
+            .ok()
+            .map(|s| s.trim().to_string())
     }
     #[cfg(target_os = "macos")]
     {
@@ -73,7 +88,7 @@ fn get_os_install_id() -> Option<String> {
     #[cfg(target_os = "windows")]
     {
         use std::process::Command;
-        Command::new("reg")
+        hide_window(&mut Command::new("reg"))
             .args([
                 "query",
                 r"HKLM\SOFTWARE\Microsoft\Cryptography",
@@ -102,7 +117,11 @@ fn get_disk_serial() -> Option<String> {
             .ok()
             .and_then(|o| {
                 let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-                if s.is_empty() { None } else { Some(s) }
+                if s.is_empty() {
+                    None
+                } else {
+                    Some(s)
+                }
             })
             .or_else(|| {
                 // Fallback: use /dev/disk/by-id first entry
@@ -130,7 +149,7 @@ fn get_disk_serial() -> Option<String> {
     #[cfg(target_os = "windows")]
     {
         use std::process::Command;
-        Command::new("wmic")
+        hide_window(&mut Command::new("wmic"))
             .args(["diskdrive", "get", "SerialNumber"])
             .output()
             .ok()
@@ -182,7 +201,7 @@ fn get_mac_address() -> Option<String> {
     #[cfg(target_os = "windows")]
     {
         use std::process::Command;
-        Command::new("getmac")
+        hide_window(&mut Command::new("getmac"))
             .args(["/FO", "CSV", "/NH"])
             .output()
             .ok()
