@@ -1,6 +1,6 @@
 import type { DateRange } from "react-day-picker";
 
-export type DatePreset = "yesterday" | "lastWeek" | "lastMonth";
+export type DatePreset = "yesterday" | "lastWeek" | "lastMonth" | "thisMonth";
 
 function atStartOfDay(date: Date) {
 	const next = new Date(date);
@@ -34,6 +34,14 @@ export function getPresetDateRange(preset: DatePreset): DateRange {
 	if (preset === "lastWeek") {
 		return {
 			from: atStartOfDay(subtractDays(now, 6)),
+			to: atEndOfDay(now),
+		};
+	}
+
+	if (preset === "thisMonth") {
+		const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+		return {
+			from: atStartOfDay(firstDayOfMonth),
 			to: atEndOfDay(now),
 		};
 	}

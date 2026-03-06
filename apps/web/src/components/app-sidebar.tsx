@@ -9,6 +9,7 @@ import {
 	Stethoscope,
 	ChevronLeft,
 	ChevronRight,
+	TrendingUp,
 } from "lucide-react";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
@@ -37,6 +38,7 @@ const navItems = [
 	{ to: "/visit-types", labelKey: "nav.visitTypes", icon: Syringe },
 	{ to: "/payments", labelKey: "nav.payments", icon: CreditCard },
 	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
+	{ to: "/reports", labelKey: "nav.reports", icon: TrendingUp },
 ] as const;
 
 const itemVariants = {
