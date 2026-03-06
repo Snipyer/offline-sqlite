@@ -254,8 +254,9 @@ export function VisitCard({
 								<span className="text-lg font-bold text-amber-600">
 									<Currency value={visit.amountLeft} />
 								</span>
-								<span className="text-muted-foreground text-sm">
-									/ <Currency value={visit.totalAmount} size="sm" />
+								<span className="text-muted-foreground inline-flex items-center gap-1 text-sm">
+									<span aria-hidden="true">/</span>
+									<Currency value={visit.totalAmount} size="sm" />
 								</span>
 							</div>
 							{showPatient && !visit.isDeleted && resolvedPatientId && (

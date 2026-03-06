@@ -201,6 +201,7 @@ export interface CurrencyProps {
 	value: number;
 	currency?: string;
 	size?: CurrencySize;
+	fontSize?: number;
 	showCents?: boolean;
 	className?: string;
 }

@@ -80,9 +80,9 @@ export default function DailySummaryContent() {
 					<StatCard
 						icon={DollarSign}
 						title={t("dailySummary.dailyIncome")}
-						value={<Currency className="text-3xl!" value={totalCollected} />}
+						value={<Currency fontSize={30} value={totalCollected} />}
 						subtitle={
-							<span className="text-muted-foreground">
+							<span className="text-muted-foreground inline-flex items-center gap-1">
 								{t("dailySummary.expected")}: <Currency value={totalExpected} size="sm" />
 								<span className="mx-2">|</span>
 								{t("dailySummary.unpaid")}: <Currency value={totalUnpaidAmount} size="sm" />

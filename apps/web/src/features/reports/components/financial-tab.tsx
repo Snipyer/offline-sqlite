@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { DollarSign, CreditCard, TrendingUp, Calendar } from "lucide-react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Currency } from "@/components/currency";
+import { Currency, formatCurrencyText } from "@/components/currency";
 import Loader from "@/components/loader";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
@@ -28,6 +28,9 @@ const revenueChartConfig = {
 
 export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 	const { t } = useTranslation();
+
+	const formatAxisCurrency = (value: number) =>
+		formatCurrencyText({ value, showCents: false }).replace(/\s+/g, " ");
 
 	const summary = useQuery(trpc.reports.getSummary.queryOptions(dateRange));
 	const revenueByTreatment = useQuery(trpc.reports.getRevenueByTreatment.queryOptions(dateRange));
@@ -60,7 +63,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 				<StatCard
 					icon={DollarSign}
 					title={t("reports.totalRevenue")}
-					value={<Currency className="text-3xl!" value={summaryData?.totalRevenue ?? 0} />}
+					value={<Currency fontSize={30} value={summaryData?.totalRevenue ?? 0} />}
 					subtitle={<span className="text-muted-foreground">{t("reports.collected")}</span>}
 					color="emerald"
 				/>
@@ -76,7 +79,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 				<StatCard
 					icon={TrendingUp}
 					title={t("reports.avgPerVisit")}
-					value={<Currency className="text-3xl" value={summaryData?.avgPerVisit ?? 0} />}
+					value={<Currency fontSize={30} value={summaryData?.avgPerVisit ?? 0} />}
 					subtitle={<span className="text-muted-foreground">{t("reports.average")}</span>}
 					color="violet"
 				/>
@@ -84,7 +87,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 				<StatCard
 					icon={CreditCard}
 					title={t("reports.outstanding")}
-					value={<Currency className="text-3xl!" value={summaryData?.outstanding ?? 0} />}
+					value={<Currency fontSize={30} value={summaryData?.outstanding ?? 0} />}
 					subtitle={<span className="text-muted-foreground">{t("reports.unpaid")}</span>}
 					color="amber"
 				/>
@@ -117,9 +120,20 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 									<YAxis
 										tickLine={false}
 										axisLine={false}
-										tickFormatter={(value) => `$${value}`}
+										width={92}
+										tick={{ fontSize: 10 }}
+										tickMargin={6}
+										tickFormatter={(value) => formatAxisCurrency(Number(value))}
 									/>
-									<ChartTooltip content={<ChartTooltipContent />} />
+									<ChartTooltip
+										content={
+											<ChartTooltipContent
+												formatter={(value) => (
+													<span>{formatAxisCurrency(Number(value))}</span>
+												)}
+											/>
+										}
+									/>
 									<Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
 								</BarChart>
 							</ChartContainer>
@@ -151,9 +165,20 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 									<YAxis
 										tickLine={false}
 										axisLine={false}
-										tickFormatter={(value) => `$${value}`}
+										width={92}
+										tick={{ fontSize: 10 }}
+										tickMargin={6}
+										tickFormatter={(value) => formatAxisCurrency(Number(value))}
 									/>
-									<ChartTooltip content={<ChartTooltipContent />} />
+									<ChartTooltip
+										content={
+											<ChartTooltipContent
+												formatter={(value) => (
+													<span>{formatAxisCurrency(Number(value))}</span>
+												)}
+											/>
+										}
+									/>
 									<Line
 										type="linear"
 										dataKey="unpaid"
