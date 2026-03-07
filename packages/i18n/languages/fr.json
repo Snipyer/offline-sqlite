@@ -196,6 +196,7 @@
 		"visitType": "Type de visite",
 		"allTypes": "Tous les types",
 		"hasUnpaid": "Solde impayé",
+		"hasUpcomingAppointment": "A un rendez-vous a venir",
 		"sortLastVisitNewest": "Dernière visite (plus récente)",
 		"sortNameAsc": "Nom (A-Z)",
 		"sortNameDesc": "Nom (Z-A)",
@@ -221,8 +222,11 @@
 		"paid": "Payé",
 		"left": "Restant",
 		"visitsTab": "Visites",
+		"appointmentsTab": "Rendez-vous",
 		"paymentsTab": "Paiements",
-		"noPayments": "Aucun paiement"
+		"noPayments": "Aucun paiement",
+		"appointmentInDays": "Rendez-vous dans {{days}} jours",
+		"appointmentToday": "Rendez-vous aujourd'hui"
 	},
 	"visits": {
 		"title": "Visites",

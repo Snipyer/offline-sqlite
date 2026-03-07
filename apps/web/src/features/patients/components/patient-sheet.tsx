@@ -40,6 +40,7 @@ export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
 						patient={patientDetails.data.patient}
 						visits={patientDetails.data.visits}
 						totalUnpaid={patientDetails.data.totalUnpaid}
+						appointments={patientDetails.data.appointments}
 						payments={patientPayments.data ?? []}
 					/>
 				) : null}

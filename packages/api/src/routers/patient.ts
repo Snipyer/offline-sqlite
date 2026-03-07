@@ -1,6 +1,13 @@
 import { db } from "@offline-sqlite/db";
-import { visit, visitAct, visitActTooth, patient, visitType } from "@offline-sqlite/db/schema/dental";
-import { eq, and, like, desc, sql } from "drizzle-orm";
+import {
+	appointment,
+	visit,
+	visitAct,
+	visitActTooth,
+	patient,
+	visitType,
+} from "@offline-sqlite/db/schema/dental";
+import { eq, and, like, desc, sql, asc, gte } from "drizzle-orm";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
@@ -17,6 +24,7 @@ const patientFilterSchema = z.object({
 	dateTo: z.number().optional(),
 	visitTypeIds: z.array(z.string()).optional(),
 	hasUnpaid: z.boolean().optional(),
+	hasUpcomingAppointment: z.boolean().optional(),
 	name: z.string().optional(),
 	query: z.string().optional(),
 	sortBy: patientSortEnum.optional(),
@@ -101,9 +109,28 @@ export const patientRouter = router({
 
 	listWithFilters: protectedProcedure.input(patientFilterSchema).query(async ({ ctx, input }) => {
 		const patients = await db.select().from(patient).where(eq(patient.userId, ctx.session.user.id));
+		const now = new Date();
 
 		const visitsData = await Promise.all(
 			patients.map(async (p) => {
+				const upcomingAppointment = await db
+					.select({
+						id: appointment.id,
+						scheduledTime: appointment.scheduledTime,
+						status: appointment.status,
+					})
+					.from(appointment)
+					.where(
+						and(
+							eq(appointment.patientId, p.id),
+							eq(appointment.userId, ctx.session.user.id),
+							eq(appointment.status, "scheduled"),
+							gte(appointment.scheduledTime, now),
+						),
+					)
+					.orderBy(asc(appointment.scheduledTime))
+					.limit(1);
+
 				const visitsForPatient = await db
 					.select()
 					.from(visit)
@@ -117,7 +144,13 @@ export const patientRouter = router({
 					.orderBy(desc(visit.visitTime));
 
 				if (visitsForPatient.length === 0) {
-					return { patient: p, lastVisit: null, visits: [], totalUnpaid: 0 };
+					return {
+						patient: p,
+						lastVisit: null,
+						visits: [],
+						totalUnpaid: 0,
+						upcomingAppointment: upcomingAppointment[0] ?? null,
+					};
 				}
 
 				const visitsWithActs = await Promise.all(
@@ -158,11 +191,12 @@ export const patientRouter = router({
 					lastVisit: visitsWithActs[0],
 					visits: visitsWithActs,
 					totalUnpaid,
+					upcomingAppointment: upcomingAppointment[0] ?? null,
 				};
 			}),
 		);
 
-		let filtered = visitsData.filter((v) => v.lastVisit !== null);
+		let filtered = visitsData;
 
 		const textQuery = input.query ?? input.name;
 
@@ -203,6 +237,10 @@ export const patientRouter = router({
 
 		if (input.hasUnpaid === true) {
 			filtered = filtered.filter((v) => v.totalUnpaid > 0);
+		}
+
+		if (input.hasUpcomingAppointment === true) {
+			filtered = filtered.filter((v) => v.upcomingAppointment !== null);
 		}
 
 		const sortBy = input.sortBy ?? "lastVisitDesc";
@@ -299,10 +337,29 @@ export const patientRouter = router({
 
 			const totalUnpaid = visitsWithActs.reduce((sum, v) => sum + Math.max(0, v.amountLeft), 0);
 
+			const appointments = await db
+				.select({
+					id: appointment.id,
+					scheduledTime: appointment.scheduledTime,
+					duration: appointment.duration,
+					status: appointment.status,
+					notes: appointment.notes,
+					visitId: appointment.visitId,
+					visitType: {
+						id: visitType.id,
+						name: visitType.name,
+					},
+				})
+				.from(appointment)
+				.leftJoin(visitType, eq(appointment.visitTypeId, visitType.id))
+				.where(and(eq(appointment.patientId, p.id), eq(appointment.userId, ctx.session.user.id)))
+				.orderBy(desc(appointment.scheduledTime));
+
 			return {
 				patient: p,
 				visits: visitsWithActs,
 				totalUnpaid,
+				appointments,
 			};
 		}),
 });

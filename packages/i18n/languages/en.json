@@ -196,6 +196,7 @@
 		"visitType": "Visit Type",
 		"allTypes": "All types",
 		"hasUnpaid": "Has unpaid balance",
+		"hasUpcomingAppointment": "Has upcoming appointment",
 		"sortLastVisitNewest": "Last visit (newest)",
 		"sortNameAsc": "Name (A-Z)",
 		"sortNameDesc": "Name (Z-A)",
@@ -221,8 +222,11 @@
 		"paid": "Paid",
 		"left": "Left",
 		"visitsTab": "Visits",
+		"appointmentsTab": "Appointments",
 		"paymentsTab": "Payments",
-		"noPayments": "No payments"
+		"noPayments": "No payments",
+		"appointmentInDays": "Appointment in {{days}} days",
+		"appointmentToday": "Appointment today"
 	},
 	"visits": {
 		"title": "Visits",

@@ -135,6 +135,18 @@ interface PatientSheetProps {
 		}[];
 	}[];
 	totalUnpaid: number;
+	appointments: {
+		id: string;
+		scheduledTime: string | Date;
+		duration: number;
+		status: "scheduled" | "completed" | "cancelled" | "no-show";
+		notes: string | null;
+		visitId: string | null;
+		visitType: {
+			id: string;
+			name: string;
+		} | null;
+	}[];
 	payments: {
 		id: string;
 		visitId: string;
@@ -145,12 +157,46 @@ interface PatientSheetProps {
 	}[];
 }
 
-export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: PatientSheetProps) {
+export function PatientSheetContent({
+	patient,
+	visits,
+	totalUnpaid,
+	appointments,
+	payments,
+}: PatientSheetProps) {
 	const { t } = useTranslation();
 	const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
-	const [activeTab, setActiveTab] = useState<"visits" | "payments">("visits");
+	const [activeTab, setActiveTab] = useState<"visits" | "appointments" | "payments">("visits");
 	const direction = useDirection();
 	const isRtl = direction === "rtl";
+
+	const getAppointmentStatusClasses = (status: "scheduled" | "completed" | "cancelled" | "no-show") => {
+		switch (status) {
+			case "completed":
+				return "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+			case "cancelled":
+				return "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300";
+			case "no-show":
+				return "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+			case "scheduled":
+			default:
+				return "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300";
+		}
+	};
+
+	const getAppointmentStatusLabel = (status: "scheduled" | "completed" | "cancelled" | "no-show") => {
+		switch (status) {
+			case "completed":
+				return t("appointments.statuses.completed");
+			case "cancelled":
+				return t("appointments.statuses.cancelled");
+			case "no-show":
+				return t("appointments.statuses.noShow");
+			case "scheduled":
+			default:
+				return t("appointments.statuses.scheduled");
+		}
+	};
 
 	const getAllVisitTeeth = () => {
 		const teeth = new Set<string>();
@@ -222,7 +268,7 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 			<div className="flex-1 overflow-hidden">
 				<Tabs
 					value={activeTab}
-					onValueChange={(value) => setActiveTab(value as "visits" | "payments")}
+					onValueChange={(value) => setActiveTab(value as "visits" | "appointments" | "payments")}
 					className="flex h-full flex-col"
 				>
 					<div className="border-border/50 border-b px-6">
@@ -230,6 +276,10 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 							<TabsTrigger value="visits">
 								<Stethoscope className="h-4 w-4" />
 								{t("patients.visitsTab")} ({visits.length})
+							</TabsTrigger>
+							<TabsTrigger value="appointments">
+								<Calendar className="h-4 w-4" />
+								{t("patients.appointmentsTab")} ({appointments.length})
 							</TabsTrigger>
 							<TabsTrigger value="payments">
 								<CreditCard className="h-4 w-4" />
@@ -274,6 +324,94 @@ export function PatientSheetContent({ patient, visits, totalUnpaid, payments }: 
 													/>
 												</div>
 											))
+										)}
+									</div>
+								</motion.div>
+							) : activeTab === "appointments" ? (
+								<motion.div
+									key="appointments"
+									className="absolute inset-0 overflow-y-auto p-6"
+									initial={{ opacity: 0, y: 8 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -8 }}
+									transition={{ duration: 0.2, ease: "easeOut" }}
+								>
+									<div className="space-y-3">
+										{appointments.length === 0 ? (
+											<div
+												className="flex flex-col items-center justify-center py-12
+													text-center"
+											>
+												<p className="text-muted-foreground">
+													{t("appointments.noAppointments")}
+												</p>
+											</div>
+										) : (
+											appointments.map((scheduledAppointment) => {
+												const scheduledTime = new Date(
+													scheduledAppointment.scheduledTime,
+												);
+												const statusClasses = getAppointmentStatusClasses(
+													scheduledAppointment.status,
+												);
+
+												return (
+													<div
+														key={scheduledAppointment.id}
+														className="border-border/50 hover:border-border
+															rounded-xl border p-4 transition-colors"
+													>
+														<div
+															className="flex items-start justify-between gap-3"
+														>
+															<div className="space-y-1">
+																<p className="text-sm font-medium">
+																	{formatDate(scheduledTime.getTime())}
+																</p>
+																<p className="text-muted-foreground text-xs">
+																	<span>
+																		{scheduledTime.toLocaleTimeString(
+																			undefined,
+																			{
+																				hour: "2-digit",
+																				minute: "2-digit",
+																				hour12: false,
+																			},
+																		)}
+																	</span>
+																	<span className="mx-2">·</span>
+																	<span>
+																		{scheduledAppointment.duration}
+																		{t("appointments.minutes")}
+																	</span>
+																</p>
+																{scheduledAppointment.visitType?.name && (
+																	<p
+																		className="text-muted-foreground
+																			text-xs"
+																	>
+																		{scheduledAppointment.visitType.name}
+																	</p>
+																)}
+															</div>
+															<span
+																className={`inline-flex items-center
+																	rounded-full border px-2 py-0.5 text-xs
+																	font-medium ${statusClasses}`}
+															>
+																{getAppointmentStatusLabel(
+																	scheduledAppointment.status,
+																)}
+															</span>
+														</div>
+														{scheduledAppointment.notes && (
+															<p className="text-muted-foreground mt-3 text-sm">
+																{scheduledAppointment.notes}
+															</p>
+														)}
+													</div>
+												);
+											})
 										)}
 									</div>
 								</motion.div>

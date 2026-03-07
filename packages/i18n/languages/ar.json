@@ -196,6 +196,7 @@
 		"visitType": "نوع الزيارة",
 		"allTypes": "جميع الأنواع",
 		"hasUnpaid": "لديه رصيد غير مدفوع",
+		"hasUpcomingAppointment": "لديه موعد قادم",
 		"sortLastVisitNewest": "آخر زيارة (الأحدث)",
 		"sortNameAsc": "الاسم (أ-ي)",
 		"sortNameDesc": "الاسم (ي-أ)",
@@ -221,8 +222,11 @@
 		"paid": "المدفوع",
 		"left": "المتبقي",
 		"visitsTab": "الزيارات",
+		"appointmentsTab": "المواعيد",
 		"paymentsTab": "المدفوعات",
-		"noPayments": "لا توجد مدفوعات"
+		"noPayments": "لا توجد مدفوعات",
+		"appointmentInDays": "موعد بعد {{days}} أيام",
+		"appointmentToday": "الموعد اليوم"
 	},
 	"visits": {
 		"title": "الزيارات",

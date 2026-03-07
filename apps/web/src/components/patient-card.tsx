@@ -8,6 +8,7 @@ import {
 	Clock,
 	MapPin,
 	VenusAndMars,
+	CalendarClock,
 } from "lucide-react";
 import { formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
@@ -29,6 +30,11 @@ export interface PatientCardProps {
 	} | null;
 	visits: { id: string }[];
 	totalUnpaid: number;
+	upcomingAppointment?: {
+		id: string;
+		scheduledTime: Date | string;
+		status: "scheduled" | "completed" | "cancelled" | "no-show";
+	} | null;
 	onClick?: () => void;
 	variant?: "default" | "compact" | "detailed";
 	className?: string;
@@ -40,12 +46,32 @@ export function PatientCard({
 	lastVisit,
 	visits,
 	totalUnpaid,
+	upcomingAppointment,
 	onClick,
 	variant = "default",
 	className,
 	index = 0,
 }: PatientCardProps) {
 	const { t } = useTranslation();
+
+	const getUpcomingAppointmentLabel = () => {
+		if (!upcomingAppointment) return null;
+
+		const appointmentDate = new Date(upcomingAppointment.scheduledTime);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		appointmentDate.setHours(0, 0, 0, 0);
+
+		const daysDiff = Math.round((appointmentDate.getTime() - today.getTime()) / 86_400_000);
+
+		if (daysDiff <= 0) {
+			return t("patients.appointmentToday");
+		}
+
+		return t("patients.appointmentInDays", { days: daysDiff });
+	};
+
+	const upcomingAppointmentLabel = getUpcomingAppointmentLabel();
 
 	const getInitials = (name: string) => {
 		return name
@@ -190,6 +216,16 @@ export function PatientCard({
 										{t("patients.address")}
 									</span>
 									<span className="truncate font-medium">{patient.address}</span>
+								</div>
+							)}
+							{upcomingAppointmentLabel && (
+								<div
+									className="inline-flex items-center gap-1.5 rounded-lg border
+										border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-emerald-700
+										dark:text-emerald-300"
+								>
+									<CalendarClock className="h-3.5 w-3.5" />
+									<span className="text-xs font-medium">{upcomingAppointmentLabel}</span>
 								</div>
 							)}
 						</div>

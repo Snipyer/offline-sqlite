@@ -29,6 +29,7 @@ interface PatientFilters {
 	dateTo?: number;
 	visitTypeIds: string[];
 	hasUnpaid: boolean;
+	hasUpcomingAppointment: boolean;
 	query: string;
 	sortBy: "lastVisitDesc" | "nameAsc" | "nameDesc" | "unpaidDesc";
 }
@@ -39,6 +40,7 @@ const emptyFilters: PatientFilters = {
 	dateTo: undefined,
 	visitTypeIds: [],
 	hasUnpaid: false,
+	hasUpcomingAppointment: false,
 	query: "",
 	sortBy: "lastVisitDesc",
 };
@@ -60,6 +62,7 @@ export function PatientsList() {
 			dateTo: filters.dateTo,
 			visitTypeIds: filters.visitTypeIds.length > 0 ? filters.visitTypeIds : undefined,
 			hasUnpaid: filters.hasUnpaid || undefined,
+			hasUpcomingAppointment: filters.hasUpcomingAppointment || undefined,
 			query: filters.query || undefined,
 			sortBy: filters.sortBy,
 			page,
@@ -76,6 +79,7 @@ export function PatientsList() {
 		filters.dateTo,
 		filters.visitTypeIds,
 		filters.hasUnpaid,
+		filters.hasUpcomingAppointment,
 		filters.query,
 		filters.sortBy,
 	]);
@@ -91,6 +95,7 @@ export function PatientsList() {
 		filters.dateTo ||
 		filters.visitTypeIds.length > 0 ||
 		filters.hasUnpaid ||
+		filters.hasUpcomingAppointment ||
 		filters.query ||
 		filters.sortBy !== "lastVisitDesc",
 	);
@@ -249,6 +254,22 @@ export function PatientsList() {
 											{t("patients.hasUnpaid")}
 										</Button>
 									</div>
+
+									<div className="mt-3 flex items-end sm:col-span-2 lg:col-span-1">
+										<Button
+											type="button"
+											variant={filters.hasUpcomingAppointment ? "default" : "outline"}
+											size="default"
+											onClick={() =>
+												setFilters((prev) => ({
+													...prev,
+													hasUpcomingAppointment: !prev.hasUpcomingAppointment,
+												}))
+											}
+										>
+											{t("patients.hasUpcomingAppointment")}
+										</Button>
+									</div>
 								</>
 							}
 						/>
@@ -282,6 +303,7 @@ export function PatientsList() {
 											lastVisit={data.lastVisit}
 											visits={data.visits}
 											totalUnpaid={data.totalUnpaid}
+											upcomingAppointment={data.upcomingAppointment}
 											onClick={() => setSelectedPatientId(data.patient.id)}
 											index={index}
 										/>
