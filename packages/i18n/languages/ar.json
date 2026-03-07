@@ -11,7 +11,11 @@
 		"patients": "المرضى",
 		"visits": "الزيارات",
 		"payments": "المدفوعات",
-		"appointments": "المواعيد"
+		"appointments": "المواعيد",
+		"groupOverview": "نظرة عامة",
+		"groupClinic": "العيادة",
+		"groupFinance": "المالية",
+		"groupInsights": "الرؤى"
 	},
 	"dashboard": {
 		"loading": "جار التحميل...",

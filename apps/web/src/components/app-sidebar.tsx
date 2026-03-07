@@ -8,8 +8,6 @@ import {
 	CalendarDays,
 	Syringe,
 	Stethoscope,
-	ChevronLeft,
-	ChevronRight,
 	TrendingUp,
 } from "lucide-react";
 import { useTranslation } from "@offline-sqlite/i18n";
@@ -23,6 +21,7 @@ import {
 	SidebarFooter,
 	SidebarHeader,
 	SidebarGroup,
+	SidebarGroupLabel,
 	SidebarGroupContent,
 } from "@/components/ui/sidebar";
 import { ModeToggle } from "./mode-toggle";
@@ -30,7 +29,6 @@ import LanguageSwitcher from "./language-switcher";
 import UserMenu from "./user-menu";
 import { isTauri } from "@/utils/is-tauri";
 import { cn } from "@/lib/utils";
-import { is } from "zod/v4/locales";
 
 const navItems = [
 	{ to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
@@ -41,6 +39,25 @@ const navItems = [
 	{ to: "/payments", labelKey: "nav.payments", icon: CreditCard },
 	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
 	{ to: "/reports", labelKey: "nav.reports", icon: TrendingUp },
+] as const;
+
+const navGroups = [
+	{
+		labelKey: "nav.groupOverview",
+		items: [navItems[0]],
+	},
+	{
+		labelKey: "nav.groupClinic",
+		items: [navItems[1], navItems[2], navItems[3], navItems[4]],
+	},
+	{
+		labelKey: "nav.groupFinance",
+		items: [navItems[5]],
+	},
+	{
+		labelKey: "nav.groupInsights",
+		items: [navItems[6], navItems[7]],
+	},
 ] as const;
 
 const itemVariants = {
@@ -62,8 +79,6 @@ export function AppSidebar() {
 	const { state, side } = useSidebar();
 	const isRtl = side === "right";
 	const isCollapsed = state === "collapsed";
-
-	const SidebarChevron = isRtl ? ChevronRight : ChevronLeft;
 
 	return (
 		<Sidebar
@@ -100,88 +115,96 @@ export function AppSidebar() {
 			</SidebarHeader>
 
 			<SidebarContent className="">
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu className="gap-1">
-							{navItems.map((item, index) => {
-								const isActive = location.pathname.startsWith(item.to);
-								const Icon = item.icon;
+				{navGroups.map((group, groupIndex) => (
+					<SidebarGroup key={group.labelKey}>
+						<SidebarGroupLabel className="pl-3">{t(group.labelKey)}</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu className="gap-1">
+								{group.items.map((item, itemIndex) => {
+									const isActive = location.pathname.startsWith(item.to);
+									const Icon = item.icon;
+									const animationIndex = groupIndex * 10 + itemIndex;
 
-								return (
-									<motion.div
-										key={item.to}
-										custom={index}
-										variants={itemVariants}
-										initial="hidden"
-										animate="visible"
-									>
-										<SidebarMenuItem>
-											<SidebarMenuButton
-												isActive={isActive}
-												tooltip={t(item.labelKey)}
-												className={cn(
-													"relative h-10 transition-colors duration-200",
-													isActive
-														? "bg-primary/10 text-primary font-medium"
-														: `text-muted-foreground hover:bg-muted
-															hover:text-foreground`,
-												)}
-											>
-												<NavLink
-													to={item.to}
+									return (
+										<motion.div
+											key={item.to}
+											custom={animationIndex}
+											variants={itemVariants}
+											initial="hidden"
+											animate="visible"
+										>
+											<SidebarMenuItem>
+												<SidebarMenuButton
+													isActive={isActive}
+													tooltip={t(item.labelKey)}
 													className={cn(
-														"flex w-full items-center",
-														isCollapsed ? "justify-center px-0" : "gap-3 px-2",
+														"relative h-10 transition-colors duration-200",
+														isActive
+															? "bg-primary/10 text-primary font-medium"
+															: `text-muted-foreground hover:bg-muted
+																hover:text-foreground`,
 													)}
 												>
-													<div
+													<NavLink
+														to={item.to}
 														className={cn(
-															`flex items-center justify-center rounded-lg
-															transition-all duration-200`,
-															isCollapsed ? "h-9 w-9" : "h-8 w-8",
-															isActive ? "bg-primary/20" : "bg-muted",
-															isCollapsed ? "bg-transparent" : "",
+															"flex w-full items-center",
+															isCollapsed
+																? "justify-center px-0"
+																: "gap-3 px-2",
 														)}
 													>
-														<Icon
+														<div
 															className={cn(
-																"transition-colors",
-																isCollapsed ? "h-5 w-5" : "h-4 w-4",
-																isActive
-																	? "text-primary"
-																	: "text-muted-foreground",
+																`flex items-center justify-center rounded-lg
+																transition-all duration-200`,
+																isCollapsed ? "h-9 w-9" : "h-8 w-8",
+																isActive ? "bg-primary/20" : "bg-muted",
+																isCollapsed ? "bg-transparent" : "",
 															)}
-														/>
-													</div>
-													{!isCollapsed && (
-														<span className="text-sm">{t(item.labelKey)}</span>
-													)}
-												</NavLink>
-
-												{/* Active indicator line */}
-												{isActive && (
-													<motion.div
-														layoutId="activeIndicator"
-														className={cn(
-															`bg-primary absolute top-1/2 h-6 w-1
-															-translate-y-1/2 rounded-full`,
-															isRtl ? "right-0" : "left-0",
+														>
+															<Icon
+																className={cn(
+																	"transition-colors",
+																	isCollapsed ? "h-5 w-5" : "h-4 w-4",
+																	isActive
+																		? "text-primary"
+																		: "text-muted-foreground",
+																)}
+															/>
+														</div>
+														{!isCollapsed && (
+															<span className="text-sm">
+																{t(item.labelKey)}
+															</span>
 														)}
-														transition={{
-															type: "spring",
-															stiffness: 500,
-															damping: 30,
-														}}
-													/>
-												)}
-											</SidebarMenuButton>
-										</SidebarMenuItem>
-									</motion.div>
-								);
-							})}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
+													</NavLink>
+
+													{/* Active indicator line */}
+													{isActive && (
+														<motion.div
+															layoutId="activeIndicator"
+															className={cn(
+																`bg-primary absolute top-1/2 h-6 w-1
+																-translate-y-1/2 rounded-full`,
+																isRtl ? "right-0" : "left-0",
+															)}
+															transition={{
+																type: "spring",
+																stiffness: 500,
+																damping: 30,
+															}}
+														/>
+													)}
+												</SidebarMenuButton>
+											</SidebarMenuItem>
+										</motion.div>
+									);
+								})}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				))}
 			</SidebarContent>
 
 			<SidebarFooter className="border-border/50 border-t p-3">

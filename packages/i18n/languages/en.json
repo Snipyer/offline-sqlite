@@ -11,7 +11,11 @@
 		"patients": "Patients",
 		"visits": "Visits",
 		"payments": "Payments",
-		"appointments": "Appointments"
+		"appointments": "Appointments",
+		"groupOverview": "Overview",
+		"groupClinic": "Clinic",
+		"groupFinance": "Finance",
+		"groupInsights": "Insights"
 	},
 	"dashboard": {
 		"loading": "Loading...",
