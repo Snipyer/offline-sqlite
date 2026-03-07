@@ -125,6 +125,7 @@ export const patientRelations = relations(patient, ({ one, many }) => ({
 		references: [user.id],
 	}),
 	visits: many(visit),
+	appointments: many(appointment),
 }));
 
 export const visitTypeRelations = relations(visitType, ({ one, many }) => ({
@@ -133,6 +134,7 @@ export const visitTypeRelations = relations(visitType, ({ one, many }) => ({
 		references: [user.id],
 	}),
 	acts: many(visitAct),
+	appointments: many(appointment),
 }));
 
 export const visitRelations = relations(visit, ({ one, many }) => ({
@@ -146,6 +148,7 @@ export const visitRelations = relations(visit, ({ one, many }) => ({
 	}),
 	acts: many(visitAct),
 	payments: many(payment),
+	appointments: many(appointment),
 }));
 
 export const visitActRelations = relations(visitAct, ({ one, many }) => ({
@@ -169,6 +172,40 @@ export const visitActToothRelations = relations(visitActTooth, ({ one }) => ({
 
 export const paymentMethodEnum = ["cash"] as const;
 export type PaymentMethod = (typeof paymentMethodEnum)[number];
+
+export const appointmentStatusEnum = ["scheduled", "completed", "cancelled", "no-show"] as const;
+export type AppointmentStatus = (typeof appointmentStatusEnum)[number];
+
+export const appointment = sqliteTable(
+	"appointment",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		patientId: text("patient_id")
+			.notNull()
+			.references(() => patient.id, { onDelete: "cascade" }),
+		scheduledTime: integer("scheduled_time", { mode: "timestamp_ms" }).notNull(),
+		duration: integer("duration").notNull().default(30),
+		status: text("status", { enum: appointmentStatusEnum }).notNull().default("scheduled"),
+		visitId: text("visit_id").references(() => visit.id, { onDelete: "set null" }),
+		visitTypeId: text("visit_type_id").references(() => visitType.id, { onDelete: "set null" }),
+		notes: text("notes"),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("appointment_userId_idx").on(table.userId),
+		index("appointment_patientId_idx").on(table.patientId),
+		index("appointment_scheduledTime_idx").on(table.scheduledTime),
+	],
+);
 
 export const payment = sqliteTable(
 	"payment",
@@ -205,5 +242,24 @@ export const paymentRelations = relations(payment, ({ one }) => ({
 	user: one(user, {
 		fields: [payment.userId],
 		references: [user.id],
+	}),
+}));
+
+export const appointmentRelations = relations(appointment, ({ one }) => ({
+	user: one(user, {
+		fields: [appointment.userId],
+		references: [user.id],
+	}),
+	patient: one(patient, {
+		fields: [appointment.patientId],
+		references: [patient.id],
+	}),
+	visit: one(visit, {
+		fields: [appointment.visitId],
+		references: [visit.id],
+	}),
+	visitType: one(visitType, {
+		fields: [appointment.visitTypeId],
+		references: [visitType.id],
 	}),
 }));

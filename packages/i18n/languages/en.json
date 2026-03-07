@@ -10,7 +10,8 @@
 		"visitTypes": "Visit Types",
 		"patients": "Patients",
 		"visits": "Visits",
-		"payments": "Payments"
+		"payments": "Payments",
+		"appointments": "Appointments"
 	},
 	"dashboard": {
 		"loading": "Loading...",
@@ -397,6 +398,40 @@
 		"topPatientsByPaid": "Top Patients by Paid",
 		"topPatientsByDebt": "Top Patients by Debt",
 		"times": "times"
+	},
+	"appointments": {
+		"title": "Appointments",
+		"manageSchedule": "Manage your schedule",
+		"new": "New Appointment",
+		"edit": "Edit Appointment",
+		"create": "Create Appointment",
+		"createDescription": "Schedule a new appointment for a patient",
+		"editDescription": "Update appointment details",
+		"scheduledTime": "Scheduled Time",
+		"duration": "Duration (minutes)",
+		"minutes": "min",
+		"status": "Status",
+		"patient": "Patient",
+		"visitType": "Visit Type",
+		"notes": "Notes",
+		"notesPlaceholder": "Add appointment notes (optional)",
+		"noAppointments": "No appointments",
+		"noAppointmentsHint": "Schedule an appointment to get started",
+		"selectDate": "Select a date to view appointments",
+		"quickSlots": "Quick Slots",
+		"timeSlots": "Time Slots",
+		"today": "Today",
+		"goToToday": "Go to Today",
+		"scheduleOne": "Schedule One",
+		"deleted": "Appointment deleted",
+		"deleteTitle": "Delete Appointment",
+		"deleteDescription": "Are you sure you want to delete this appointment?",
+		"statuses": {
+			"scheduled": "Scheduled",
+			"completed": "Completed",
+			"cancelled": "Cancelled",
+			"noShow": "No Show"
+		}
 	},
 	"licensing": {
 		"activateTitle": "Welcome to OfflineSQLite",

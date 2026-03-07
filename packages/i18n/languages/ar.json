@@ -10,7 +10,8 @@
 		"visitTypes": "أنواع الزيارات",
 		"patients": "المرضى",
 		"visits": "الزيارات",
-		"payments": "المدفوعات"
+		"payments": "المدفوعات",
+		"appointments": "المواعيد"
 	},
 	"dashboard": {
 		"loading": "جار التحميل...",
@@ -397,6 +398,40 @@
 		"topPatientsByPaid": "أكثر المرضى دفعاً",
 		"topPatientsByDebt": "أكثر المرضى مديونية",
 		"times": "مرات"
+	},
+	"appointments": {
+		"title": "المواعيد",
+		"manageSchedule": "إدارة جدولك",
+		"new": "موعد جديد",
+		"edit": "تعديل الموعد",
+		"create": "إنشاء موعد",
+		"createDescription": "جدولة موعد جديد لمريض",
+		"editDescription": "تحديث تفاصيل الموعد",
+		"scheduledTime": "وقت الموعد",
+		"duration": "المدة (بالدقائق)",
+		"minutes": "د",
+		"status": "الحالة",
+		"patient": "المريض",
+		"visitType": "نوع الزيارة",
+		"notes": "ملاحظات",
+		"notesPlaceholder": "أضف ملاحظات الموعد (اختياري)",
+		"noAppointments": "لا توجد مواعيد",
+		"noAppointmentsHint": "قم بجدولة موعد للبدء",
+		"selectDate": "اختر تاريخا لعرض المواعيد",
+		"quickSlots": "أوقات سريعة",
+		"timeSlots": "الفترات الزمنية",
+		"today": "اليوم",
+		"goToToday": "الانتقال إلى اليوم",
+		"scheduleOne": "جدولة موعد",
+		"deleted": "تم حذف الموعد",
+		"deleteTitle": "حذف الموعد",
+		"deleteDescription": "هل أنت متأكد أنك تريد حذف هذا الموعد؟",
+		"statuses": {
+			"scheduled": "مجدول",
+			"completed": "مكتمل",
+			"cancelled": "ملغي",
+			"noShow": "لم يحضر"
+		}
 	},
 	"licensing": {
 		"activateTitle": "مرحبًا بك في OfflineSQLite",

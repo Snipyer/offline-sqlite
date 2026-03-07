@@ -6,6 +6,7 @@ import {
 	patient,
 	visitType,
 	payment,
+	appointment,
 } from "@offline-sqlite/db/schema/dental";
 import { eq, and, like, gte, lte, desc, asc, sql, or, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -218,6 +219,37 @@ export const visitRouter = router({
 			isDeleted: false,
 			userId: ctx.session.user.id,
 		});
+
+		const visitTimeDate = new Date(input.visitTime);
+		const twoHoursMs = 2 * 60 * 60 * 1000;
+		const windowStart = new Date(visitTimeDate.getTime() - twoHoursMs);
+		const windowEnd = new Date(visitTimeDate.getTime() + twoHoursMs);
+
+		const scheduledAppointment = await db
+			.select()
+			.from(appointment)
+			.where(
+				and(
+					eq(appointment.patientId, input.patientId),
+					eq(appointment.status, "scheduled"),
+					eq(appointment.userId, ctx.session.user.id),
+					gte(appointment.scheduledTime, windowStart),
+					lte(appointment.scheduledTime, windowEnd),
+				),
+			)
+			.orderBy(asc(appointment.scheduledTime))
+			.limit(1);
+
+		if (scheduledAppointment.length > 0 && scheduledAppointment[0]) {
+			await db
+				.update(appointment)
+				.set({
+					status: "completed",
+					visitId: visitId,
+					updatedAt: new Date(),
+				})
+				.where(eq(appointment.id, scheduledAppointment[0].id));
+		}
 
 		for (const act of input.acts) {
 			const actId = generateId();

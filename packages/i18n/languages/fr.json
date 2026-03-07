@@ -10,7 +10,8 @@
 		"visitTypes": "Types de visites",
 		"patients": "Patients",
 		"visits": "Visites",
-		"payments": "Paiements"
+		"payments": "Paiements",
+		"appointments": "Rendez-vous"
 	},
 	"dashboard": {
 		"loading": "Chargement...",
@@ -397,6 +398,40 @@
 		"topPatientsByPaid": "Top patients par paiements",
 		"topPatientsByDebt": "Top patients par dettes",
 		"times": "fois"
+	},
+	"appointments": {
+		"title": "Rendez-vous",
+		"manageSchedule": "Gerez votre planning",
+		"new": "Nouveau rendez-vous",
+		"edit": "Modifier le rendez-vous",
+		"create": "Creer un rendez-vous",
+		"createDescription": "Planifiez un nouveau rendez-vous pour un patient",
+		"editDescription": "Mettez a jour les details du rendez-vous",
+		"scheduledTime": "Heure prevue",
+		"duration": "Duree (minutes)",
+		"minutes": "min",
+		"status": "Statut",
+		"patient": "Patient",
+		"visitType": "Type de visite",
+		"notes": "Notes",
+		"notesPlaceholder": "Ajoutez des notes de rendez-vous (optionnel)",
+		"noAppointments": "Aucun rendez-vous",
+		"noAppointmentsHint": "Planifiez un rendez-vous pour commencer",
+		"selectDate": "Selectionnez une date pour voir les rendez-vous",
+		"quickSlots": "Creneaux rapides",
+		"timeSlots": "Creneaux horaires",
+		"today": "Aujourd'hui",
+		"goToToday": "Aller a aujourd'hui",
+		"scheduleOne": "Planifier un rendez-vous",
+		"deleted": "Rendez-vous supprime",
+		"deleteTitle": "Supprimer le rendez-vous",
+		"deleteDescription": "Voulez-vous vraiment supprimer ce rendez-vous ?",
+		"statuses": {
+			"scheduled": "Planifie",
+			"completed": "Termine",
+			"cancelled": "Annule",
+			"noShow": "Absent"
+		}
 	},
 	"licensing": {
 		"activateTitle": "Bienvenue sur OfflineSQLite",
