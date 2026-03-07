@@ -2,10 +2,8 @@ import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
-
 import { authClient } from "@/lib/auth-client";
 import { useTranslation } from "@offline-sqlite/i18n";
-
 import Loader from "./loader";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -36,7 +34,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 						},
 					},
 					onSuccess: () => {
-						navigate("/dashboard");
+						navigate("/daily-summary");
 						toast.success(t("auth.successSignUp"));
 					},
 					onError: (error) => {

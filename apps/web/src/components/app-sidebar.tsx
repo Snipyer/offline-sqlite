@@ -1,15 +1,6 @@
 import { NavLink, useLocation } from "react-router";
 import { motion } from "motion/react";
-import {
-	LayoutDashboard,
-	Users,
-	CreditCard,
-	Calendar,
-	CalendarDays,
-	Syringe,
-	Stethoscope,
-	TrendingUp,
-} from "lucide-react";
+import { Users, CreditCard, Calendar, CalendarDays, Syringe, Stethoscope, TrendingUp } from "lucide-react";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
@@ -31,13 +22,12 @@ import { isTauri } from "@/utils/is-tauri";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-	{ to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
 	{ to: "/visits", labelKey: "nav.visits", icon: Stethoscope },
 	{ to: "/patients", labelKey: "nav.patients", icon: Users },
 	{ to: "/visit-types", labelKey: "nav.visitTypes", icon: Syringe },
 	{ to: "/appointments", labelKey: "nav.appointments", icon: CalendarDays },
 	{ to: "/payments", labelKey: "nav.payments", icon: CreditCard },
-	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
 	{ to: "/reports", labelKey: "nav.reports", icon: TrendingUp },
 ] as const;
 
@@ -52,11 +42,7 @@ const navGroups = [
 	},
 	{
 		labelKey: "nav.groupFinance",
-		items: [navItems[5]],
-	},
-	{
-		labelKey: "nav.groupInsights",
-		items: [navItems[6], navItems[7]],
+		items: [navItems[5], navItems[6]],
 	},
 ] as const;
 

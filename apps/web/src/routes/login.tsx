@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-
 import { authClient } from "@/lib/auth-client";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
@@ -13,7 +12,7 @@ export default function Login() {
 
 	useEffect(() => {
 		if (session) {
-			navigate("/dashboard");
+			navigate("/daily-summary");
 		}
 	}, [session, navigate]);
 
