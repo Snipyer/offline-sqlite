@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { DollarSign, TrendingUp, Activity } from "lucide-react";
+import { DollarSign, TrendingUp, ChartNoAxesCombined } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@offline-sqlite/i18n";
@@ -123,7 +123,7 @@ export default function ReportsPage() {
 							{t("reports.financial")}
 						</TabsTrigger>
 						<TabsTrigger value="analytics">
-							<Activity className="h-4 w-4" />
+							<ChartNoAxesCombined className="h-4 w-4" />
 							{t("reports.analytics")}
 						</TabsTrigger>
 					</TabsList>

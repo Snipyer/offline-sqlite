@@ -1,12 +1,5 @@
 import { db } from "@offline-sqlite/db";
-import {
-	payment,
-	visit,
-	visitAct,
-	visitActTooth,
-	patient,
-	visitType,
-} from "@offline-sqlite/db/schema/dental";
+import { payment, visit, visitAct, patient, visitType } from "@offline-sqlite/db/schema/dental";
 import { eq, and, gte, lte, sql, inArray } from "drizzle-orm";
 
 import { router, protectedProcedure } from "../index";
@@ -37,50 +30,55 @@ export const reportsRouter = router({
 
 		const visitIds = visitsInRange.map((v) => v.id);
 
-		let totalExpected = 0;
 		let totalCollected = 0;
+		let outstanding = 0;
 
 		if (visitIds.length > 0) {
 			const actsData = await db
 				.select({
+					visitId: visitAct.visitId,
 					price: visitAct.price,
 				})
 				.from(visitAct)
-				.where(eq(visitAct.visitId, visitIds[0]!));
+				.where(inArray(visitAct.visitId, visitIds));
 
-			for (let i = 1; i < visitIds.length; i++) {
-				const moreActs = await db
-					.select({
-						price: visitAct.price,
-					})
-					.from(visitAct)
-					.where(eq(visitAct.visitId, visitIds[i]!));
-				actsData.push(...moreActs);
+			const totalByVisit = new Map<string, number>();
+
+			for (const act of actsData) {
+				totalByVisit.set(act.visitId, (totalByVisit.get(act.visitId) ?? 0) + act.price);
 			}
-
-			totalExpected = actsData.reduce((sum, a) => sum + a.price, 0);
 
 			const paymentsData = await db
-				.select({ amount: payment.amount })
+				.select({
+					visitId: payment.visitId,
+					amount: payment.amount,
+				})
 				.from(payment)
-				.where(eq(payment.visitId, visitIds[0]!));
-
-			for (let i = 1; i < visitIds.length; i++) {
-				const morePayments = await db
-					.select({ amount: payment.amount })
-					.from(payment)
-					.where(eq(payment.visitId, visitIds[i]!));
-				paymentsData.push(...morePayments);
-			}
+				.where(and(inArray(payment.visitId, visitIds), lte(payment.recordedAt, endDate)));
 
 			totalCollected = paymentsData.reduce((sum, p) => sum + p.amount, 0);
+
+			const paidByVisit = new Map<string, number>();
+
+			for (const paymentRow of paymentsData) {
+				paidByVisit.set(
+					paymentRow.visitId,
+					(paidByVisit.get(paymentRow.visitId) ?? 0) + paymentRow.amount,
+				);
+			}
+
+			for (const visitId of visitIds) {
+				const total = totalByVisit.get(visitId) ?? 0;
+				const paid = paidByVisit.get(visitId) ?? 0;
+				outstanding += Math.max(0, total - paid);
+			}
 		}
 
 		return {
 			totalRevenue: totalCollected,
 			totalVisits: visitIds.length,
 			avgPerVisit: visitIds.length > 0 ? Math.round(totalCollected / visitIds.length) : 0,
-			outstanding: Math.max(0, totalExpected - totalCollected),
+			outstanding,
 		};
 	}),
 
@@ -306,6 +304,157 @@ export const reportsRouter = router({
 		};
 	}),
 
+	getPatientAnalytics: protectedProcedure.input(dateRangeSchema).query(async ({ ctx, input }) => {
+		const startDate = new Date(input.startDate);
+		const endDate = new Date(input.endDate);
+		endDate.setHours(23, 59, 59, 999);
+
+		const visitsInRange = await db
+			.select({
+				id: visit.id,
+				patientId: visit.patientId,
+				visitTime: visit.visitTime,
+			})
+			.from(visit)
+			.where(
+				and(
+					eq(visit.userId, ctx.session.user.id),
+					eq(visit.isDeleted, false),
+					gte(visit.visitTime, startDate.getTime()),
+					lte(visit.visitTime, endDate.getTime()),
+				),
+			);
+
+		if (visitsInRange.length === 0) {
+			return {
+				genderDistribution: {
+					M: 0,
+					F: 0,
+				},
+				visitsByWeekday: Array.from({ length: 7 }, (_, dayIndex) => ({
+					dayIndex,
+					count: 0,
+				})),
+				topPatientsByVisits: [],
+				topPatientsByPaid: [],
+				topPatientsByDebt: [],
+			};
+		}
+
+		const visitIds = visitsInRange.map((v) => v.id);
+		const patientIds = Array.from(new Set(visitsInRange.map((v) => v.patientId)));
+
+		const patientsData = await db
+			.select({
+				id: patient.id,
+				name: patient.name,
+				sex: patient.sex,
+			})
+			.from(patient)
+			.where(and(eq(patient.userId, ctx.session.user.id), inArray(patient.id, patientIds)));
+
+		const actsByVisit = await db
+			.select({
+				visitId: visitAct.visitId,
+				price: visitAct.price,
+			})
+			.from(visitAct)
+			.where(inArray(visitAct.visitId, visitIds));
+
+		const totalsByVisit = new Map<string, number>();
+
+		for (const act of actsByVisit) {
+			totalsByVisit.set(act.visitId, (totalsByVisit.get(act.visitId) ?? 0) + act.price);
+		}
+
+		const paymentsByVisitRows = await db
+			.select({
+				visitId: payment.visitId,
+				amount: payment.amount,
+			})
+			.from(payment)
+			.where(and(inArray(payment.visitId, visitIds), lte(payment.recordedAt, endDate)));
+
+		const paidByVisit = new Map<string, number>();
+
+		for (const paymentRow of paymentsByVisitRows) {
+			paidByVisit.set(
+				paymentRow.visitId,
+				(paidByVisit.get(paymentRow.visitId) ?? 0) + paymentRow.amount,
+			);
+		}
+
+		const genderDistribution = {
+			M: 0,
+			F: 0,
+		};
+
+		for (const patientRecord of patientsData) {
+			if (patientRecord.sex === "M") {
+				genderDistribution.M += 1;
+			} else if (patientRecord.sex === "F") {
+				genderDistribution.F += 1;
+			}
+		}
+
+		const weekdayCounts = Array.from({ length: 7 }, (_, dayIndex) => ({ dayIndex, count: 0 }));
+
+		const patientAggregate = new Map<
+			string,
+			{ patientId: string; name: string; visits: number; paid: number; debt: number }
+		>();
+
+		const patientNameById = new Map(patientsData.map((p) => [p.id, p.name]));
+
+		for (const visitRecord of visitsInRange) {
+			const dayIndex = new Date(visitRecord.visitTime).getDay();
+			weekdayCounts[dayIndex]!.count += 1;
+
+			const total = totalsByVisit.get(visitRecord.id) ?? 0;
+			const paid = paidByVisit.get(visitRecord.id) ?? 0;
+			const debt = Math.max(0, total - paid);
+
+			const existing = patientAggregate.get(visitRecord.patientId) ?? {
+				patientId: visitRecord.patientId,
+				name: patientNameById.get(visitRecord.patientId) ?? "-",
+				visits: 0,
+				paid: 0,
+				debt: 0,
+			};
+
+			existing.visits += 1;
+			existing.paid += paid;
+			existing.debt += debt;
+
+			patientAggregate.set(visitRecord.patientId, existing);
+		}
+
+		const patientRows = Array.from(patientAggregate.values());
+
+		const topPatientsByVisits = [...patientRows]
+			.sort((a, b) => b.visits - a.visits)
+			.slice(0, 8)
+			.map(({ patientId, name, visits }) => ({ patientId, name, value: visits }));
+
+		const topPatientsByPaid = [...patientRows]
+			.sort((a, b) => b.paid - a.paid)
+			.slice(0, 8)
+			.map(({ patientId, name, paid }) => ({ patientId, name, value: paid }));
+
+		const topPatientsByDebt = [...patientRows]
+			.sort((a, b) => b.debt - a.debt)
+			.slice(0, 8)
+			.map(({ patientId, name, debt }) => ({ patientId, name, value: debt }));
+
+		return {
+			genderDistribution,
+			visitsByWeekday: weekdayCounts,
+			topPatientsByVisits,
+			topPatientsByPaid,
+			topPatientsByDebt,
+		};
+	}),
+
 	getTreatmentStats: protectedProcedure.input(dateRangeSchema).query(async ({ ctx, input }) => {
 		const startDate = new Date(input.startDate);
 		const endDate = new Date(input.endDate);
@@ -326,7 +475,6 @@ export const reportsRouter = router({
 		const visitIds = visitsInRange.map((v) => v.id);
 
 		const treatmentCounts: Record<string, number> = {};
-		const toothCounts: Record<string, number> = {};
 
 		if (visitIds.length > 0) {
 			const actsData = await db
@@ -351,26 +499,6 @@ export const reportsRouter = router({
 			for (const act of actsData) {
 				treatmentCounts[act.visitTypeName] = (treatmentCounts[act.visitTypeName] || 0) + 1;
 			}
-
-			const actIdsResult = await db
-				.select({ id: visitAct.id })
-				.from(visitAct)
-				.where(inArray(visitAct.visitId, visitIds));
-
-			const actIds = actIdsResult.map((a) => a.id);
-
-			if (actIds.length > 0) {
-				const teethResult = await db
-					.select({
-						toothId: visitActTooth.toothId,
-					})
-					.from(visitActTooth)
-					.where(inArray(visitActTooth.visitActId, actIds));
-
-				for (const tooth of teethResult) {
-					toothCounts[tooth.toothId] = (toothCounts[tooth.toothId] || 0) + 1;
-				}
-			}
 		}
 
 		const topTreatments = Object.entries(treatmentCounts)
@@ -378,13 +506,8 @@ export const reportsRouter = router({
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 10);
 
-		const topTeeth = Object.entries(toothCounts)
-			.map(([toothId, count]) => ({ toothId, count }))
-			.sort((a, b) => b.count - a.count);
-
 		return {
 			topTreatments,
-			topTeeth,
 		};
 	}),
 });

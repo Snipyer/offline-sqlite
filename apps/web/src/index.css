@@ -52,6 +52,12 @@
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.85 0.12 190);
+	--color-female: oklch(63.291% 0.2787 330.8);
+	--color-male: oklch(50.092% 0.25502 263.836);
+	--color-visits: oklch(58.5% 0.233 277.117);
+	--color-revenue: oklch(72.3% 0.219 149.579);
+	--color-unpaid: oklch(70.5% 0.213 47.604);
+	--color-treatment: oklch(68.5% 0.169 237.323);
 }
 
 .dark {

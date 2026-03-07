@@ -391,6 +391,11 @@
 		"withVisits": "Avec visites dans la periode",
 		"topTreatments": "Traitements populaires",
 		"teethHeatmap": "Carte thermique des dents",
+		"genderDistribution": "Repartition par sexe",
+		"visitsByWeekday": "Visites par jour de semaine",
+		"topPatientsByVisits": "Top patients par visites",
+		"topPatientsByPaid": "Top patients par paiements",
+		"topPatientsByDebt": "Top patients par dettes",
 		"times": "fois"
 	},
 	"licensing": {

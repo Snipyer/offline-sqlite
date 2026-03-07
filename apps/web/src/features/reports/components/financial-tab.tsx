@@ -7,24 +7,14 @@ import Loader from "@/components/loader";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { StatCard } from "@/features/daily-summary/components/stat-card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { chartConfig } from "./chart-config";
 
 interface DateRangeParams {
 	startDate: string;
 	endDate: string;
 }
-
-const revenueChartConfig = {
-	revenue: {
-		label: "Revenue",
-		color: "hsl(142 76% 36%)",
-	},
-	unpaid: {
-		label: "Unpaid",
-		color: "hsl(25 95% 53%)",
-	},
-} satisfies ChartConfig;
 
 export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 	const { t } = useTranslation();
@@ -100,9 +90,9 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 							<div className="flex items-center gap-3">
 								<div
 									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-blue-500/10"
+										bg-(--color-revenue)/10"
 								>
-									<TrendingUp className="h-5 w-5 text-blue-500" />
+									<TrendingUp className="h-5 w-5 text-(--color-revenue)" />
 								</div>
 								<CardTitle className="text-sm font-medium">
 									{t("reports.revenueTrend")}
@@ -110,7 +100,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 							</div>
 						</CardHeader>
 						<CardContent>
-							<ChartContainer config={revenueChartConfig}>
+							<ChartContainer config={chartConfig}>
 								<BarChart
 									data={formattedPeriodData}
 									margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
@@ -145,9 +135,9 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 							<div className="flex items-center gap-3">
 								<div
 									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-amber-500/10"
+										bg-(--color-unpaid)/10"
 								>
-									<CreditCard className="h-5 w-5 text-amber-500" />
+									<CreditCard className="h-5 w-5 text-(--color-unpaid)" />
 								</div>
 								<CardTitle className="text-sm font-medium">
 									{t("reports.outstanding")}
@@ -155,7 +145,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 							</div>
 						</CardHeader>
 						<CardContent>
-							<ChartContainer config={revenueChartConfig}>
+							<ChartContainer config={chartConfig}>
 								<LineChart
 									data={formattedPeriodData}
 									margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
@@ -197,9 +187,10 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 				<CardHeader className="pb-3">
 					<div className="flex items-center gap-3">
 						<div
-							className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10"
+							className="flex h-10 w-10 items-center justify-center rounded-xl
+								bg-(--color-treatment)/10"
 						>
-							<DollarSign className="h-5 w-5 text-violet-500" />
+							<DollarSign className="h-5 w-5 text-(--color-treatment)" />
 						</div>
 						<CardTitle className="text-sm font-medium">
 							{t("reports.revenueByTreatment")}
@@ -229,7 +220,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 									</div>
 									<div className="bg-muted h-2 w-full overflow-hidden rounded-full">
 										<motion.div
-											className="h-full rounded-full bg-violet-500"
+											className="h-full rounded-full bg-(--color-treatment)"
 											initial={{ width: 0 }}
 											animate={{
 												width:

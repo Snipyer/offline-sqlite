@@ -391,6 +391,11 @@
 		"withVisits": "بزيارات في الفترة",
 		"topTreatments": "العلاجات الأكثر شيوعاً",
 		"teethHeatmap": "خريطة كثافة الأسنان",
+		"genderDistribution": "توزيع الجنس",
+		"visitsByWeekday": "الزيارات حسب أيام الأسبوع",
+		"topPatientsByVisits": "أكثر المرضى زيارة",
+		"topPatientsByPaid": "أكثر المرضى دفعاً",
+		"topPatientsByDebt": "أكثر المرضى مديونية",
 		"times": "مرات"
 	},
 	"licensing": {

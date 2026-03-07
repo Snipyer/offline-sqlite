@@ -391,6 +391,11 @@
 		"withVisits": "With visits in period",
 		"topTreatments": "Top Treatments",
 		"teethHeatmap": "Teeth Heatmap",
+		"genderDistribution": "Gender Distribution",
+		"visitsByWeekday": "Visits by Weekday",
+		"topPatientsByVisits": "Top Patients by Visits",
+		"topPatientsByPaid": "Top Patients by Paid",
+		"topPatientsByDebt": "Top Patients by Debt",
 		"times": "times"
 	},
 	"licensing": {
