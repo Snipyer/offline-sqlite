@@ -375,6 +375,9 @@
 		"unpaid": "مستحق",
 		"new": "جديد",
 		"proceduresBreakdown": "تفاصيل الإجراءات",
+		"upcomingSchedules": "المواعيد القادمة",
+		"inMinutes": "خلال {{minutes}}{{unit}}",
+		"noUpcomingSchedules": "لا توجد مواعيد متبقية اليوم",
 		"todayVisitsList": "زيارات اليوم",
 		"noVisitsToday": "لا توجد زيارات اليوم"
 	},

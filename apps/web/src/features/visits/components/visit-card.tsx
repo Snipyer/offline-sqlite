@@ -46,6 +46,7 @@ interface VisitCardProps {
 	index?: number;
 	showPatient?: boolean;
 	showActions?: boolean;
+	showPaymentAction?: boolean;
 	showBorder?: boolean;
 	borderColor?: string;
 	isRtl?: boolean;
@@ -53,6 +54,7 @@ interface VisitCardProps {
 	onEdit?: () => void;
 	onDelete?: () => void;
 	onRestore?: () => void;
+	onPaymentSuccess?: () => void;
 	className?: string;
 }
 
@@ -62,6 +64,7 @@ export function VisitCard({
 	index = 0,
 	showPatient = false,
 	showActions = true,
+	showPaymentAction = true,
 	showBorder = false,
 	borderColor,
 	isRtl = false,
@@ -69,6 +72,7 @@ export function VisitCard({
 	onEdit,
 	onDelete,
 	onRestore,
+	onPaymentSuccess,
 	className,
 }: VisitCardProps) {
 	const { t } = useTranslation();
@@ -165,12 +169,13 @@ export function VisitCard({
 
 					{showActions && (
 						<div className="flex shrink-0 gap-1">
-							{!visit.isDeleted && patientId && visit.amountLeft > 0 && (
+							{showPaymentAction && !visit.isDeleted && patientId && visit.amountLeft > 0 && (
 								<PaymentForm
 									visitId={visit.id}
 									totalAmount={visit.totalAmount}
 									totalPaid={visit.amountPaid}
 									patientId={patientId}
+									onSuccess={onPaymentSuccess}
 								>
 									<Button variant="default" size="sm" className="mr-2 cursor-pointer">
 										{t("payments.pay")}
@@ -259,12 +264,13 @@ export function VisitCard({
 									<Currency value={visit.totalAmount} size="sm" />
 								</span>
 							</div>
-							{showPatient && !visit.isDeleted && resolvedPatientId && (
+							{showPaymentAction && showPatient && !visit.isDeleted && resolvedPatientId && (
 								<PaymentForm
 									visitId={visit.id}
 									totalAmount={visit.totalAmount}
 									totalPaid={visit.amountPaid}
 									patientId={resolvedPatientId}
+									onSuccess={onPaymentSuccess}
 								>
 									<Button variant="default" size="sm" className="cursor-pointer">
 										{t("payments.pay")}

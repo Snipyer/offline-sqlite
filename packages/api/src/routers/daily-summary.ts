@@ -6,8 +6,9 @@ import {
 	visitActTooth,
 	patient,
 	visitType,
+	appointment,
 } from "@offline-sqlite/db/schema/dental";
-import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
+import { eq, and, desc, gte, lte, sql, asc } from "drizzle-orm";
 
 import { router, protectedProcedure } from "../index";
 
@@ -26,6 +27,7 @@ function getEndOfDay(date: Date): Date {
 export const dailySummaryRouter = router({
 	get: protectedProcedure.query(async ({ ctx }) => {
 		const today = new Date();
+		const now = new Date();
 		const startOfDay = getStartOfDay(today);
 		const endOfDay = getEndOfDay(today);
 
@@ -173,6 +175,31 @@ export const dailySummaryRouter = router({
 			}
 		}
 
+		const upcomingSchedulesResult = await db
+			.select({
+				appointment,
+				patient,
+				visitType,
+			})
+			.from(appointment)
+			.innerJoin(patient, eq(appointment.patientId, patient.id))
+			.leftJoin(visitType, eq(appointment.visitTypeId, visitType.id))
+			.where(
+				and(
+					eq(appointment.userId, ctx.session.user.id),
+					eq(appointment.status, "scheduled"),
+					gte(appointment.scheduledTime, now),
+					lte(appointment.scheduledTime, endOfDay),
+				),
+			)
+			.orderBy(asc(appointment.scheduledTime));
+
+		const upcomingSchedules = upcomingSchedulesResult.map((item) => ({
+			...item.appointment,
+			patient: item.patient,
+			visitType: item.visitType,
+		}));
+
 		return {
 			date: today.toISOString(),
 			totalVisits: todayVisits.length,
@@ -183,6 +210,7 @@ export const dailySummaryRouter = router({
 			totalRemaining: Math.max(0, totalExpected - totalCollected),
 			totalUnpaidAmount,
 			proceduresByType,
+			upcomingSchedules,
 			visits: visitsWithDetails,
 		};
 	}),

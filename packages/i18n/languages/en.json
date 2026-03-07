@@ -375,6 +375,9 @@
 		"unpaid": "Unpaid",
 		"new": "new",
 		"proceduresBreakdown": "Procedures Breakdown",
+		"upcomingSchedules": "Upcoming Schedules",
+		"inMinutes": "in {{minutes}}{{unit}}",
+		"noUpcomingSchedules": "No remaining schedules today",
 		"todayVisitsList": "Today's Visits",
 		"noVisitsToday": "No visits today"
 	},
