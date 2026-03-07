@@ -7,6 +7,42 @@ use tauri::Manager;
 use licensing::types::LicenseState;
 use state::AppState;
 
+#[cfg(windows)]
+fn ensure_vc_redist_installed(app: &tauri::AppHandle, app_data_dir: &std::path::Path) {
+    let marker_file = app_data_dir.join(".vc_redist_installed");
+    
+    if marker_file.exists() {
+        return;
+    }
+
+    if let Ok(resource_path) = app
+        .path()
+        .resource_dir()
+    {
+        let redist_path = resource_path.join("resources").join("vc_redist.x64.exe");
+        
+        if redist_path.exists() {
+            log::info!("Installing VC++ Redistributable...");
+            
+            let result = std::process::Command::new(&redist_path)
+                .args(["/install", "/quiet", "/norestart"])
+                .spawn();
+            
+            match result {
+                Ok(mut child) => {
+                    std::thread::sleep(std::time::Duration::from_secs(15));
+                    let _ = child.wait();
+                    log::info!("VC++ Redistributable installation completed");
+                    std::fs::write(&marker_file, "installed").ok();
+                }
+                Err(e) => {
+                    log::error!("Failed to install VC++ Redistributable: {}", e);
+                }
+            }
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
@@ -34,6 +70,9 @@ pub fn run() {
                 .app_data_dir()
                 .expect("Failed to get app data dir");
             std::fs::create_dir_all(&app_data_dir).ok();
+
+            #[cfg(windows)]
+            ensure_vc_redist_installed(&app_handle, &app_data_dir);
 
             let license_state = licensing::activation::check_license_on_startup(&app_data_dir);
             log::info!("License state on startup: {:?}", license_state);
