@@ -8,9 +8,10 @@ import Loader from "@/components/loader";
 interface PatientSheetProps {
 	patientId: string | null;
 	onClose: () => void;
+	onEdit?: (patientId: string) => void;
 }
 
-export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
+export function PatientSheet({ patientId, onClose, onEdit }: PatientSheetProps) {
 	const direction = useDirection();
 	const patientDetails = useQuery({
 		...trpc.patient.getByIdWithVisits.queryOptions({ id: patientId! }, { enabled: !!patientId }),
@@ -42,6 +43,7 @@ export function PatientSheet({ patientId, onClose }: PatientSheetProps) {
 						totalUnpaid={patientDetails.data.totalUnpaid}
 						appointments={patientDetails.data.appointments}
 						payments={patientPayments.data ?? []}
+						onEdit={onEdit ? () => onEdit(patientId!) : undefined}
 					/>
 				) : null}
 			</SheetContent>

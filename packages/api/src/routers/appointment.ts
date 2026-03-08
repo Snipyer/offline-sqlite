@@ -4,6 +4,7 @@ import { eq, and, gte, lte, asc } from "drizzle-orm";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
+import { capitalizePatientName } from "../utils/patient";
 
 const generateId = () => crypto.randomUUID();
 
@@ -68,7 +69,10 @@ export const appointmentRouter = router({
 
 		return appointments.map((row) => ({
 			...row.appointment,
-			patient: row.patient,
+			patient: {
+				...row.patient,
+				name: capitalizePatientName(row.patient.name),
+			},
 			visitType: row.visitType,
 		}));
 	}),
@@ -96,7 +100,10 @@ export const appointmentRouter = router({
 
 		return appointments.map((row) => ({
 			...row.appointment,
-			patient: row.patient,
+			patient: {
+				...row.patient,
+				name: capitalizePatientName(row.patient.name),
+			},
 			visitType: row.visitType,
 		}));
 	}),
@@ -120,7 +127,10 @@ export const appointmentRouter = router({
 
 		return {
 			...result[0].appointment,
-			patient: result[0].patient,
+			patient: {
+				...result[0].patient,
+				name: capitalizePatientName(result[0].patient.name),
+			},
 			visitType: result[0].visitType,
 		};
 	}),

@@ -16,9 +16,11 @@ interface Patient {
 	id: string;
 	name: string;
 	sex: "M" | "F";
-	age: number;
+	age: number | null;
+	dateOfBirth: string | null;
 	phone: string | null;
 	address: string | null;
+	medicalNotes: string | null;
 }
 
 interface VisitType {
@@ -54,8 +56,10 @@ interface PatientFormData {
 	name: string;
 	sex: Sex;
 	age: number | "";
+	dateOfBirth: string;
 	phone: string;
 	address: string;
+	medicalNotes: string;
 }
 
 interface AppointmentFormValues {
@@ -79,12 +83,39 @@ function toLocalDateTimeInputValue(value: Date | string | number) {
 	return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
+function calculateAge(dateString: string): number {
+	const today = new Date();
+	const birthDate = new Date(dateString);
+	let age = today.getFullYear() - birthDate.getFullYear();
+	const monthDiff = today.getMonth() - birthDate.getMonth();
+
+	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+		age -= 1;
+	}
+
+	return Math.max(0, age);
+}
+
+function calculateDateOfBirthFromAge(age: number): string {
+	if (!Number.isFinite(age) || age < 0) {
+		return "";
+	}
+
+	const today = new Date();
+	const dob = new Date(today);
+	dob.setFullYear(today.getFullYear() - age);
+
+	return dob.toISOString().split("T")[0] ?? "";
+}
+
 const emptyPatientData: PatientFormData = {
 	name: "",
 	sex: "M",
 	age: "",
+	dateOfBirth: "",
 	phone: "",
 	address: "",
+	medicalNotes: "",
 };
 
 export function AppointmentForm({
@@ -118,9 +149,13 @@ export function AppointmentForm({
 				? {
 						name: appointment.patient.name,
 						sex: appointment.patient.sex,
-						age: appointment.patient.age,
+						age: appointment.patient.age ?? "",
+						dateOfBirth: appointment.patient.dateOfBirth
+							? new Date(appointment.patient.dateOfBirth).toISOString().split("T")[0]
+							: "",
 						phone: appointment.patient.phone || "",
 						address: appointment.patient.address || "",
+						medicalNotes: appointment.patient.medicalNotes || "",
 					}
 				: emptyPatientData,
 		} satisfies AppointmentFormValues,
@@ -173,9 +208,13 @@ export function AppointmentForm({
 			form.setFieldValue("patient", {
 				name: appointment.patient.name,
 				sex: appointment.patient.sex,
-				age: appointment.patient.age,
+				age: appointment.patient.age ?? "",
+				dateOfBirth: appointment.patient.dateOfBirth
+					? new Date(appointment.patient.dateOfBirth).toISOString().split("T")[0]
+					: "",
 				phone: appointment.patient.phone || "",
 				address: appointment.patient.address || "",
+				medicalNotes: appointment.patient.medicalNotes || "",
 			});
 			setPatientSearch(appointment.patient.name);
 		} else {
@@ -197,9 +236,11 @@ export function AppointmentForm({
 		form.setFieldValue("patient", {
 			name: patient.name,
 			sex: patient.sex,
-			age: patient.age,
+			age: patient.age ?? "",
+			dateOfBirth: patient.dateOfBirth ? new Date(patient.dateOfBirth).toISOString().split("T")[0] : "",
 			phone: patient.phone || "",
 			address: patient.address || "",
+			medicalNotes: patient.medicalNotes || "",
 		});
 		setPatientSearch(patient.name);
 		form.setFieldValue("patientId", patient.id);
@@ -231,8 +272,12 @@ export function AppointmentForm({
 				name: values.patient.name.trim(),
 				sex: values.patient.sex,
 				age: Number(values.patient.age) || 0,
+				dateOfBirth: values.patient.dateOfBirth
+					? new Date(values.patient.dateOfBirth).getTime()
+					: undefined,
 				phone: values.patient.phone || undefined,
 				address: values.patient.address || undefined,
+				medicalNotes: values.patient.medicalNotes || undefined,
 			});
 			finalPatientId = result.id;
 			form.setFieldValue("patientId", result.id);
@@ -458,6 +503,37 @@ export function AppointmentForm({
 													e.target.value ? parseInt(e.target.value) : "",
 												)
 											}
+											onBlur={() => {
+												const currentAge = form.getFieldValue("patient.age");
+												if (typeof currentAge === "number") {
+													form.setFieldValue(
+														"patient.dateOfBirth",
+														calculateDateOfBirthFromAge(currentAge),
+													);
+												}
+											}}
+											className="mt-1.5"
+											disabled={isEditMode || hasSelectedPatient}
+										/>
+									)}
+								</form.Field>
+							</div>
+							<div>
+								<Label htmlFor="patient-dob">{t("patients.dateOfBirth")}</Label>
+								<form.Field name="patient.dateOfBirth">
+									{(field) => (
+										<Input
+											id="patient-dob"
+											type="date"
+											value={field.state.value}
+											onChange={(e) => {
+												const nextDob = e.target.value;
+												field.handleChange(nextDob);
+												form.setFieldValue(
+													"patient.age",
+													nextDob ? calculateAge(nextDob) : "",
+												);
+											}}
 											className="mt-1.5"
 											disabled={isEditMode || hasSelectedPatient}
 										/>
@@ -490,6 +566,22 @@ export function AppointmentForm({
 											placeholder={t("patients.addressPlaceholder")}
 											className="mt-1.5"
 											disabled={isEditMode || hasSelectedPatient}
+										/>
+									)}
+								</form.Field>
+							</div>
+							<div className="sm:col-span-2">
+								<Label htmlFor="patient-medical-notes">{t("patients.medicalNotes")}</Label>
+								<form.Field name="patient.medicalNotes">
+									{(field) => (
+										<Textarea
+											id="patient-medical-notes"
+											value={field.state.value}
+											onChange={(e) => field.handleChange(e.target.value)}
+											placeholder={t("patients.medicalNotesPlaceholder")}
+											className="mt-1.5"
+											disabled={isEditMode || hasSelectedPatient}
+											rows={2}
 										/>
 									)}
 								</form.Field>

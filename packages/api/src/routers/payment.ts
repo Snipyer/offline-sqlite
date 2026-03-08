@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
+import { capitalizePatientName } from "../utils/patient";
 
 const generateId = () => crypto.randomUUID();
 
@@ -196,7 +197,7 @@ export const paymentRouter = router({
 				visitId: input.visitId,
 				totalAmount,
 				totalPaid,
-				remainingBalance: totalAmount - totalPaid,
+				remainingBalance: Math.max(0, totalAmount - totalPaid),
 			};
 		}),
 
@@ -288,11 +289,16 @@ export const paymentRouter = router({
 					.where(whereCondition),
 			]);
 
+			const items = paymentsData.map((paymentRow) => ({
+				...paymentRow,
+				patientName: capitalizePatientName(paymentRow.patientName),
+			}));
+
 			const total = Number(totalResult[0]?.total ?? 0);
 			const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
 
 			return {
-				items: paymentsData,
+				items,
 				total,
 				page: input.page,
 				pageSize: input.pageSize,

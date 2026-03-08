@@ -1,14 +1,4 @@
-import {
-	Calendar,
-	AlertCircle,
-	CheckCircle2,
-	Pencil,
-	Trash2,
-	RotateCcw,
-	User,
-	FileText,
-	Syringe,
-} from "lucide-react";
+import { Calendar, AlertCircle, CheckCircle2, Pencil, Trash2, RotateCcw, User, Syringe } from "lucide-react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { formatDate, useTranslation } from "@offline-sqlite/i18n";
@@ -22,7 +12,6 @@ import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
 export interface Visit {
 	id: string;
 	visitTime: number;
-	notes: string | null;
 	totalAmount: number;
 	amountPaid: number;
 	amountLeft: number;
@@ -35,6 +24,7 @@ export interface Visit {
 		id: string;
 		price: number;
 		visitTypeId: string;
+		notes: string | null;
 		visitType: { name: string };
 		teeth: string[];
 	}[];
@@ -153,15 +143,16 @@ export function VisitCard({
 											<div className="[&>div]:flex-nowrap [&>div]:justify-end">
 												<ToothBadge teeth={act.teeth} />
 											</div>
+											{act.notes && (
+												<p
+													className="text-muted-foreground/80 max-w-56 truncate
+														text-[11px]"
+												>
+													{act.notes}
+												</p>
+											)}
 										</div>
 									))}
-								</div>
-							)}
-
-							{visit.notes && (
-								<div className="text-muted-foreground flex items-center gap-2 text-sm">
-									<FileText className="h-3.5 w-3.5 shrink-0" />
-									<p className="line-clamp-2 text-sm">{visit.notes}</p>
 								</div>
 							)}
 						</div>

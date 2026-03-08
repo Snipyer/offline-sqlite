@@ -47,35 +47,36 @@ export function ToothBadge({
 
 	const fullUpperSelected = isFullArchSelection(teeth, ADULT_UPPER_TEETH);
 	const fullLowerSelected = isFullArchSelection(teeth, ADULT_LOWER_TEETH);
-	const shouldCollapseToArchLabels = !onRemove && !maxTeeth && (fullUpperSelected || fullLowerSelected);
+	const archLabels = [
+		...(fullUpperSelected ? [t("teeth.upper")] : []),
+		...(fullLowerSelected ? [t("teeth.lower")] : []),
+	];
 
-	if (shouldCollapseToArchLabels) {
-		const archLabels = [
-			...(fullUpperSelected ? [t("teeth.upper")] : []),
-			...(fullLowerSelected ? [t("teeth.lower")] : []),
-		];
+	const teethWithoutFullArches = teeth.filter((tooth) => {
+		if (fullUpperSelected && ADULT_UPPER_TEETH.includes(tooth)) {
+			return false;
+		}
+		if (fullLowerSelected && ADULT_LOWER_TEETH.includes(tooth)) {
+			return false;
+		}
+		return true;
+	});
 
-		return (
-			<div className="flex flex-wrap gap-1">
-				{archLabels.map((label) => (
-					<span
-						key={label}
-						className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2
-							py-0.5 text-xs font-medium"
-					>
-						{label}
-					</span>
-				))}
-			</div>
-		);
-	}
-
-	const displayTeeth = maxTeeth ? teeth.slice(0, maxTeeth) : teeth;
-	const remainingCount = maxTeeth ? teeth.length - maxTeeth : 0;
+	const teethToRender = maxTeeth ? teethWithoutFullArches.slice(0, maxTeeth) : teethWithoutFullArches;
+	const remainingCount = maxTeeth ? teethWithoutFullArches.length - maxTeeth : 0;
 
 	return (
 		<div className="flex flex-wrap gap-1">
-			{displayTeeth.map((tooth) => (
+			{archLabels.map((label) => (
+				<span
+					key={label}
+					className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2
+						py-0.5 text-xs font-medium"
+				>
+					{label}
+				</span>
+			))}
+			{teethToRender.map((tooth) => (
 				<span
 					key={tooth}
 					className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2

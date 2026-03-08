@@ -38,6 +38,7 @@
 		"name": "Nom",
 		"email": "E-mail",
 		"password": "Mot de passe",
+		"confirmPassword": "Confirmer le mot de passe",
 		"submitting": "Envoi...",
 		"successSignIn": "Connexion reussie",
 		"successSignUp": "Inscription reussie"
@@ -45,7 +46,8 @@
 	"validation": {
 		"invalidEmail": "Adresse e-mail invalide",
 		"passwordMin": "Le mot de passe doit contenir au moins 8 caracteres",
-		"nameMin": "Le nom doit contenir au moins 2 caracteres"
+		"nameMin": "Le nom doit contenir au moins 2 caracteres",
+		"passwordsMustMatch": "Les mots de passe doivent correspondre"
 	},
 	"theme": {
 		"toggle": "Basculer le theme",
@@ -70,6 +72,7 @@
 	},
 	"common": {
 		"save": "Enregistrer",
+		"saved": "Enregistre",
 		"cancel": "Annuler",
 		"edit": "Modifier",
 		"delete": "Supprimer",
@@ -82,6 +85,7 @@
 		"clear": "Effacer",
 		"previous": "Précédent",
 		"next": "Suivant",
+		"total": "Total",
 		"pageAria": "Aller à la page {{page}}",
 		"scrollToTop": "Remonter en haut"
 	},
@@ -152,6 +156,7 @@
 		"description": "Gérer les catégories de visites de votre clinique",
 		"addNew": "Ajouter un type",
 		"nameLabel": "Nom du type",
+		"multiCreateNotice": "Utilisez | pour ajouter plusieurs types d'un coup, ex: Détartrage|Suivi",
 		"namePlaceholder": "ex: Consultation, Traitement, Suivi",
 		"searchLabel": "Recherche",
 		"searchPlaceholder": "Rechercher des types de visites...",
@@ -175,7 +180,13 @@
 		"sexMale": "Masculin",
 		"sexFemale": "Féminin",
 		"ageLabel": "Âge",
+		"dateOfBirth": "Date de naissance",
 		"years": "ans",
+		"medicalNotes": "Notes medicales",
+		"medicalNotesPlaceholder": "Conditions medicales, allergies, etc.",
+		"editPatient": "Modifier le patient",
+		"notFound": "Patient introuvable",
+
 		"phoneLabel": "Numéro de téléphone",
 		"phonePlaceholder": "Numéro de contact optionnel",
 		"addressLabel": "Adresse",
@@ -405,6 +416,7 @@
 		"teethHeatmap": "Carte thermique des dents",
 		"genderDistribution": "Repartition par sexe",
 		"visitsByWeekday": "Visites par jour de semaine",
+		"treatmentsByWeekday": "Traitements par jour de semaine",
 		"topPatientsByVisits": "Top patients par visites",
 		"topPatientsByPaid": "Top patients par paiements",
 		"topPatientsByDebt": "Top patients par dettes",
@@ -480,6 +492,10 @@
 		"trialExpiredTitle": "Votre essai a expiré",
 		"trialExpiredSubtitle": "Vous avez utilisé les 7 jours d'essai. Entrez une clé de licence pour continuer.",
 		"purchaseLicense": "Acheter une licence",
+		"contactForLicense": "Contact pour la licence",
+		"contactEmail": "support@example.com",
+		"contactPhone": "+1 234 567 8900",
+		"contactTelegram": "@clinic_support",
 		"serverOnline": "En ligne",
 		"serverOffline": "Hors ligne"
 	}

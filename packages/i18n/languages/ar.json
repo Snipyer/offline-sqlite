@@ -38,6 +38,7 @@
 		"name": "الاسم",
 		"email": "البريد الالكتروني",
 		"password": "كلمة المرور",
+		"confirmPassword": "تأكيد كلمة المرور",
 		"submitting": "جار الارسال...",
 		"successSignIn": "تم تسجيل الدخول بنجاح",
 		"successSignUp": "تم انشاء الحساب بنجاح"
@@ -45,7 +46,8 @@
 	"validation": {
 		"invalidEmail": "عنوان البريد الالكتروني غير صالح",
 		"passwordMin": "يجب ان تكون كلمة المرور 8 احرف على الاقل",
-		"nameMin": "يجب ان يكون الاسم حرفين على الاقل"
+		"nameMin": "يجب ان يكون الاسم حرفين على الاقل",
+		"passwordsMustMatch": "كلمتا المرور غير متطابقتين"
 	},
 	"theme": {
 		"toggle": "تبديل المظهر",
@@ -70,6 +72,7 @@
 	},
 	"common": {
 		"save": "حفظ",
+		"saved": "تم الحفظ",
 		"cancel": "إلغاء",
 		"edit": "تعديل",
 		"delete": "حذف",
@@ -82,6 +85,7 @@
 		"clear": "مسح",
 		"previous": "السابق",
 		"next": "التالي",
+		"total": "الإجمالي",
 		"pageAria": "الانتقال إلى الصفحة {{page}}",
 		"scrollToTop": "التمرير إلى الأعلى"
 	},
@@ -152,6 +156,7 @@
 		"description": "إدارة فئات زيارات عيادتك",
 		"addNew": "إضافة نوع",
 		"nameLabel": "اسم النوع",
+		"multiCreateNotice": "استخدم | لإضافة عدة أنواع دفعة واحدة، مثال: تنظيف|متابعة",
 		"namePlaceholder": "مثال: استشارة، علاج، متابعة",
 		"searchLabel": "بحث",
 		"searchPlaceholder": "ابحث في أنواع الزيارات...",
@@ -175,7 +180,13 @@
 		"sexMale": "ذكر",
 		"sexFemale": "أنثى",
 		"ageLabel": "العمر",
+		"dateOfBirth": "تاريخ الميلاد",
 		"years": "سنة",
+		"medicalNotes": "ملاحظات طبية",
+		"medicalNotesPlaceholder": "أي حالات طبية أو حساسية، إلخ.",
+		"editPatient": "تعديل المريض",
+		"notFound": "المريض غير موجود",
+
 		"phoneLabel": "رقم الهاتف",
 		"phonePlaceholder": "رقم الاتصال اختياري",
 		"addressLabel": "العنوان",
@@ -405,6 +416,7 @@
 		"teethHeatmap": "خريطة كثافة الأسنان",
 		"genderDistribution": "توزيع الجنس",
 		"visitsByWeekday": "الزيارات حسب أيام الأسبوع",
+		"treatmentsByWeekday": "العلاجات حسب أيام الأسبوع",
 		"topPatientsByVisits": "أكثر المرضى زيارة",
 		"topPatientsByPaid": "أكثر المرضى دفعاً",
 		"topPatientsByDebt": "أكثر المرضى مديونية",
@@ -480,6 +492,10 @@
 		"trialExpiredTitle": "انتهت فترة التجربة",
 		"trialExpiredSubtitle": "لقد استخدمت جميع أيام التجربة السبعة. أدخل مفتاح ترخيص للمتابعة.",
 		"purchaseLicense": "شراء ترخيص",
+		"contactForLicense": "للتواصل بشأن الترخيص",
+		"contactEmail": "support@example.com",
+		"contactPhone": "+1 234 567 8900",
+		"contactTelegram": "@clinic_support",
 		"serverOnline": "متصل",
 		"serverOffline": "غير متصل"
 	}

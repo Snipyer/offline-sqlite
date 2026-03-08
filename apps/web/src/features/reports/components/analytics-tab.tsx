@@ -50,6 +50,7 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 	const topPatientsByPaid = analyticsData?.topPatientsByPaid ?? [];
 	const topPatientsByDebt = analyticsData?.topPatientsByDebt ?? [];
 	const visitsByWeekday = analyticsData?.visitsByWeekday ?? [];
+	const treatmentsByWeekday = analyticsData?.treatmentsByWeekday ?? [];
 	const maxCount = Math.max(...topTreatments.map((t) => t.count), 0);
 	const maxTopVisits = Math.max(...topPatientsByVisits.map((item) => item.value), 0);
 	const maxTopPaid = Math.max(...topPatientsByPaid.map((item) => item.value), 0);
@@ -72,7 +73,7 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 
 	const weekdayLabelFormatter = new Intl.DateTimeFormat(undefined, { weekday: "short" });
 
-	const weekdayChartData = visitsByWeekday.map((item) => {
+	const withWeekdayLabel = (item: { dayIndex: number; count: number }) => {
 		const baseSunday = new Date(Date.UTC(2024, 0, 7));
 		baseSunday.setUTCDate(baseSunday.getUTCDate() + item.dayIndex);
 
@@ -80,20 +81,10 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 			...item,
 			label: weekdayLabelFormatter.format(baseSunday),
 		};
-	});
+	};
 
-	const totalVisitsTrendData = weekdayChartData.reduce<
-		Array<{ dayIndex: number; count: number; label: string; total: number }>
-	>((acc, item) => {
-		const previousTotal = acc[acc.length - 1]?.total ?? 0;
-
-		acc.push({
-			...item,
-			total: previousTotal + item.count,
-		});
-
-		return acc;
-	}, []);
+	const visitsWeekdayChartData = visitsByWeekday.map(withWeekdayLabel);
+	const treatmentsWeekdayChartData = treatmentsByWeekday.map(withWeekdayLabel);
 
 	const topPatientSections = [
 		{
@@ -227,14 +218,14 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 						</div>
 					</CardHeader>
 					<CardContent>
-						{weekdayChartData.every((item) => item.count === 0) ? (
+						{visitsWeekdayChartData.every((item) => item.count === 0) ? (
 							<div className="py-8 text-center">
 								<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
 							</div>
 						) : (
 							<ChartContainer config={chartConfig}>
 								<BarChart
-									data={weekdayChartData}
+									data={visitsWeekdayChartData}
 									margin={{ top: 5, right: 8, left: -6, bottom: 0 }}
 								>
 									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
@@ -317,20 +308,22 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 					<CardHeader className="pb-3">
 						<div className="flex items-center gap-3">
 							<div className="bg-muted flex h-10 w-10 items-center justify-center rounded-xl">
-								<Activity className="h-5 w-5 text-(--color-visits)" />
+								<Activity className="h-5 w-5 text-(--color-treatment)" />
 							</div>
-							<CardTitle className="text-sm font-medium">{t("reports.totalVisits")}</CardTitle>
+							<CardTitle className="text-sm font-medium">
+								{t("reports.totalTreatments")}
+							</CardTitle>
 						</div>
 					</CardHeader>
 					<CardContent>
-						{totalVisitsTrendData.every((item) => item.total === 0) ? (
+						{treatmentsWeekdayChartData.every((item) => item.count === 0) ? (
 							<div className="py-8 text-center">
 								<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
 							</div>
 						) : (
 							<ChartContainer config={chartConfig}>
 								<LineChart
-									data={totalVisitsTrendData}
+									data={treatmentsWeekdayChartData}
 									margin={{ top: 5, right: 8, left: -6, bottom: 0 }}
 								>
 									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
@@ -344,11 +337,11 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 									<ChartTooltip content={<ChartTooltipContent />} />
 									<Line
 										type="monotone"
-										dataKey="total"
-										name={t("reports.totalVisits")}
-										stroke="var(--color-visits)"
+										dataKey="count"
+										name={t("reports.totalTreatments")}
+										stroke="var(--color-treatment)"
 										strokeWidth={3}
-										dot={{ r: 4, fill: "var(--color-visits)" }}
+										dot={{ r: 4, fill: "var(--color-treatment)" }}
 										activeDot={{ r: 6 }}
 									/>
 								</LineChart>

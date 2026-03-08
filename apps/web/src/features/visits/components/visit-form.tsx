@@ -7,7 +7,6 @@ import {
 	Search,
 	User,
 	Calendar as CalendarIcon,
-	FileText,
 	CreditCard,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -35,30 +34,34 @@ interface PatientFormData {
 	name: string;
 	sex: Sex;
 	age: number | "";
+	dateOfBirth: string;
 	phone: string;
 	address: string;
+	medicalNotes: string;
 }
 
 interface VisitData {
 	id: string;
 	patientId: string;
 	visitTime: number;
-	notes: string | null;
 	amountPaid: number;
 	amountLeft: number;
 	patient: {
 		id: string;
 		name: string;
 		sex: Sex;
-		age: number;
+		age: number | null;
+		dateOfBirth: string | null;
 		phone: string | null;
 		address: string | null;
+		medicalNotes: string | null;
 	};
 	acts: Array<{
 		id: string;
 		visitTypeId: string;
 		price: number;
 		teeth: string[];
+		notes: string | null;
 		visitType: {
 			id: string;
 			name: string;
@@ -70,18 +73,42 @@ function generateId() {
 	return Math.random().toString(36).substring(2, 9);
 }
 
+function calculateAge(dateString: string): number {
+	const today = new Date();
+	const birthDate = new Date(dateString);
+	let age = today.getFullYear() - birthDate.getFullYear();
+	const m = today.getMonth() - birthDate.getMonth();
+	if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+		age--;
+	}
+	return age;
+}
+
+function calculateDateOfBirthFromAge(age: number): string {
+	if (!Number.isFinite(age) || age < 0) {
+		return "";
+	}
+
+	const today = new Date();
+	const dob = new Date(today);
+	dob.setFullYear(today.getFullYear() - age);
+
+	return dob.toISOString().split("T")[0] ?? "";
+}
+
 const emptyPatientData: PatientFormData = {
 	name: "",
 	sex: "M",
 	age: "",
+	dateOfBirth: "",
 	phone: "",
 	address: "",
+	medicalNotes: "",
 };
 
 const visitFormSchema = z.object({
 	patientId: z.string().min(1, "Patient is required"),
 	visitTime: z.string().min(1, "Visit time is required"),
-	notes: z.string().optional().default(""),
 	acts: z
 		.array(
 			z.object({
@@ -89,6 +116,7 @@ const visitFormSchema = z.object({
 				visitTypeId: z.string().min(1, "Procedure type is required"),
 				price: z.number().int().min(1, "Price must be greater than 0"),
 				teeth: z.array(z.string()).min(1, "At least one tooth is required"),
+				notes: z.string().optional(),
 			}),
 		)
 		.min(1, "At least one treatment act is required"),
@@ -123,13 +151,13 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		defaultValues: {
 			patientId: "new",
 			visitTime: new Date().toISOString().slice(0, 16),
-			notes: "",
 			acts: [
 				{
 					id: generateId(),
 					visitTypeId: "",
 					price: 0,
 					teeth: [] as string[],
+					notes: "",
 				},
 			],
 		},
@@ -142,7 +170,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		if (mode === "edit" && visit) {
 			form.setFieldValue("patientId", visit.patientId);
 			form.setFieldValue("visitTime", new Date(visit.visitTime).toISOString().slice(0, 16));
-			form.setFieldValue("notes", visit.notes || "");
 			form.setFieldValue(
 				"acts",
 				visit.acts.map((act) => ({
@@ -150,14 +177,19 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 					visitTypeId: act.visitTypeId,
 					price: act.price,
 					teeth: act.teeth,
+					notes: act.notes ?? "",
 				})),
 			);
 			setPatientFormData({
 				name: visit.patient.name,
 				sex: visit.patient.sex,
-				age: visit.patient.age,
+				age: visit.patient.age ?? "",
+				dateOfBirth: visit.patient.dateOfBirth
+					? new Date(visit.patient.dateOfBirth).toISOString().split("T")[0]
+					: "",
 				phone: visit.patient.phone ?? "",
 				address: visit.patient.address ?? "",
+				medicalNotes: visit.patient.medicalNotes ?? "",
 			});
 			setPatientSearch(visit.patient.name);
 			setExistingPaid(visit.amountPaid);
@@ -236,8 +268,12 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 				name: patientFormData.name.trim(),
 				sex: patientFormData.sex,
 				age: patientFormData.age || 0,
+				dateOfBirth: patientFormData.dateOfBirth
+					? new Date(patientFormData.dateOfBirth).getTime()
+					: undefined,
 				phone: patientFormData.phone || undefined,
 				address: patientFormData.address || undefined,
+				medicalNotes: patientFormData.medicalNotes || undefined,
 			});
 			patientId = result.id;
 		}
@@ -248,20 +284,19 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 			visitTypeId: act.visitTypeId,
 			price: act.price,
 			teeth: act.teeth,
+			notes: act.notes,
 		}));
 
 		if (mode === "create") {
 			createVisitMutation.mutate({
 				patientId,
 				visitTime: new Date(values.visitTime).getTime(),
-				notes: values.notes || undefined,
 				acts: actsPayload,
 			});
 		} else if (mode === "edit" && visit) {
 			updateVisitMutation.mutate({
 				id: visit.id,
 				visitTime: new Date(values.visitTime).getTime(),
-				notes: values.notes || undefined,
 				acts: actsPayload,
 			});
 		}
@@ -271,17 +306,21 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		id: string;
 		name: string;
 		sex: Sex;
-		age: number;
+		age: number | null;
+		dateOfBirth: string | null;
 		phone: string | null;
 		address: string | null;
+		medicalNotes: string | null;
 	}) => {
 		form.setFieldValue("patientId", patient.id);
 		setPatientFormData({
 			name: patient.name,
 			sex: patient.sex,
-			age: patient.age,
+			age: patient.age ?? "",
+			dateOfBirth: patient.dateOfBirth ? new Date(patient.dateOfBirth).toISOString().split("T")[0] : "",
 			phone: patient.phone ?? "",
 			address: patient.address ?? "",
+			medicalNotes: patient.medicalNotes ?? "",
 		});
 		setPatientSearch(patient.name);
 		setShowPatientResults(false);
@@ -501,7 +540,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									</Select>
 								</div>
 								<div>
-									<Label htmlFor="patient-age">{t("patients.ageLabel")} *</Label>
+									<Label htmlFor="patient-age">{t("patients.ageLabel")}</Label>
 									<Input
 										id="patient-age"
 										type="number"
@@ -509,12 +548,35 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										max={150}
 										value={patientFormData.age || ""}
 										placeholder="0"
-										onChange={(e) =>
+										onChange={(e) => {
+											const ageValue = e.target.value ? parseInt(e.target.value) : "";
 											setPatientFormData((prev) => ({
 												...prev,
-												age: e.target.value ? parseInt(e.target.value) : "",
-											}))
-										}
+												age: ageValue,
+												dateOfBirth:
+													typeof ageValue === "number"
+														? calculateDateOfBirthFromAge(ageValue)
+														: prev.dateOfBirth,
+											}));
+										}}
+										className="mt-1.5"
+										disabled={mode === "edit" || hasSelectedPatient}
+									/>
+								</div>
+								<div>
+									<Label htmlFor="patient-dob">{t("patients.dateOfBirth")}</Label>
+									<Input
+										id="patient-dob"
+										type="date"
+										value={patientFormData.dateOfBirth}
+										onChange={(e) => {
+											const dobValue = e.target.value;
+											setPatientFormData((prev) => ({
+												...prev,
+												dateOfBirth: dobValue,
+												age: dobValue ? calculateAge(dobValue) : "",
+											}));
+										}}
 										className="mt-1.5"
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
@@ -535,7 +597,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
 								</div>
-								<div>
+								<div className="sm:col-span-2">
 									<Label htmlFor="patient-address">{t("patients.addressLabel")}</Label>
 									<Input
 										id="patient-address"
@@ -551,6 +613,25 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
 								</div>
+								<div className="sm:col-span-2">
+									<Label htmlFor="patient-medical-notes">
+										{t("patients.medicalNotes")}
+									</Label>
+									<Textarea
+										id="patient-medical-notes"
+										value={patientFormData.medicalNotes}
+										onChange={(e) =>
+											setPatientFormData((prev) => ({
+												...prev,
+												medicalNotes: e.target.value,
+											}))
+										}
+										placeholder={t("patients.medicalNotesPlaceholder")}
+										className="mt-1.5"
+										disabled={mode === "edit" || hasSelectedPatient}
+										rows={2}
+									/>
+								</div>
 							</div>
 						</div>
 					</CardContent>
@@ -558,14 +639,37 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 
 				<Card>
 					<CardHeader className="pb-4">
-						<div className="flex items-center gap-3">
-							<div
-								className="bg-primary text-primary-foreground flex h-8 w-8 items-center
-									justify-center rounded-full text-sm font-semibold"
-							>
-								2
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-3">
+								<div
+									className="bg-primary text-primary-foreground flex h-8 w-8 items-center
+										justify-center rounded-full text-sm font-semibold"
+								>
+									2
+								</div>
+								<CardTitle className="text-lg">{t("visits.treatmentActs")}</CardTitle>
 							</div>
-							<CardTitle className="text-lg">{t("visits.visitDetails")}</CardTitle>
+							<form.Field name="acts" mode="array">
+								{(field) => (
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() =>
+											field.pushValue({
+												id: generateId(),
+												visitTypeId: "",
+												price: 0,
+												teeth: [],
+												notes: "",
+											})
+										}
+									>
+										<Plus className="mr-1 h-4 w-4" />
+										{t("visits.addAct")}
+									</Button>
+								)}
+							</form.Field>
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-4 py-4">
@@ -618,62 +722,8 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									</PopoverContent>
 								</Popover>
 							</div>
-							<div>
-								<Label htmlFor="notes">{t("visits.clinicalNotes")}</Label>
-								<div className="relative mt-1.5">
-									<FileText className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
-									<form.Field name="notes">
-										{(field) => (
-											<Textarea
-												id="notes"
-												value={field.state.value}
-												onChange={(e) => field.handleChange(e.target.value)}
-												placeholder={t("visits.addClinicalObservations")}
-												className="pl-10"
-											/>
-										)}
-									</form.Field>
-								</div>
-							</div>
 						</div>
-					</CardContent>
-				</Card>
 
-				<Card>
-					<CardHeader className="pb-4">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-3">
-								<div
-									className="bg-primary text-primary-foreground flex h-8 w-8 items-center
-										justify-center rounded-full text-sm font-semibold"
-								>
-									3
-								</div>
-								<CardTitle className="text-lg">{t("visits.treatmentActs")}</CardTitle>
-							</div>
-							<form.Field name="acts" mode="array">
-								{(field) => (
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										onClick={() =>
-											field.pushValue({
-												id: generateId(),
-												visitTypeId: "",
-												price: 0,
-												teeth: [],
-											})
-										}
-									>
-										<Plus className="mr-1 h-4 w-4" />
-										{t("visits.addAct")}
-									</Button>
-								)}
-							</form.Field>
-						</div>
-					</CardHeader>
-					<CardContent className="space-y-4 py-4">
 						<form.Field name="acts" mode="array">
 							{(field) => (
 								<>
@@ -718,7 +768,10 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 																	subField.handleChange(value || "")
 																}
 															>
-																<SelectTrigger className="mt-1.5 w-full">
+																<SelectTrigger
+																	autoFocus={index === 0}
+																	className="mt-1.5 w-full"
+																>
 																	<SelectValue>
 																		{visitTypes.data?.find(
 																			(vt) =>
@@ -796,6 +849,23 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 														)}
 													</form.Field>
 												</div>
+
+												<div className="sm:col-span-3">
+													<Label className="text-sm">{t("visits.actNotes")}</Label>
+													<form.Field name={`acts[${index}].notes`}>
+														{(subField) => (
+															<Textarea
+																value={subField.state.value || ""}
+																onChange={(e) =>
+																	subField.handleChange(e.target.value)
+																}
+																placeholder={t("visits.actNotesPlaceholder")}
+																className="mt-1.5"
+																rows={2}
+															/>
+														)}
+													</form.Field>
+												</div>
 											</div>
 										</div>
 									))}
@@ -812,7 +882,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 								className="bg-primary text-primary-foreground flex h-8 w-8 items-center
 									justify-center rounded-full text-sm font-semibold"
 							>
-								4
+								3
 							</div>
 							<CardTitle className="text-lg">{t("visits.payment")}</CardTitle>
 						</div>
@@ -828,9 +898,18 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									(sum, act) => sum + (act?.price || 0),
 									0,
 								);
-								const currentPaymentAmount = paymentAmount;
-								const currentAmountLeft =
-									currentTotalAmount - existingPaid - currentPaymentAmount;
+								const availableBeforeNewPayment = Math.max(
+									0,
+									currentTotalAmount - existingPaid,
+								);
+								const currentPaymentAmount = Math.min(
+									paymentAmount,
+									availableBeforeNewPayment,
+								);
+								const currentAmountLeft = Math.max(
+									0,
+									availableBeforeNewPayment - currentPaymentAmount,
+								);
 
 								return (
 									<div className="space-y-6">
@@ -859,7 +938,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 															id="payment-amount"
 															type="number"
 															min={0}
-															max={currentTotalAmount - existingPaid}
+															max={availableBeforeNewPayment}
 															value={currentPaymentAmount || ""}
 															placeholder="0"
 															onChange={(e) =>
@@ -867,13 +946,13 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 																	e.target.value
 																		? Math.min(
 																				parseInt(e.target.value) || 0,
-																				currentTotalAmount -
-																					existingPaid,
+																				availableBeforeNewPayment,
 																			)
 																		: 0,
 																)
 															}
 															className="pl-7 text-lg"
+															disabled={availableBeforeNewPayment === 0}
 														/>
 													</div>
 												</div>
@@ -891,7 +970,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 												</div>
 											</div>
 
-											{currentPaymentAmount > currentTotalAmount && (
+											{currentPaymentAmount > availableBeforeNewPayment && (
 												<p className="text-destructive mt-4 text-center text-sm">
 													{t("visits.amountExceedError")}
 												</p>

@@ -120,6 +120,15 @@ export default function TrialExpired() {
 							{t("licensing.purchaseLicense")}
 						</a>
 					</p>
+					<p className="text-muted-foreground mt-2 text-center text-xs">
+						{t("licensing.contactForLicense")}:{" "}
+						<a href={`mailto:${t("licensing.contactEmail")}`} className="text-primary underline">
+							{t("licensing.contactEmail")}
+						</a>
+					</p>
+					<p className="text-muted-foreground text-center text-xs">
+						Phone: {t("licensing.contactPhone")} | Telegram: {t("licensing.contactTelegram")}
+					</p>
 				</div>
 			</div>
 		</div>

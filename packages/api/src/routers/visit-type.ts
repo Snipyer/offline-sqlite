@@ -1,5 +1,6 @@
 import { db } from "@offline-sqlite/db";
 import { visitType } from "@offline-sqlite/db/schema/dental";
+import { TRPCError } from "@trpc/server";
 import { eq, and, asc, desc, like, sql } from "drizzle-orm";
 import z from "zod";
 
@@ -85,13 +86,35 @@ export const visitTypeRouter = router({
 	}),
 
 	create: protectedProcedure.input(visitTypeCreateSchema).mutation(async ({ ctx, input }) => {
-		const id = generateId();
-		await db.insert(visitType).values({
-			id,
-			name: input.name,
+		const names = input.name
+			.split("|")
+			.map((name) => name.trim())
+			.filter((name) => name.length > 0);
+
+		if (names.length === 0) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Visit type name is required",
+			});
+		}
+
+		const entries = names.map((name) => ({
+			id: generateId(),
+			name,
 			userId: ctx.session.user.id,
-		});
-		return { id };
+		}));
+
+		const firstEntry = entries[0];
+		if (!firstEntry) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Visit type name is required",
+			});
+		}
+
+		await db.insert(visitType).values(entries);
+
+		return { id: firstEntry.id, ids: entries.map((entry) => entry.id) };
 	}),
 
 	update: protectedProcedure.input(visitTypeUpdateSchema).mutation(async ({ ctx, input }) => {

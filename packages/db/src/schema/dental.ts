@@ -10,9 +10,11 @@ export const patient = sqliteTable(
 		id: text("id").primaryKey(),
 		name: text("name").notNull(),
 		sex: text("sex", { enum: sexEnum }).notNull(),
-		age: integer("age").notNull(),
+		age: integer("age"),
+		dateOfBirth: integer("date_of_birth", { mode: "timestamp_ms" }),
 		phone: text("phone"),
 		address: text("address"),
+		medicalNotes: text("medical_notes"),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -54,7 +56,6 @@ export const visit = sqliteTable(
 			.notNull()
 			.references(() => patient.id, { onDelete: "cascade" }),
 		visitTime: integer("visit_time").notNull(),
-		notes: text("notes"),
 		amountPaid: integer("amount_paid").notNull().default(0),
 		isDeleted: integer("is_deleted", { mode: "boolean" }).default(false).notNull(),
 		userId: text("user_id")
@@ -87,6 +88,7 @@ export const visitAct = sqliteTable(
 			.notNull()
 			.references(() => visitType.id, { onDelete: "cascade" }),
 		price: integer("price").notNull(),
+		notes: text("notes"),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),

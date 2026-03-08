@@ -8,12 +8,13 @@ import {
 	payment,
 	appointment,
 } from "@offline-sqlite/db/schema/dental";
-import { eq, and, like, gte, lte, desc, asc, sql, or, inArray } from "drizzle-orm";
+import { eq, and, like, gte, lte, desc, asc, sql, or, inArray, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
 import { getVisitTotalPaid } from "../utils/payment";
+import { capitalizePatientName } from "../utils/patient";
 
 const generateId = () => crypto.randomUUID();
 
@@ -21,19 +22,18 @@ const visitActInputSchema = z.object({
 	visitTypeId: z.string(),
 	price: z.number().int().min(1, "Price must be greater than 0"),
 	teeth: z.array(z.string()).min(1),
+	notes: z.string().optional(),
 });
 
 const visitCreateSchema = z.object({
 	patientId: z.string(),
 	visitTime: z.number(),
-	notes: z.string().optional(),
 	acts: z.array(visitActInputSchema).min(1),
 });
 
 const visitUpdateSchema = z.object({
 	id: z.string(),
 	visitTime: z.number().optional(),
-	notes: z.string().optional(),
 	acts: z.array(visitActInputSchema).min(1).optional(),
 });
 
@@ -70,10 +70,13 @@ async function getVisitWithPaymentData(
 
 	return {
 		...visitData,
-		patient: patientData,
+		patient: {
+			...patientData,
+			name: capitalizePatientName(patientData.name),
+		},
 		totalAmount,
 		amountPaid: totalPaid,
-		amountLeft: totalAmount - totalPaid,
+		amountLeft: Math.max(0, totalAmount - totalPaid),
 		acts: acts.map((a) => ({
 			...a.act,
 			visitType: a.visitType,
@@ -114,7 +117,7 @@ export const visitRouter = router({
 								like(patient.name, `%${textQuery}%`),
 								like(patient.phone, `%${textQuery}%`),
 								like(patient.address, `%${textQuery}%`),
-								like(visit.notes, `%${textQuery}%`),
+								like(patient.medicalNotes, `%${textQuery}%`),
 							)
 						: undefined,
 				),
@@ -215,17 +218,13 @@ export const visitRouter = router({
 			id: visitId,
 			patientId: input.patientId,
 			visitTime: input.visitTime,
-			notes: input.notes ?? null,
 			isDeleted: false,
 			userId: ctx.session.user.id,
 		});
 
 		const visitTimeDate = new Date(input.visitTime);
-		const twoHoursMs = 2 * 60 * 60 * 1000;
-		const windowStart = new Date(visitTimeDate.getTime() - twoHoursMs);
-		const windowEnd = new Date(visitTimeDate.getTime() + twoHoursMs);
 
-		const scheduledAppointment = await db
+		const scheduledAppointments = await db
 			.select()
 			.from(appointment)
 			.where(
@@ -233,14 +232,28 @@ export const visitRouter = router({
 					eq(appointment.patientId, input.patientId),
 					eq(appointment.status, "scheduled"),
 					eq(appointment.userId, ctx.session.user.id),
-					gte(appointment.scheduledTime, windowStart),
-					lte(appointment.scheduledTime, windowEnd),
+					isNull(appointment.visitId),
 				),
 			)
 			.orderBy(asc(appointment.scheduledTime))
-			.limit(1);
+			.limit(200);
 
-		if (scheduledAppointment.length > 0 && scheduledAppointment[0]) {
+		const sameDayAppointments = scheduledAppointments.filter((scheduled) => {
+			const scheduledDate = new Date(scheduled.scheduledTime);
+			return (
+				scheduledDate.getFullYear() === visitTimeDate.getFullYear() &&
+				scheduledDate.getMonth() === visitTimeDate.getMonth() &&
+				scheduledDate.getDate() === visitTimeDate.getDate()
+			);
+		});
+
+		const appointmentToComplete = sameDayAppointments.sort((a, b) => {
+			const diffA = Math.abs(new Date(a.scheduledTime).getTime() - input.visitTime);
+			const diffB = Math.abs(new Date(b.scheduledTime).getTime() - input.visitTime);
+			return diffA - diffB;
+		})[0];
+
+		if (appointmentToComplete) {
 			await db
 				.update(appointment)
 				.set({
@@ -248,7 +261,7 @@ export const visitRouter = router({
 					visitId: visitId,
 					updatedAt: new Date(),
 				})
-				.where(eq(appointment.id, scheduledAppointment[0].id));
+				.where(eq(appointment.id, appointmentToComplete.id));
 		}
 
 		for (const act of input.acts) {
@@ -258,6 +271,7 @@ export const visitRouter = router({
 				visitId,
 				visitTypeId: act.visitTypeId,
 				price: act.price,
+				notes: act.notes ?? null,
 			});
 
 			for (const toothId of act.teeth) {
@@ -298,6 +312,7 @@ export const visitRouter = router({
 					visitId: id,
 					visitTypeId: act.visitTypeId,
 					price: act.price,
+					notes: act.notes ?? null,
 				});
 
 				for (const toothId of act.teeth) {
@@ -318,7 +333,6 @@ export const visitRouter = router({
 
 		const setData: Record<string, unknown> = {};
 		if (updateData.visitTime !== undefined) setData.visitTime = updateData.visitTime;
-		if (updateData.notes !== undefined) setData.notes = updateData.notes;
 
 		if (Object.keys(setData).length > 0) {
 			await db
@@ -329,7 +343,7 @@ export const visitRouter = router({
 
 		const totalPaid = await getVisitTotalPaid(id);
 
-		return { id, totalAmount, amountPaid: totalPaid, amountLeft: totalAmount - totalPaid };
+		return { id, totalAmount, amountPaid: totalPaid, amountLeft: Math.max(0, totalAmount - totalPaid) };
 	}),
 
 	softDelete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {

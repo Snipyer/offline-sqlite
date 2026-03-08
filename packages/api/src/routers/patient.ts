@@ -12,6 +12,7 @@ import z from "zod";
 
 import { router, protectedProcedure } from "../index";
 import { getVisitTotalPaid } from "../utils/payment";
+import { ageFromDateOfBirth, capitalizePatientName, dateOfBirthFromAge } from "../utils/patient";
 
 const generateId = () => crypto.randomUUID();
 
@@ -35,9 +36,11 @@ const patientFilterSchema = z.object({
 const patientCreateSchema = z.object({
 	name: z.string().min(1),
 	sex: sexEnum,
-	age: z.number().int().min(0).max(150),
+	age: z.number().int().min(0).max(150).optional(),
+	dateOfBirth: z.number().optional(),
 	phone: z.string().optional(),
 	address: z.string().optional(),
+	medicalNotes: z.string().optional(),
 });
 
 const patientUpdateSchema = patientCreateSchema.partial().extend({
@@ -46,11 +49,16 @@ const patientUpdateSchema = patientCreateSchema.partial().extend({
 
 export const patientRouter = router({
 	list: protectedProcedure.query(async ({ ctx }) => {
-		return await db
+		const rows = await db
 			.select()
 			.from(patient)
 			.where(eq(patient.userId, ctx.session.user.id))
 			.orderBy(desc(patient.createdAt));
+
+		return rows.map((row) => ({
+			...row,
+			name: capitalizePatientName(row.name),
+		}));
 	}),
 
 	search: protectedProcedure
@@ -60,11 +68,16 @@ export const patientRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) => {
-			return await db
+			const rows = await db
 				.select()
 				.from(patient)
 				.where(and(eq(patient.userId, ctx.session.user.id), like(patient.name, `%${input.query}%`)))
 				.limit(20);
+
+			return rows.map((row) => ({
+				...row,
+				name: capitalizePatientName(row.name),
+			}));
 		}),
 
 	getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
@@ -74,28 +87,77 @@ export const patientRouter = router({
 			.where(and(eq(patient.id, input.id), eq(patient.userId, ctx.session.user.id)))
 			.limit(1);
 
-		return result[0] ?? null;
+		if (!result[0]) {
+			return null;
+		}
+
+		return {
+			...result[0],
+			name: capitalizePatientName(result[0].name),
+		};
 	}),
 
 	create: protectedProcedure.input(patientCreateSchema).mutation(async ({ ctx, input }) => {
 		const id = generateId();
+		const hasAge = input.age !== undefined;
+		const hasDateOfBirth = input.dateOfBirth !== undefined;
+
+		let calculatedAge = input.age;
+		let calculatedDateOfBirth = input.dateOfBirth;
+
+		if (!hasAge && hasDateOfBirth && input.dateOfBirth) {
+			calculatedAge = ageFromDateOfBirth(input.dateOfBirth);
+		}
+
+		if (hasAge && !hasDateOfBirth && input.age !== undefined) {
+			calculatedDateOfBirth = dateOfBirthFromAge(input.age).getTime();
+		}
+
 		await db.insert(patient).values({
 			id,
-			name: input.name,
+			name: capitalizePatientName(input.name),
 			sex: input.sex,
-			age: input.age,
+			age: calculatedAge ?? null,
+			dateOfBirth: calculatedDateOfBirth ? new Date(calculatedDateOfBirth) : null,
 			phone: input.phone ?? null,
 			address: input.address ?? null,
+			medicalNotes: input.medicalNotes ?? null,
 			userId: ctx.session.user.id,
 		});
 		return { id };
 	}),
 
 	update: protectedProcedure.input(patientUpdateSchema).mutation(async ({ ctx, input }) => {
-		const { id, ...data } = input;
+		const { id, name, dateOfBirth, ...data } = input;
+
+		const updateData: Record<string, unknown> = { ...data };
+
+		if (name !== undefined) {
+			updateData.name = capitalizePatientName(name);
+		}
+
+		const hasAge = data.age !== undefined;
+		const hasDateOfBirth = dateOfBirth !== undefined;
+
+		if (dateOfBirth !== undefined) {
+			updateData.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
+
+			if (!hasAge && dateOfBirth) {
+				updateData.age = ageFromDateOfBirth(dateOfBirth);
+			}
+		}
+
+		if (hasAge && !hasDateOfBirth && data.age !== undefined) {
+			updateData.dateOfBirth = dateOfBirthFromAge(data.age);
+		}
+
+		if (dateOfBirth === null) {
+			updateData.dateOfBirth = null;
+		}
+
 		await db
 			.update(patient)
-			.set(data)
+			.set(updateData)
 			.where(and(eq(patient.id, id), eq(patient.userId, ctx.session.user.id)));
 		return { id };
 	}),
@@ -113,6 +175,11 @@ export const patientRouter = router({
 
 		const visitsData = await Promise.all(
 			patients.map(async (p) => {
+				const normalizedPatient = {
+					...p,
+					name: capitalizePatientName(p.name),
+				};
+
 				const upcomingAppointment = await db
 					.select({
 						id: appointment.id,
@@ -145,7 +212,7 @@ export const patientRouter = router({
 
 				if (visitsForPatient.length === 0) {
 					return {
-						patient: p,
+						patient: normalizedPatient,
 						lastVisit: null,
 						visits: [],
 						totalUnpaid: 0,
@@ -174,7 +241,7 @@ export const patientRouter = router({
 							...v,
 							totalAmount,
 							amountPaid: totalPaid,
-							amountLeft: totalAmount - totalPaid,
+							amountLeft: Math.max(0, totalAmount - totalPaid),
 							acts: acts.map((a) => ({
 								...a.act,
 								visitType: a.visitType,
@@ -187,7 +254,7 @@ export const patientRouter = router({
 				const totalUnpaid = visitsWithActs.reduce((sum, v) => sum + Math.max(0, v.amountLeft), 0);
 
 				return {
-					patient: p,
+					patient: normalizedPatient,
 					lastVisit: visitsWithActs[0],
 					visits: visitsWithActs,
 					totalUnpaid,
@@ -207,7 +274,10 @@ export const patientRouter = router({
 					v.patient.name.toLowerCase().includes(lowered) ||
 					(v.patient.phone?.toLowerCase().includes(lowered) ?? false) ||
 					(v.patient.address?.toLowerCase().includes(lowered) ?? false) ||
-					v.visits.some((visit) => visit.notes?.toLowerCase().includes(lowered) ?? false),
+					v.patient.medicalNotes?.toLowerCase().includes(lowered) ||
+					v.visits.some((visit) =>
+						visit.acts.some((act) => act.notes?.toLowerCase().includes(lowered) ?? false),
+					),
 			);
 		}
 
@@ -291,6 +361,10 @@ export const patientRouter = router({
 			}
 
 			const p = result[0];
+			const normalizedPatient = {
+				...p,
+				name: capitalizePatientName(p.name),
+			};
 
 			const visitsForPatient = await db
 				.select()
@@ -325,7 +399,7 @@ export const patientRouter = router({
 						...v,
 						totalAmount,
 						amountPaid: totalPaid,
-						amountLeft: totalAmount - totalPaid,
+						amountLeft: Math.max(0, totalAmount - totalPaid),
 						acts: acts.map((a) => ({
 							...a.act,
 							visitType: a.visitType,
@@ -356,7 +430,7 @@ export const patientRouter = router({
 				.orderBy(desc(appointment.scheduledTime));
 
 			return {
-				patient: p,
+				patient: normalizedPatient,
 				visits: visitsWithActs,
 				totalUnpaid,
 				appointments,

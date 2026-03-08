@@ -164,16 +164,31 @@ export default function ActivationScreen() {
 
 					{/* Purchase link for expired state */}
 					{isExpired && (
-						<p className="text-muted-foreground mt-4 text-center text-sm">
-							<a
-								href="https://yourapp.com/pricing"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-primary underline"
-							>
-								{t("licensing.purchaseLicense")}
-							</a>
-						</p>
+						<div className="mt-4 space-y-3">
+							<p className="text-muted-foreground text-center text-sm">
+								<a
+									href="https://yourapp.com/pricing"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-primary underline"
+								>
+									{t("licensing.purchaseLicense")}
+								</a>
+							</p>
+							<p className="text-muted-foreground text-center text-xs">
+								{t("licensing.contactForLicense")}:{" "}
+								<a
+									href={`mailto:${t("licensing.contactEmail")}`}
+									className="text-primary underline"
+								>
+									{t("licensing.contactEmail")}
+								</a>
+							</p>
+							<p className="text-muted-foreground text-center text-xs">
+								Phone: {t("licensing.contactPhone")} | Telegram:{" "}
+								{t("licensing.contactTelegram")}
+							</p>
+						</div>
 					)}
 				</div>
 			</div>

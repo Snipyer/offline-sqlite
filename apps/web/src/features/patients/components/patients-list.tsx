@@ -9,7 +9,9 @@ import { PatientCard } from "@/components/patient-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDirection } from "@/components/ui/direction";
 import { ListFilters } from "@/features/list-filters/components/list-filters";
 import { MultiSelectDropdown } from "@/features/list-filters/components/multi-select-dropdown";
 import {
@@ -20,6 +22,7 @@ import {
 import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { trpc } from "@/utils/trpc";
+import PatientEditForm from "./patient-edit-form";
 
 import { PatientSheet } from "./patient-sheet";
 
@@ -47,9 +50,11 @@ const emptyFilters: PatientFilters = {
 
 export function PatientsList() {
 	const { t } = useTranslation();
+	const direction = useDirection();
 	const [filters, setFilters] = useState<PatientFilters>(emptyFilters);
 	const [datePreset, setDatePreset] = useState<DatePreset | null>(null);
 	const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+	const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const pageSize = 10;
 
@@ -321,7 +326,31 @@ export function PatientsList() {
 				</Card>
 			</motion.div>
 
-			<PatientSheet patientId={selectedPatientId} onClose={() => setSelectedPatientId(null)} />
+			<PatientSheet
+				patientId={selectedPatientId}
+				onClose={() => {
+					setSelectedPatientId(null);
+					setEditingPatientId(null);
+				}}
+				onEdit={(patientId) => setEditingPatientId(patientId)}
+			/>
+
+			<Sheet open={!!editingPatientId} onOpenChange={(open) => !open && setEditingPatientId(null)}>
+				<SheetContent
+					side={direction === "rtl" ? "left" : "right"}
+					dir={direction}
+					className="inset-y-0! z-60 flex h-full! w-[95vw] max-w-150! flex-col border-l pt-6"
+				>
+					{editingPatientId && (
+						<PatientEditForm
+							patientId={editingPatientId}
+							inSheet
+							onCancel={() => setEditingPatientId(null)}
+							onSuccess={() => setEditingPatientId(null)}
+						/>
+					)}
+				</SheetContent>
+			</Sheet>
 		</motion.div>
 	);
 }

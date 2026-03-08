@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { CreditCard, Calendar, DollarSign } from "lucide-react";
+import { CreditCard, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -111,7 +111,7 @@ export default function PaymentsList() {
 			<motion.div variants={pageItemVariants} className="mb-8">
 				<div className="flex items-center gap-4">
 					<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
-						<DollarSign className="text-primary h-6 w-6" />
+						<CreditCard className="text-primary h-6 w-6" />
 					</div>
 					<div>
 						<h1 className="text-3xl font-semibold tracking-tight">{t("payments.title")}</h1>

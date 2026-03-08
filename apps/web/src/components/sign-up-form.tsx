@@ -18,6 +18,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 		defaultValues: {
 			email: "",
 			password: "",
+			confirmPassword: "",
 			name: "",
 		},
 		onSubmit: async ({ value }) => {
@@ -44,11 +45,17 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 			);
 		},
 		validators: {
-			onSubmit: z.object({
-				name: z.string().min(2, t("validation.nameMin")),
-				email: z.email(t("validation.invalidEmail")),
-				password: z.string().min(8, t("validation.passwordMin")),
-			}),
+			onSubmit: z
+				.object({
+					name: z.string().min(2, t("validation.nameMin")),
+					email: z.email(t("validation.invalidEmail")),
+					password: z.string().min(8, t("validation.passwordMin")),
+					confirmPassword: z.string().min(8, t("validation.passwordMin")),
+				})
+				.refine((value) => value.password === value.confirmPassword, {
+					path: ["confirmPassword"],
+					message: t("validation.passwordsMustMatch"),
+				}),
 		},
 	});
 
@@ -148,6 +155,30 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 								{(field) => (
 									<div className="space-y-2">
 										<Label htmlFor={field.name}>{t("auth.password")}</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											type="password"
+											placeholder="********"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+										/>
+										{field.state.meta.errors.map((error) => (
+											<p key={error?.message} className="text-destructive text-xs">
+												{error?.message}
+											</p>
+										))}
+									</div>
+								)}
+							</form.Field>
+						</div>
+
+						<div>
+							<form.Field name="confirmPassword">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>{t("auth.confirmPassword")}</Label>
 										<Input
 											id={field.name}
 											name={field.name}

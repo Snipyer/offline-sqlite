@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Loader2, Pencil, Plus, Trash2, X, Check, Syringe } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2, X, Check, Syringe, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/loader";
@@ -32,8 +32,10 @@ import { PaginationControls } from "@/components/pagination-controls";
 
 export default function VisitTypes() {
 	const { t } = useTranslation();
+	<span>[</span>;
 	const [isCreating, setIsCreating] = useState(false);
 	const [editingId, setEditingId] = useState<string | null>(null);
+	<span>]</span>;
 	const [formName, setFormName] = useState("");
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [query, setQuery] = useState("");
@@ -233,8 +235,16 @@ export default function VisitTypes() {
 										>
 											{t("visitTypes.nameLabel")}
 										</Label>
+										<p
+											className="text-muted-foreground mt-1.5 flex items-center gap-1.5
+												text-xs"
+										>
+											<Info className="h-3.5 w-3.5" />
+											<span>{t("visitTypes.multiCreateNotice")}</span>
+										</p>
 										<Input
 											id="new-name"
+											autoFocus
 											value={formName}
 											onChange={(e) => setFormName(e.target.value)}
 											placeholder={t("visitTypes.namePlaceholder")}

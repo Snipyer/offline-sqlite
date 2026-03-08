@@ -53,6 +53,7 @@ export default function DailySummaryContent() {
 		upcomingSchedules,
 		visits,
 	} = summary.data;
+	const proceduresTotal = Object.values(proceduresByType).reduce((sum, count) => sum + count, 0);
 
 	const now = Date.now();
 
@@ -121,6 +122,11 @@ export default function DailySummaryContent() {
 									</div>
 									<CardTitle className="text-sm font-medium">
 										{t("dailySummary.proceduresBreakdown")}
+										{proceduresTotal > 0 && (
+											<span className="text-muted-foreground ml-2 font-normal">
+												({t("common.total")}: {proceduresTotal})
+											</span>
+										)}
 									</CardTitle>
 								</div>
 							</CardHeader>

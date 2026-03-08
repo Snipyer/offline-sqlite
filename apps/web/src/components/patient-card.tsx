@@ -9,6 +9,7 @@ import {
 	MapPin,
 	VenusAndMars,
 	CalendarClock,
+	FileText,
 } from "lucide-react";
 import { formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
@@ -21,9 +22,11 @@ export interface PatientCardProps {
 		id: string;
 		name: string;
 		sex: "M" | "F";
-		age: number;
+		age: number | null;
+		dateOfBirth: string | null;
 		phone: string | null;
 		address: string | null;
+		medicalNotes: string | null;
 	};
 	lastVisit: {
 		visitTime: number;
@@ -182,6 +185,13 @@ export function PatientCard({
 							<Calendar className="h-3.5 w-3.5" />
 							{lastVisit ? formatDate(lastVisit.visitTime) : t("patients.noVisits")}
 						</p>
+
+						{patient.medicalNotes && (
+							<p className="text-muted-foreground my-2 flex items-center gap-1.5 text-sm">
+								<FileText className="h-3.5 w-3.5 shrink-0" />
+								<span className="line-clamp-1">{patient.medicalNotes}</span>
+							</p>
+						)}
 
 						{/* Patient details row */}
 						<div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">

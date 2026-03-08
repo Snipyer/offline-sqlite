@@ -35,14 +35,21 @@ export function Currency({
 	className = "",
 }: CurrencyProps) {
 	const normalizedValue = normalizeCurrencyValue(value, showCents);
+	const isNegative = normalizedValue < 0;
+	const displayValue = Math.abs(normalizedValue);
 	const symbol = getCurrencySymbol(currency);
 	const resolvedFontSize = fontSize ?? sizeToFontSize[size];
 
 	return (
 		<span className={cn("inline-flex items-center gap-0.5", className)}>
+			{isNegative && (
+				<span dir="ltr" className="inline-flex items-center leading-none">
+					-
+				</span>
+			)}
 			<span dir="ltr" className="inline-flex items-center leading-none">
 				<Counter
-					value={normalizedValue}
+					value={displayValue}
 					fontSize={resolvedFontSize}
 					horizontalPadding={0}
 					gap={0}

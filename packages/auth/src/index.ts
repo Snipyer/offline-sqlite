@@ -7,7 +7,7 @@ import { localization } from "better-auth-localization";
 
 const isSecureCookie = env.BETTER_AUTH_URL.startsWith("https://");
 // For Tauri desktop apps, we need SameSite="none" for cross-origin between
-// tauri://localhost and http://127.0.0.1:3000 to work properly
+// tauri://localhost and the local sidecar server origin to work properly
 const isTauri = process.env.TAURI_ENVIRONMENT === "true";
 
 export const auth = betterAuth({

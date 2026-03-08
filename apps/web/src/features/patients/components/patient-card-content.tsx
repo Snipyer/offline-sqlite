@@ -1,4 +1,4 @@
-import { Calendar, CreditCard, Phone, MapPin, User, ChevronRight, Stethoscope } from "lucide-react";
+import { Calendar, CreditCard, Phone, MapPin, User, ChevronRight, Stethoscope, Pencil } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
@@ -8,15 +8,18 @@ import { Currency } from "@/components/currency";
 import { VisitCard } from "@/features/visits/components/visit-card";
 import { useDirection } from "@base-ui/react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 interface PatientCardProps {
 	patient: {
 		id: string;
 		name: string;
 		sex: "M" | "F";
-		age: number;
+		age: number | null;
+		dateOfBirth: string | null;
 		phone: string | null;
 		address: string | null;
+		medicalNotes: string | null;
 	};
 	lastVisit: {
 		visitTime: number;
@@ -115,14 +118,15 @@ interface PatientSheetProps {
 		id: string;
 		name: string;
 		sex: "M" | "F";
-		age: number;
+		age: number | null;
+		dateOfBirth: string | null;
 		phone: string | null;
 		address: string | null;
+		medicalNotes: string | null;
 	};
 	visits: {
 		id: string;
 		visitTime: number;
-		notes: string | null;
 		totalAmount: number;
 		amountPaid: number;
 		amountLeft: number;
@@ -130,6 +134,7 @@ interface PatientSheetProps {
 			id: string;
 			price: number;
 			visitTypeId: string;
+			notes: string | null;
 			visitType: { name: string };
 			teeth: string[];
 		}[];
@@ -155,6 +160,7 @@ interface PatientSheetProps {
 		notes: string | null;
 		recordedAt: string | Date;
 	}[];
+	onEdit?: () => void;
 }
 
 export function PatientSheetContent({
@@ -163,6 +169,7 @@ export function PatientSheetContent({
 	totalUnpaid,
 	appointments,
 	payments,
+	onEdit,
 }: PatientSheetProps) {
 	const { t } = useTranslation();
 	const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
@@ -232,7 +239,19 @@ export function PatientSheetContent({
 						<User className="text-primary h-10 w-10" />
 					</div>
 					<div className="flex-1">
-						<h2 className="text-2xl font-semibold tracking-tight">{patient.name}</h2>
+						<div className="flex items-center gap-3">
+							<h2 className="text-2xl font-semibold tracking-tight">{patient.name}</h2>
+							{onEdit && (
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-8 cursor-pointer"
+									onClick={onEdit}
+								>
+									<Pencil className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
 						<div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
 							<span className="text-muted-foreground">
 								{patient.sex === "M" ? t("patients.male") : t("patients.female")},{" "}

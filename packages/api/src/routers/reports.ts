@@ -4,6 +4,7 @@ import { eq, and, gte, lte, sql, inArray } from "drizzle-orm";
 
 import { router, protectedProcedure } from "../index";
 import { z } from "zod";
+import { capitalizePatientName } from "../utils/patient";
 
 const dateRangeSchema = z.object({
 	startDate: z.string(),
@@ -335,6 +336,10 @@ export const reportsRouter = router({
 					dayIndex,
 					count: 0,
 				})),
+				treatmentsByWeekday: Array.from({ length: 7 }, (_, dayIndex) => ({
+					dayIndex,
+					count: 0,
+				})),
 				topPatientsByVisits: [],
 				topPatientsByPaid: [],
 				topPatientsByDebt: [],
@@ -398,6 +403,15 @@ export const reportsRouter = router({
 		}
 
 		const weekdayCounts = Array.from({ length: 7 }, (_, dayIndex) => ({ dayIndex, count: 0 }));
+		const treatmentWeekdayCounts = Array.from({ length: 7 }, (_, dayIndex) => ({
+			dayIndex,
+			count: 0,
+		}));
+
+		const actsByVisitId = new Map<string, number>();
+		for (const act of actsByVisit) {
+			actsByVisitId.set(act.visitId, (actsByVisitId.get(act.visitId) ?? 0) + 1);
+		}
 
 		const patientAggregate = new Map<
 			string,
@@ -409,6 +423,7 @@ export const reportsRouter = router({
 		for (const visitRecord of visitsInRange) {
 			const dayIndex = new Date(visitRecord.visitTime).getDay();
 			weekdayCounts[dayIndex]!.count += 1;
+			treatmentWeekdayCounts[dayIndex]!.count += actsByVisitId.get(visitRecord.id) ?? 0;
 
 			const total = totalsByVisit.get(visitRecord.id) ?? 0;
 			const paid = paidByVisit.get(visitRecord.id) ?? 0;
@@ -416,7 +431,7 @@ export const reportsRouter = router({
 
 			const existing = patientAggregate.get(visitRecord.patientId) ?? {
 				patientId: visitRecord.patientId,
-				name: patientNameById.get(visitRecord.patientId) ?? "-",
+				name: capitalizePatientName(patientNameById.get(visitRecord.patientId) ?? "-"),
 				visits: 0,
 				paid: 0,
 				debt: 0,
@@ -449,6 +464,7 @@ export const reportsRouter = router({
 		return {
 			genderDistribution,
 			visitsByWeekday: weekdayCounts,
+			treatmentsByWeekday: treatmentWeekdayCounts,
 			topPatientsByVisits,
 			topPatientsByPaid,
 			topPatientsByDebt,

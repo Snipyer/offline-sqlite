@@ -31,9 +31,11 @@ interface Appointment {
 		id: string;
 		name: string;
 		sex: "M" | "F";
-		age: number;
+		age: number | null;
+		dateOfBirth: string | null;
 		phone: string | null;
 		address: string | null;
+		medicalNotes: string | null;
 	};
 	visitType: {
 		id: string;

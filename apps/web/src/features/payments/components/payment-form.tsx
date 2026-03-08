@@ -55,7 +55,7 @@ export function PaymentForm({
 		}
 	};
 
-	const remainingBalance = totalAmount - totalPaid;
+	const remainingBalance = Math.max(0, totalAmount - totalPaid);
 	const amountNumber = Number(amount);
 
 	const createPayment = useMutation(
