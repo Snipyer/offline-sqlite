@@ -229,6 +229,7 @@
 		"patientInfoAndHistory": "Informations et historique des visites",
 		"personalInfo": "Informations personnelles",
 		"name": "Nom",
+		"call": "Appeler",
 		"phone": "Téléphone",
 		"address": "Adresse",
 		"totalUnpaid": "Total impayé",
@@ -241,7 +242,11 @@
 		"paymentsTab": "Paiements",
 		"noPayments": "Aucun paiement",
 		"appointmentInDays": "Rendez-vous dans {{days}} jours",
-		"appointmentToday": "Rendez-vous aujourd'hui"
+		"appointmentToday": "Rendez-vous aujourd'hui",
+		"callDialogTitle": "Appeler {{name}} au {{phone}}",
+		"callDialogDescription": "Scannez le code QR avec votre téléphone",
+		"callDialogQrAlt": "Code QR pour appeler {{name}} au {{phone}}",
+		"callDialogOpenAria": "Ouvrir la fenetre d'appel pour {{name}} au {{phone}}"
 	},
 	"visits": {
 		"title": "Visites",

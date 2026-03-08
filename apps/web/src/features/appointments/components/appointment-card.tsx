@@ -1,6 +1,7 @@
-import { Pencil, Trash2, Clock, User, Stethoscope, FileText } from "lucide-react";
+import { Pencil, Trash2, Clock, Stethoscope, FileText, PhoneCall } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { CallPatientDialog } from "@/features/patients/components/call-patient-dialog";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -60,6 +61,7 @@ export function AppointmentCard({
 }: AppointmentCardProps) {
 	const { t } = useTranslation();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [showCallDialog, setShowCallDialog] = useState(false);
 
 	const scheduledTime = new Date(appointment.scheduledTime);
 	const endTime = new Date(scheduledTime.getTime() + appointment.duration * 60000);
@@ -174,6 +176,23 @@ export function AppointmentCard({
 					</div>
 
 					<div className="flex shrink-0 gap-1">
+						{appointment.patient.phone && (
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 rounded-lg px-2 text-xs"
+								onClick={(e) => {
+									e.stopPropagation();
+									setShowCallDialog(!showCallDialog);
+								}}
+								aria-label={t("patients.callDialogOpenAria", {
+									name: appointment.patient.name,
+									phone: appointment.patient.phone,
+								})}
+							>
+								<PhoneCall className="h-4 w-4" />
+							</Button>
+						)}
 						<Button
 							variant="ghost"
 							size="icon"
@@ -233,6 +252,15 @@ export function AppointmentCard({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{appointment.patient.phone && (
+				<CallPatientDialog
+					open={showCallDialog}
+					onOpenChange={setShowCallDialog}
+					patientName={appointment.patient.name}
+					patientPhone={appointment.patient.phone}
+				/>
+			)}
 		</motion.div>
 	);
 }

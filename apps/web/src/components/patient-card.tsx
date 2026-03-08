@@ -2,20 +2,21 @@ import {
 	Calendar,
 	CalendarDays,
 	CreditCard,
-	Phone,
-	User,
 	ChevronRight,
 	Clock,
 	MapPin,
 	VenusAndMars,
 	CalendarClock,
 	FileText,
+	PhoneCall,
 } from "lucide-react";
+import { useState } from "react";
 import { formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
 import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
+import { CallPatientDialog } from "@/features/patients/components/call-patient-dialog";
 
 export interface PatientCardProps {
 	patient: {
@@ -56,6 +57,25 @@ export function PatientCard({
 	index = 0,
 }: PatientCardProps) {
 	const { t } = useTranslation();
+	const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
+	const [ignoreCardClickUntil, setIgnoreCardClickUntil] = useState(0);
+
+	const handleCardClick = () => {
+		if (isCallDialogOpen || Date.now() < ignoreCardClickUntil) {
+			return;
+		}
+
+		onClick?.();
+	};
+
+	const handleCallDialogOpenChange = (open: boolean) => {
+		setIsCallDialogOpen(open);
+
+		if (!open) {
+			// Prevent click-through when closing from backdrop/cancel.
+			setIgnoreCardClickUntil(Date.now() + 300);
+		}
+	};
 
 	const getUpcomingAppointmentLabel = () => {
 		if (!upcomingAppointment) return null;
@@ -113,7 +133,7 @@ export function PatientCard({
 					transition-[background-color,border-color,box-shadow] duration-300`,
 					className,
 				)}
-				onClick={onClick}
+				onClick={handleCardClick}
 			>
 				<div
 					className={cn(
@@ -154,7 +174,7 @@ export function PatientCard({
 				duration-300`,
 				className,
 			)}
-			onClick={onClick}
+			onClick={handleCardClick}
 		>
 			{/* Hover gradient overlay */}
 			<div
@@ -208,13 +228,36 @@ export function PatientCard({
 								</span>
 							</div>
 							{patient.phone && (
-								<div className="bg-muted flex items-center gap-1.5 rounded-lg px-2.5 py-1">
-									<Phone className="text-muted-foreground h-3.5 w-3.5" />
-									<span className="text-muted-foreground text-xs">
-										{t("patients.phone")}
-									</span>
-									<span className="font-medium">{patient.phone}</span>
-								</div>
+								<>
+									<button
+										type="button"
+										className="bg-muted hover:bg-muted/80 flex cursor-pointer items-center
+											gap-1.5 rounded-lg px-2.5 py-1 text-start"
+										onPointerDown={(event) => event.stopPropagation()}
+										onMouseDown={(event) => event.stopPropagation()}
+										onClick={(event) => {
+											event.stopPropagation();
+											setIgnoreCardClickUntil(Date.now() + 300);
+											setIsCallDialogOpen(true);
+										}}
+										aria-label={t("patients.callDialogOpenAria", {
+											name: patient.name,
+											phone: patient.phone,
+										})}
+									>
+										<PhoneCall className="text-muted-foreground h-3.5 w-3.5" />
+										<span className="text-muted-foreground text-xs">
+											{t("patients.call")}
+										</span>
+										<span className="font-medium">{patient.phone}</span>
+									</button>
+									<CallPatientDialog
+										open={isCallDialogOpen}
+										onOpenChange={handleCallDialogOpenChange}
+										patientName={patient.name}
+										patientPhone={patient.phone}
+									/>
+								</>
 							)}
 							{patient.address && (
 								<div

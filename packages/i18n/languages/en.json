@@ -228,6 +228,7 @@
 		"patientInfoAndHistory": "Patient information and visit history",
 		"personalInfo": "Personal Information",
 		"name": "Name",
+		"call": "Call",
 		"phone": "Phone",
 		"address": "Address",
 		"totalUnpaid": "Total Unpaid",
@@ -240,7 +241,11 @@
 		"paymentsTab": "Payments",
 		"noPayments": "No payments",
 		"appointmentInDays": "Appointment in {{days}} days",
-		"appointmentToday": "Appointment today"
+		"appointmentToday": "Appointment today",
+		"callDialogTitle": "Call {{name}} at {{phone}}",
+		"callDialogDescription": "Scan QR code with your phone",
+		"callDialogQrAlt": "QR code to call {{name}} at {{phone}}",
+		"callDialogOpenAria": "Open call dialog for {{name}} at {{phone}}"
 	},
 	"visits": {
 		"title": "Visits",

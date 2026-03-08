@@ -1,4 +1,13 @@
-import { Calendar, CreditCard, Phone, MapPin, User, ChevronRight, Stethoscope, Pencil } from "lucide-react";
+import {
+	Calendar,
+	CreditCard,
+	MapPin,
+	User,
+	ChevronRight,
+	Stethoscope,
+	Pencil,
+	PhoneCall,
+} from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
@@ -9,6 +18,7 @@ import { VisitCard } from "@/features/visits/components/visit-card";
 import { useDirection } from "@base-ui/react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { CallPatientDialog } from "./call-patient-dialog";
 
 interface PatientCardProps {
 	patient: {
@@ -75,7 +85,7 @@ export function PatientCard({ patient, lastVisit, visits, totalUnpaid, onClick }
 								</div>
 								{patient.phone && (
 									<div className="flex items-center gap-1">
-										<Phone className="text-muted-foreground h-3.5 w-3.5" />
+										<PhoneCall className="text-muted-foreground h-3.5 w-3.5" />
 										<span className="font-medium">{patient.phone}</span>
 									</div>
 								)}
@@ -174,6 +184,7 @@ export function PatientSheetContent({
 	const { t } = useTranslation();
 	const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<"visits" | "appointments" | "payments">("visits");
+	const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
 	const direction = useDirection();
 	const isRtl = direction === "rtl";
 
@@ -230,6 +241,14 @@ export function PatientSheetContent({
 
 	return (
 		<div className="flex flex-1 flex-col overflow-hidden">
+			{patient.phone && (
+				<CallPatientDialog
+					open={isCallDialogOpen}
+					onOpenChange={setIsCallDialogOpen}
+					patientName={patient.name}
+					patientPhone={patient.phone}
+				/>
+			)}
 			<div className="p-6">
 				<div className="flex items-start gap-5">
 					<div
@@ -258,10 +277,20 @@ export function PatientSheetContent({
 								{patient.age} {t("patients.years")}
 							</span>
 							{patient.phone && (
-								<span className="text-muted-foreground flex items-center gap-1.5">
-									<Phone className="h-3.5 w-3.5" />
-									{patient.phone}
-								</span>
+								<button
+									type="button"
+									className="text-muted-foreground hover:text-foreground bg-muted/70
+										hover:bg-muted inline-flex cursor-pointer items-center gap-1.5
+										rounded-md border px-2.5 py-1 text-xs font-medium"
+									onClick={() => setIsCallDialogOpen(true)}
+									aria-label={t("patients.callDialogOpenAria", {
+										name: patient.name,
+										phone: patient.phone,
+									})}
+								>
+									<PhoneCall className="h-3.5 w-3.5" />
+									{t("patients.call")}: {patient.phone}
+								</button>
 							)}
 						</div>
 						{patient.address && (

@@ -229,6 +229,7 @@
 		"patientInfoAndHistory": "معلومات المريض وتاريخ زياراته",
 		"personalInfo": "المعلومات الشخصية",
 		"name": "الاسم",
+		"call": "اتصال",
 		"phone": "الهاتف",
 		"address": "العنوان",
 		"totalUnpaid": "إجمالي غير المدفوع",
@@ -241,7 +242,11 @@
 		"paymentsTab": "المدفوعات",
 		"noPayments": "لا توجد مدفوعات",
 		"appointmentInDays": "موعد بعد {{days}} أيام",
-		"appointmentToday": "الموعد اليوم"
+		"appointmentToday": "الموعد اليوم",
+		"callDialogTitle": "اتصل بـ {{name}} على {{phone}}",
+		"callDialogDescription": "امسح رمز QR بهاتفك",
+		"callDialogQrAlt": "رمز QR للاتصال بـ {{name}} على {{phone}}",
+		"callDialogOpenAria": "فتح نافذة الاتصال لـ {{name}} على {{phone}}"
 	},
 	"visits": {
 		"title": "الزيارات",
