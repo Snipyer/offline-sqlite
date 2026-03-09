@@ -8,11 +8,14 @@ import Loader from "./loader";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
 	const navigate = useNavigate();
 	const { isPending } = authClient.useSession();
 	const { t, i18n } = useTranslation();
+	const [showPassword, setShowPassword] = useState(false);
 
 	const form = useForm({
 		defaultValues: {
@@ -155,15 +158,33 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 								{(field) => (
 									<div className="space-y-2">
 										<Label htmlFor={field.name}>{t("auth.password")}</Label>
-										<Input
-											id={field.name}
-											name={field.name}
-											type="password"
-											placeholder="********"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-										/>
+										<div className="relative">
+											<Input
+												id={field.name}
+												name={field.name}
+												type={showPassword ? "text" : "password"}
+												placeholder="********"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(e) => field.handleChange(e.target.value)}
+												className="pr-10"
+											/>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="absolute top-0 right-0 h-full px-3 py-1
+													hover:bg-transparent"
+												onClick={() => setShowPassword(!showPassword)}
+												tabIndex={-1}
+											>
+												{showPassword ? (
+													<EyeOff className="text-muted-foreground size-4" />
+												) : (
+													<Eye className="text-muted-foreground size-4" />
+												)}
+											</Button>
+										</div>
 										{field.state.meta.errors.map((error) => (
 											<p key={error?.message} className="text-destructive text-xs">
 												{error?.message}
@@ -179,15 +200,33 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 								{(field) => (
 									<div className="space-y-2">
 										<Label htmlFor={field.name}>{t("auth.confirmPassword")}</Label>
-										<Input
-											id={field.name}
-											name={field.name}
-											type="password"
-											placeholder="********"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-										/>
+										<div className="relative">
+											<Input
+												id={field.name}
+												name={field.name}
+												type={showPassword ? "text" : "password"}
+												placeholder="********"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(e) => field.handleChange(e.target.value)}
+												className="pr-10"
+											/>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="absolute top-0 right-0 h-full px-3 py-1
+													hover:bg-transparent"
+												onClick={() => setShowPassword(!showPassword)}
+												tabIndex={-1}
+											>
+												{showPassword ? (
+													<EyeOff className="text-muted-foreground size-4" />
+												) : (
+													<Eye className="text-muted-foreground size-4" />
+												)}
+											</Button>
+										</div>
 										{field.state.meta.errors.map((error) => (
 											<p key={error?.message} className="text-destructive text-xs">
 												{error?.message}
