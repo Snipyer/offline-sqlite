@@ -503,6 +503,10 @@
 		"contactEmail": "support@example.com",
 		"contactPhone": "+1 234 567 8900",
 		"contactTelegram": "@clinic_support",
+		"qrDialogEmailTitle": "Email us at {{email}}",
+		"qrDialogPhoneTitle": "Call us at {{phone}}",
+		"qrDialogTelegramTitle": "Message us at {{telegram}}",
+		"qrDialogDescription": "Scan QR code using your phone",
 		"serverOnline": "Online",
 		"serverOffline": "Offline"
 	}

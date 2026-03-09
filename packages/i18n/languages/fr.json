@@ -501,6 +501,10 @@
 		"contactEmail": "support@example.com",
 		"contactPhone": "+1 234 567 8900",
 		"contactTelegram": "@clinic_support",
+		"qrDialogEmailTitle": "Envoyez-nous un email à {{email}}",
+		"qrDialogPhoneTitle": "Appelez-nous au {{phone}}",
+		"qrDialogTelegramTitle": "Envoyez-nous un message sur {{telegram}}",
+		"qrDialogDescription": "Scannez le code QR avec votre téléphone",
 		"serverOnline": "En ligne",
 		"serverOffline": "Hors ligne"
 	}

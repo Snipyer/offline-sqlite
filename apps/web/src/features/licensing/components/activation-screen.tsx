@@ -2,13 +2,13 @@ import { useForm } from "@tanstack/react-form";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { toast } from "sonner";
 import z from "zod";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Loader from "@/components/loader";
 import { useLicense } from "../hooks/use-license";
 import { LicenseServerStatusChip } from "./license-server-status-chip";
+import ContactInfo from "./contact-info";
 
 /**
  * Full-screen activation / trial screen shown when no valid license is found.
@@ -58,7 +58,7 @@ export default function ActivationScreen() {
 		return null;
 	}
 
-	const isExpired = licenseState.state === "expired" || licenseState.state === "trial_expired";
+	const isExpired = ["expired", "trial_expired", "invalid"].includes(licenseState.state);
 
 	return (
 		<div
@@ -162,34 +162,8 @@ export default function ActivationScreen() {
 						</div>
 					)}
 
-					{/* Purchase link for expired state */}
-					{isExpired && (
-						<div className="mt-4 space-y-3">
-							<p className="text-muted-foreground text-center text-sm">
-								<a
-									href="https://yourapp.com/pricing"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-primary underline"
-								>
-									{t("licensing.purchaseLicense")}
-								</a>
-							</p>
-							<p className="text-muted-foreground text-center text-xs">
-								{t("licensing.contactForLicense")}:{" "}
-								<a
-									href={`mailto:${t("licensing.contactEmail")}`}
-									className="text-primary underline"
-								>
-									{t("licensing.contactEmail")}
-								</a>
-							</p>
-							<p className="text-muted-foreground text-center text-xs">
-								Phone: {t("licensing.contactPhone")} | Telegram:{" "}
-								{t("licensing.contactTelegram")}
-							</p>
-						</div>
-					)}
+					{/* Contact info to purchase a license */}
+					<ContactInfo />
 				</div>
 			</div>
 		</div>

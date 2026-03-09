@@ -1,5 +1,4 @@
 import { useTranslation } from "@offline-sqlite/i18n";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +6,7 @@ import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import z from "zod";
 import { useLicense } from "../hooks/use-license";
+import ContactInfo from "./contact-info";
 
 /**
  * Shown when a trial has expired and the user must enter a license key.
@@ -110,25 +110,7 @@ export default function TrialExpired() {
 						</form.Subscribe>
 					</form>
 
-					<p className="text-muted-foreground mt-4 text-center text-sm">
-						<a
-							href="https://yourapp.com/pricing"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-primary underline"
-						>
-							{t("licensing.purchaseLicense")}
-						</a>
-					</p>
-					<p className="text-muted-foreground mt-2 text-center text-xs">
-						{t("licensing.contactForLicense")}:{" "}
-						<a href={`mailto:${t("licensing.contactEmail")}`} className="text-primary underline">
-							{t("licensing.contactEmail")}
-						</a>
-					</p>
-					<p className="text-muted-foreground text-center text-xs">
-						Phone: {t("licensing.contactPhone")} | Telegram: {t("licensing.contactTelegram")}
-					</p>
+					<ContactInfo />
 				</div>
 			</div>
 		</div>
