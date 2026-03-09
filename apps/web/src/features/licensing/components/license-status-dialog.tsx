@@ -1,5 +1,4 @@
 import { useTranslation } from "@offline-sqlite/i18n";
-
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -14,6 +13,7 @@ import { useLicense } from "../hooks/use-license";
 import { LicenseServerStatusChip } from "./license-server-status-chip";
 import { Button } from "@/components/ui/button";
 import { ShieldQuestion } from "lucide-react";
+import { env } from "@offline-sqlite/env/web";
 
 function getStatusLabel(
 	state: ReturnType<typeof useLicense>["licenseState"]["state"],
@@ -42,6 +42,8 @@ export function LicenseStatusDialog() {
 	const rowClassName = "flex items-start justify-between gap-4";
 	const labelClassName = "text-muted-foreground min-w-0";
 	const valueClassName = "min-w-0 break-words text-right font-medium";
+
+	const showDebugButtons = env.VITE_SHOW_LICENSE_DEBUG === "true";
 
 	const renderDetails = () => {
 		if (loading) {
@@ -128,7 +130,7 @@ export function LicenseStatusDialog() {
 				</AlertDialogHeader>
 				{renderDetails()}
 				<AlertDialogFooter className="items-stretch sm:flex-col sm:items-stretch sm:justify-start">
-					<div className="flex w-full flex-col gap-2">
+					{showDebugButtons && <div className="flex w-full flex-col gap-2">
 						<Button
 							type="button"
 							variant="outline"
@@ -145,7 +147,7 @@ export function LicenseStatusDialog() {
 						>
 							{t("licensing.debugDeactivateTrial")}
 						</Button>
-					</div>
+					</div>}
 					<AlertDialogCancel className="w-full sm:w-full">{t("common.cancel")}</AlertDialogCancel>
 				</AlertDialogFooter>
 			</AlertDialogContent>
