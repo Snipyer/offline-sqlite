@@ -203,7 +203,9 @@ export function PatientCard({
 
 						<p className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
 							<Calendar className="h-3.5 w-3.5" />
-							{lastVisit ? formatDate(lastVisit.visitTime) : t("patients.noVisits")}
+							{lastVisit
+								? `${t("patients.lastVisit")}: ${formatDate(lastVisit.visitTime)}`
+								: t("patients.noVisits")}
 						</p>
 
 						{patient.medicalNotes && (

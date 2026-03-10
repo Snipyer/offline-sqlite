@@ -9,6 +9,7 @@ import Loader from "@/components/loader";
 import { useLicense } from "../hooks/use-license";
 import { LicenseServerStatusChip } from "./license-server-status-chip";
 import ContactInfo from "./contact-info";
+import { env } from "@offline-sqlite/env/web";
 
 /**
  * Full-screen activation / trial screen shown when no valid license is found.
@@ -87,7 +88,9 @@ export default function ActivationScreen() {
 						</svg>
 					</div>
 					<h1 className="mb-2 text-2xl font-bold">
-						{isExpired ? t("licensing.expiredTitle") : t("licensing.activateTitle")}
+						{isExpired
+							? t("licensing.expiredTitle")
+							: t("licensing.activateTitle", { appName: env.VITE_APP_NAME })}
 					</h1>
 					<p className="text-muted-foreground">
 						{isExpired ? t("licensing.expiredSubtitle") : t("licensing.activateSubtitle")}

@@ -124,6 +124,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
 											<Link
 												to="/forgot-password"
 												className="text-muted-foreground hover:text-primary text-xs"
+												tabIndex={-1}
 											>
 												{t("auth.forgotPassword")}
 											</Link>

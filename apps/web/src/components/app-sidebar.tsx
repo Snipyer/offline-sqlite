@@ -20,6 +20,7 @@ import LanguageSwitcher from "./language-switcher";
 import UserMenu from "./user-menu";
 import { isTauri } from "@/utils/is-tauri";
 import { cn } from "@/lib/utils";
+import { env } from "@offline-sqlite/env/web";
 
 const navItems = [
 	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
@@ -84,15 +85,12 @@ export function AppSidebar() {
 							animate={{ opacity: 1 }}
 							className="flex items-center gap-3"
 						>
-							<div
-								className="bg-primary/10 flex h-10 w-10 items-center justify-center
-									rounded-xl"
-							>
-								<Stethoscope className="text-primary h-5 w-5" />
+							<div className="flex h-10 w-10 items-center justify-center rounded-xl">
+								<img src="/square_tauri_icon.png" alt="Logo" className="h-10 w-10" />
 							</div>
 							<div className="flex flex-col">
-								<span className="text-sm font-semibold">Clinic</span>
-								<span className="text-muted-foreground text-xs">Manager</span>
+								<span className="text-muted-foreground text-xs">{t("common.welcomeTo")}</span>
+								<span className="text-sm font-semibold">{env.VITE_APP_NAME}</span>
 							</div>
 						</motion.div>
 					)}

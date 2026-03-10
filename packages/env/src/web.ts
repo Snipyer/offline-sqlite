@@ -7,6 +7,7 @@ export const env = createEnv({
 		VITE_SERVER_URL: z.url(),
 		VITE_LICENSE_SERVER_URL: z.url(),
 		VITE_SHOW_LICENSE_DEBUG: z.string().min(1),
+		VITE_APP_NAME: z.string().min(1),
 	},
 	runtimeEnv: (import.meta as any).env,
 	emptyStringAsUndefined: true,

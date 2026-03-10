@@ -5,9 +5,9 @@ import {
 	Pencil,
 	Trash2,
 	RotateCcw,
-	User,
 	Syringe,
 	Clock4,
+	Stethoscope,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
@@ -103,7 +103,7 @@ export function VisitCard({
 								className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center
 									rounded-2xl"
 							>
-								<User className="text-primary h-6 w-6" />
+								<Stethoscope className="text-primary h-6 w-6" />
 							</div>
 						)}
 

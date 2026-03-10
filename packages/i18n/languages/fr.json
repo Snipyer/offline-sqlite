@@ -104,7 +104,8 @@
 		"next": "Suivant",
 		"total": "Total",
 		"pageAria": "Aller à la page {{page}}",
-		"scrollToTop": "Remonter en haut"
+		"scrollToTop": "Remonter en haut",
+		"welcomeTo": "Bienvenue sur"
 	},
 	"licensingAdmin": {
 		"title": "Administration des licences",
@@ -483,7 +484,7 @@
 		}
 	},
 	"licensing": {
-		"activateTitle": "Bienvenue sur OfflineSQLite",
+		"activateTitle": "Bienvenue sur {{appName}}",
 		"activateSubtitle": "Entrez votre clé de licence pour commencer",
 		"expiredTitle": "Licence expirée",
 		"expiredSubtitle": "Votre licence ou période d'essai a expiré. Entrez une nouvelle clé pour continuer.",

@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { LicenseStatusDialog } from "@/features/licensing/components/license-status-dialog";
 import LanguageSwitcher from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
+import { env } from "@offline-sqlite/env/web";
 
 export function Titlebar() {
 	const navigate = useNavigate();
@@ -95,8 +96,8 @@ export function Titlebar() {
 					font-medium"
 				data-tauri-drag-region
 			>
-				<img src="/square_tauri_icon.png" alt="" className="h-4 w-4 mb-1" />
-				<span>offline-sqlite</span>
+				<img src="/square_tauri_icon.png" alt="" className="mb-1 h-4 w-4" />
+				<span>{env.VITE_APP_NAME}</span>
 			</div>
 
 			<div className="flex items-center">

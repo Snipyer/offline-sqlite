@@ -104,7 +104,8 @@
 		"next": "التالي",
 		"total": "الإجمالي",
 		"pageAria": "الانتقال إلى الصفحة {{page}}",
-		"scrollToTop": "التمرير إلى الأعلى"
+		"scrollToTop": "التمرير إلى الأعلى",
+		"welcomeTo": "مرحبًا بك في"
 	},
 	"licensingAdmin": {
 		"title": "إدارة التراخيص",
@@ -483,7 +484,7 @@
 		}
 	},
 	"licensing": {
-		"activateTitle": "مرحبًا بك في OfflineSQLite",
+		"activateTitle": "مرحبًا بك في {{appName}}",
 		"activateSubtitle": "أدخل مفتاح الترخيص للبدء",
 		"expiredTitle": "انتهت صلاحية الترخيص",
 		"expiredSubtitle": "انتهت صلاحية ترخيصك أو فترة التجربة. أدخل مفتاحًا جديدًا للمتابعة.",
