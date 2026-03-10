@@ -87,7 +87,7 @@ export const visitTypeRouter = router({
 
 	create: protectedProcedure.input(visitTypeCreateSchema).mutation(async ({ ctx, input }) => {
 		const names = input.name
-			.split("|")
+			.split("+")
 			.map((name) => name.trim())
 			.filter((name) => name.length > 0);
 

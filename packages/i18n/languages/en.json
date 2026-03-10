@@ -173,7 +173,7 @@
 		"description": "Manage your clinic's visit categories",
 		"addNew": "Add Type",
 		"nameLabel": "Type Name",
-		"multiCreateNotice": "Use | to add multiple types at once, e.g. Cleanup|Follow-up",
+		"multiCreateNotice": "Use + to add multiple types at once, e.g. Cleanup+Follow-up",
 		"namePlaceholder": "e.g., Consultation, Treatment, Follow-up",
 		"searchLabel": "Search",
 		"searchPlaceholder": "Search visit types...",

@@ -173,7 +173,7 @@
 		"description": "Gérer les catégories de visites de votre clinique",
 		"addNew": "Ajouter un type",
 		"nameLabel": "Nom du type",
-		"multiCreateNotice": "Utilisez | pour ajouter plusieurs types d'un coup, ex: Détartrage|Suivi",
+		"multiCreateNotice": "Utilisez + pour ajouter plusieurs types d'un coup, ex: Détartrage+Suivi",
 		"namePlaceholder": "ex: Consultation, Traitement, Suivi",
 		"searchLabel": "Recherche",
 		"searchPlaceholder": "Rechercher des types de visites...",
