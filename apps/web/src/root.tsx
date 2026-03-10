@@ -2,15 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import "./index.css";
 import { initAntiDebug } from "./utils/anti-debug";
-import {
-	isRouteErrorResponse,
-	Links,
-	Meta,
-	Outlet,
-	Scripts,
-	ScrollRestoration,
-	useLocation,
-} from "react-router";
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
 import { Titlebar } from "./components/titlebar";
 import { ThemeProvider } from "./components/theme-provider";
@@ -25,7 +17,6 @@ import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
 import { authClient } from "./lib/auth-client";
 import { ScrollToTopButton } from "./components/scroll-to-top-button";
 import ActivationScreen from "./features/licensing/components/activation-screen";
-import TrialBanner from "./features/licensing/components/trial-banner";
 import TrialExpired from "./features/licensing/components/trial-expired";
 import { useLicense } from "./features/licensing/hooks/use-license";
 import Loader from "./components/loader";
@@ -82,7 +73,6 @@ export default function App() {
 	const currentLanguage = instance.resolvedLanguage ?? instance.language;
 	const direction = getLanguageDirection(currentLanguage);
 	const sidebarSide = direction === "rtl" ? "right" : "left";
-	const location = useLocation();
 	const { data: session } = authClient.useSession();
 	const isAuthenticated = !!session;
 
@@ -98,8 +88,6 @@ export default function App() {
 	// In Tauri mode, block the app behind a license check
 	const showLicenseGate =
 		isTauriEnv && !licenseLoading && licenseState.state !== "valid" && licenseState.state !== "trial";
-
-	const showTrialBanner = isTauriEnv && licenseState.state === "trial" && licenseState.days_remaining > 0;
 
 	return (
 		<I18nextProvider i18n={i18n}>
@@ -132,15 +120,6 @@ export default function App() {
 							{/* Main app — shown only when license is OK (or not Tauri) */}
 							{(!isTauriEnv || (!licenseLoading && !showLicenseGate)) && (
 								<>
-									{showTrialBanner && (
-										<TrialBanner
-											daysRemaining={
-												licenseState.state === "trial"
-													? licenseState.days_remaining
-													: 0
-											}
-										/>
-									)}
 									<div className={cn("app-content")}>
 										{isAuthenticated ? (
 											<SidebarProvider defaultOpen side={sidebarSide}>

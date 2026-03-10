@@ -73,25 +73,8 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 		>
 			<div className="w-full max-w-md">
 				<div className="mb-8 text-center">
-					<div
-						className="bg-primary shadow-primary/25 mb-4 inline-flex size-14 items-center
-							justify-center rounded-2xl shadow-lg"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="text-primary-foreground size-7"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-							<circle cx="9" cy="7" r="4" />
-							<line x1="19" x2="19" y1="8" y2="14" />
-							<line x1="22" x2="16" y1="11" y2="11" />
-						</svg>
+					<div className="mb-4 inline-flex items-center justify-center rounded-2xl shadow-lg">
+						<img src="/square_tauri_icon.png" alt="Logo" className="h-30 w-30" />
 					</div>
 					<h1 className="mb-2 text-2xl font-bold">{t("auth.createAccount")}</h1>
 					<p className="text-muted-foreground">{t("auth.signUpSubtitle")}</p>

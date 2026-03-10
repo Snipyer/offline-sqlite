@@ -21,6 +21,8 @@ import UserMenu from "./user-menu";
 import { isTauri } from "@/utils/is-tauri";
 import { cn } from "@/lib/utils";
 import { env } from "@offline-sqlite/env/web";
+import TrialBanner from "@/features/licensing/components/trial-banner";
+import { useLicense } from "@/features/licensing/hooks/use-license";
 
 const navItems = [
 	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
@@ -67,6 +69,11 @@ export function AppSidebar() {
 	const isRtl = side === "right";
 	const isCollapsed = state === "collapsed";
 
+	const isTauriEnv = isTauri();
+	const { licenseState } = useLicense();
+
+	const showTrialBanner = isTauriEnv && licenseState.state === "trial" && licenseState.days_remaining > 0;
+
 	return (
 		<Sidebar
 			collapsible="icon"
@@ -99,6 +106,12 @@ export function AppSidebar() {
 			</SidebarHeader>
 
 			<SidebarContent className="">
+				{showTrialBanner && (
+					<TrialBanner
+						isCollapsed={isCollapsed}
+						daysRemaining={licenseState.state === "trial" ? licenseState.days_remaining : 0}
+					/>
+				)}
 				{navGroups.map((group, groupIndex) => (
 					<SidebarGroup key={group.labelKey}>
 						<SidebarGroupLabel className="pl-3">{t(group.labelKey)}</SidebarGroupLabel>

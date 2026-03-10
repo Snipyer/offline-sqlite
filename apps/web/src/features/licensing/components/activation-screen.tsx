@@ -69,23 +69,8 @@ export default function ActivationScreen() {
 			<div className="w-full max-w-md">
 				{/* Header */}
 				<div className="mb-8 text-center">
-					<div
-						className="bg-primary shadow-primary/25 mb-4 inline-flex size-14 items-center
-							justify-center rounded-2xl shadow-lg"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="text-primary-foreground size-7"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-							<path d="M7 11V7a5 5 0 0 1 10 0v4" />
-						</svg>
+					<div className="mb-4 inline-flex items-center justify-center rounded-2xl shadow-lg">
+						<img src="/square_tauri_icon.png" alt="Logo" className="h-30 w-30" />
 					</div>
 					<h1 className="mb-2 text-2xl font-bold">
 						{isExpired

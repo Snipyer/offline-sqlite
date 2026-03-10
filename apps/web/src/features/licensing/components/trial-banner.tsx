@@ -2,12 +2,13 @@ import { useTranslation } from "@offline-sqlite/i18n";
 
 interface TrialBannerProps {
 	daysRemaining: number;
+	isCollapsed: boolean;
 }
 
 /**
  * A persistent top banner shown while the app is running in trial mode.
  */
-export default function TrialBanner({ daysRemaining }: TrialBannerProps) {
+export default function TrialBanner({ daysRemaining, isCollapsed }: TrialBannerProps) {
 	const { t } = useTranslation();
 
 	return (
@@ -28,7 +29,7 @@ export default function TrialBanner({ daysRemaining }: TrialBannerProps) {
 				<circle cx="12" cy="12" r="10" />
 				<polyline points="12 6 12 12 16 14" />
 			</svg>
-			<span>{t("licensing.trialBanner", { days: daysRemaining })}</span>
+			{!isCollapsed && <span>{t("licensing.trialBanner", { days: daysRemaining })}</span>}
 		</div>
 	);
 }
