@@ -120,7 +120,7 @@ export default function App() {
 							{/* Main app — shown only when license is OK (or not Tauri) */}
 							{(!isTauriEnv || (!licenseLoading && !showLicenseGate)) && (
 								<>
-									<div className={cn("app-content")}>
+									<div className={cn("app-content", "mt-8")}>
 										{isAuthenticated ? (
 											<SidebarProvider defaultOpen side={sidebarSide}>
 												<AppSidebar />
