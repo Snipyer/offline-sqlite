@@ -1,5 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Calendar, DollarSign, Clock, Syringe, CalendarClock, Stethoscope, Users, User } from "lucide-react";
+import {
+	Calendar,
+	DollarSign,
+	Clock,
+	Syringe,
+	CalendarClock,
+	Stethoscope,
+	Users,
+	User,
+	PhoneCall,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Currency } from "@/components/currency";
@@ -16,9 +26,14 @@ import {
 	subtleListItemInitial,
 } from "@/lib/animations";
 import { StatCard } from "./stat-card";
+import { Button } from "@/components/ui/button";
+import { CallPatientDialog } from "@/features/patients/components/call-patient-dialog";
+import { useState } from "react";
 
 export default function DailySummaryContent() {
 	const { t } = useTranslation();
+	const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
+
 	const summary = useQuery(trpc.dailySummary.get.queryOptions());
 
 	const softDeleteMutation = useMutation(
@@ -32,6 +47,15 @@ export default function DailySummaryContent() {
 			softDeleteMutation.mutate({ id: visitId });
 		}
 	};
+
+	function formatTimeLeft(minutes: number, t: Function): string {
+		if (minutes < 60) return t("dailySummary.timeMinutes", { count: minutes });
+		const h = Math.floor(minutes / 60);
+		const m = minutes % 60;
+		return m === 0
+			? t("dailySummary.timeHours", { count: h })
+			: t("dailySummary.timeHoursMinutes", { hours: h, minutes: m });
+	}
 
 	if (summary.isLoading) {
 		return <Loader />;
@@ -204,9 +228,8 @@ export default function DailySummaryContent() {
 												0,
 												Math.ceil((scheduledTime.getTime() - now) / 60_000),
 											);
-											const timeLeftLabel = t("dailySummary.inMinutes", {
-												minutes: timeLeftMinutes,
-												unit: t("appointments.minutes"),
+											const timeLeftLabel = t("dailySummary.inTime", {
+												time: formatTimeLeft(timeLeftMinutes, t),
 											});
 											const visitTypeLabel =
 												schedule.visitType?.name ?? t("common.empty");
@@ -252,6 +275,27 @@ export default function DailySummaryContent() {
 															})}
 														</span>
 													</div>
+													{schedule.patient.phone && (
+														<>
+															<Button
+																variant="ghost"
+																size="icon"
+																className="ml-auto"
+																onClick={() =>
+																	setIsCallDialogOpen(!isCallDialogOpen)
+																}
+															>
+																<PhoneCall className="h-4 w-4" />
+															</Button>
+
+															<CallPatientDialog
+																open={isCallDialogOpen}
+																onOpenChange={setIsCallDialogOpen}
+																patientName={schedule.patient.name}
+																patientPhone={schedule.patient.phone}
+															/>
+														</>
+													)}
 												</motion.div>
 											);
 										})}

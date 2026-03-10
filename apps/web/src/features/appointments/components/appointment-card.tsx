@@ -65,11 +65,11 @@ export function AppointmentCard({
 
 	const scheduledTime = new Date(appointment.scheduledTime);
 	const endTime = new Date(scheduledTime.getTime() + appointment.duration * 60000);
+	const formatDate = (date: Date) => {
+		return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false });
+	};
 
-	const timeString = `${scheduledTime.toLocaleTimeString(undefined, {
-		hour: "2-digit",
-		minute: "2-digit",
-	})} - ${endTime.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+	const timeString = `${formatDate(scheduledTime)} - ${formatDate(endTime)}`;
 
 	const statusConfig: Record<string, { label: string; bg: string; text: string; border: string }> = {
 		scheduled: {

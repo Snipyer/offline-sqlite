@@ -410,7 +410,10 @@
 		"new": "new",
 		"proceduresBreakdown": "Procedures Breakdown",
 		"upcomingSchedules": "Upcoming Schedules",
-		"inMinutes": "in {{minutes}}{{unit}}",
+		"inTime": "in {{time}}",
+		"timeHours": "{{count}}h",
+		"timeMinutes": "{{count}}m",
+		"timeHoursMinutes": "{{hours}}h{{minutes}}m",
 		"noUpcomingSchedules": "No remaining schedules today",
 		"todayVisitsList": "Today's Visits",
 		"noVisitsToday": "No visits today"

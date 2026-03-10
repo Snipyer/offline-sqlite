@@ -409,7 +409,10 @@
 		"new": "nouveau",
 		"proceduresBreakdown": "Repartition des actes",
 		"upcomingSchedules": "Rendez-vous a venir",
-		"inMinutes": "dans {{minutes}}{{unit}}",
+		"inTime": "dans {{time}}",
+		"timeHours": "{{count}}h",
+		"timeMinutes": "{{count}}m",
+		"timeHoursMinutes": "{{hours}}h{{minutes}}m",
 		"noUpcomingSchedules": "Aucun rendez-vous restant aujourd'hui",
 		"todayVisitsList": "Visites du jour",
 		"noVisitsToday": "Aucune visite aujourd'hui"

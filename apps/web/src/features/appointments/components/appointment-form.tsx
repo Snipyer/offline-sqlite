@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
-import { Loader2, Plus, Search, User, Calendar as CalendarIcon, Clock, FileText, Check } from "lucide-react";
+import { Loader2, Plus, Search, User, FileText, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { toast } from "sonner";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 interface Patient {
 	id: string;
@@ -64,23 +65,12 @@ interface PatientFormData {
 
 interface AppointmentFormValues {
 	patientId: string;
-	scheduledTime: string;
+	scheduledTime: Date;
 	duration: number;
 	visitTypeId: string;
 	notes: string;
 	status: AppointmentStatus;
 	patient: PatientFormData;
-}
-
-function toLocalDateTimeInputValue(value: Date | string | number) {
-	const date = new Date(value);
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
-	const hours = String(date.getHours()).padStart(2, "0");
-	const minutes = String(date.getMinutes()).padStart(2, "0");
-
-	return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function calculateAge(dateString: string): number {
@@ -132,10 +122,10 @@ export function AppointmentForm({
 	const [showPatientResults, setShowPatientResults] = useState(false);
 
 	const initialScheduledTime = prefillTime
-		? toLocalDateTimeInputValue(prefillTime)
+		? new Date(prefillTime)
 		: appointment
-			? toLocalDateTimeInputValue(appointment.scheduledTime)
-			: toLocalDateTimeInputValue(selectedDate);
+			? new Date(appointment.scheduledTime)
+			: selectedDate;
 
 	const form = useForm({
 		defaultValues: {
@@ -200,7 +190,7 @@ export function AppointmentForm({
 	useEffect(() => {
 		if (appointment?.patient) {
 			form.setFieldValue("patientId", appointment.patientId);
-			form.setFieldValue("scheduledTime", toLocalDateTimeInputValue(appointment.scheduledTime));
+			form.setFieldValue("scheduledTime", new Date(appointment.scheduledTime));
 			form.setFieldValue("duration", appointment.duration);
 			form.setFieldValue("visitTypeId", appointment.visitTypeId || "");
 			form.setFieldValue("notes", appointment.notes || "");
@@ -218,9 +208,7 @@ export function AppointmentForm({
 			});
 			setPatientSearch(appointment.patient.name);
 		} else {
-			const nextScheduledTime = prefillTime
-				? toLocalDateTimeInputValue(prefillTime)
-				: toLocalDateTimeInputValue(selectedDate);
+			const nextScheduledTime = prefillTime ? new Date(prefillTime) : selectedDate;
 			form.setFieldValue("patientId", "");
 			form.setFieldValue("scheduledTime", nextScheduledTime);
 			form.setFieldValue("duration", 30);
@@ -283,7 +271,7 @@ export function AppointmentForm({
 			form.setFieldValue("patientId", result.id);
 		}
 
-		const scheduledTimeNum = new Date(values.scheduledTime).getTime();
+		const scheduledTimeNum = values.scheduledTime.getTime();
 
 		if (isEditMode && appointment) {
 			await updateMutation.mutateAsync({
@@ -606,24 +594,18 @@ export function AppointmentForm({
 				<CardContent className="space-y-4 py-4">
 					<div className="grid gap-4 sm:grid-cols-1">
 						<div>
-							<Label htmlFor="scheduledTime">{t("appointments.scheduledTime")} *</Label>
-							<div className="relative mt-1.5">
-								<CalendarIcon
-									className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4
-										-translate-y-1/2"
-								/>
-								<form.Field name="scheduledTime">
-									{(field) => (
-										<Input
-											id="scheduledTime"
-											type="datetime-local"
+							<form.Field name="scheduledTime">
+								{(field) => (
+									<div className="space-y-2">
+										<Label>{t("appointments.scheduledTime")} *</Label>
+										<DateTimePicker
 											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
-											className="pl-10"
+											onChange={(date) => field.handleChange(date)}
+											className="grid-cols-1"
 										/>
-									)}
-								</form.Field>
-							</div>
+									</div>
+								)}
+							</form.Field>
 						</div>
 
 						<div>
@@ -769,7 +751,9 @@ export function AppointmentForm({
 						const hasPatientValue =
 							subState.patientId !== "" || subState.patientName.trim().length > 0;
 						const canSubmit =
-							subState.scheduledTime.length > 0 && (isEditMode ? true : hasPatientValue);
+							subState.scheduledTime instanceof Date &&
+							!Number.isNaN(subState.scheduledTime.getTime()) &&
+							(isEditMode ? true : hasPatientValue);
 
 						return (
 							<Button type="submit" disabled={isLoading || subState.isSubmitting || !canSubmit}>

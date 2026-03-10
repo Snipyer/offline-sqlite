@@ -409,7 +409,10 @@
 		"new": "جديد",
 		"proceduresBreakdown": "تفاصيل الإجراءات",
 		"upcomingSchedules": "المواعيد القادمة",
-		"inMinutes": "خلال {{minutes}}{{unit}}",
+		"inTime": "خلال {{time}}",
+		"timeHours": "{{count}}س",
+		"timeMinutes": "{{count}}د",
+		"timeHoursMinutes": "{{hours}}س {{minutes}}د",
 		"noUpcomingSchedules": "لا توجد مواعيد متبقية اليوم",
 		"todayVisitsList": "زيارات اليوم",
 		"noVisitsToday": "لا توجد زيارات اليوم"
