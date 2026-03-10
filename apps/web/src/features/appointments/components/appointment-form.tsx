@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { Loader2, Plus, Search, User, FileText, Check } from "lucide-react";
+import z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,8 @@ import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { createAppointmentFormSchema } from "../utils/schemas";
+import { toFormErrorMessage } from "@/lib/form-error-messages";
 
 interface Patient {
 	id: string;
@@ -52,6 +55,7 @@ interface AppointmentFormProps {
 
 type Sex = "M" | "F";
 type AppointmentStatus = "scheduled" | "completed" | "cancelled" | "no-show";
+type ValidationErrors = Record<string, string>;
 
 interface PatientFormData {
 	name: string;
@@ -120,6 +124,10 @@ export function AppointmentForm({
 	const isEditMode = !!appointment;
 	const [patientSearch, setPatientSearch] = useState("");
 	const [showPatientResults, setShowPatientResults] = useState(false);
+	const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+
+	const appointmentFormSchema = createAppointmentFormSchema(t);
+	type AppointmentFormSchemaValues = z.infer<typeof appointmentFormSchema>;
 
 	const initialScheduledTime = prefillTime
 		? new Date(prefillTime)
@@ -246,9 +254,81 @@ export function AppointmentForm({
 		form.setFieldValue("patient", emptyPatientData);
 		setPatientSearch("");
 		form.setFieldValue("patientId", "");
+		clearValidationError("patientId");
+		clearValidationError("patient.name");
+	};
+
+	const clearValidationError = (path: string) => {
+		setValidationErrors((prev) => {
+			if (!prev[path]) return prev;
+			const next = { ...prev };
+			delete next[path];
+			return next;
+		});
+	};
+
+	const scrollToFirstError = (errors: ValidationErrors) => {
+		const orderedPaths = [
+			"patientId",
+			"patient.name",
+			"patient.age",
+			"scheduledTime",
+			"duration",
+			"visitTypeId",
+		];
+
+		const firstPath = orderedPaths.find((path) => errors[path]) ?? Object.keys(errors)[0];
+		if (!firstPath) return;
+
+		requestAnimationFrame(() => {
+			const target = document.querySelector<HTMLElement>(`[data-field-path="${firstPath}"]`);
+			if (!target) return;
+
+			target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+			const focusTarget = target.matches("input, textarea, button, [role='combobox']")
+				? target
+				: target.querySelector<HTMLElement>("input, textarea, button, [role='combobox'], [tabindex]");
+
+			focusTarget?.focus();
+		});
+	};
+
+	const validateRequiredFields = (values: AppointmentFormSchemaValues) => {
+		const errors: ValidationErrors = {};
+
+		const schemaResult = appointmentFormSchema.safeParse(values);
+		if (!schemaResult.success) {
+			for (const issue of schemaResult.error.issues) {
+				const key = issue.path.join(".");
+				const message = toFormErrorMessage(issue);
+				if (!errors[key] && message) {
+					errors[key] = message;
+				}
+			}
+		}
+
+		if (!isEditMode && !values.patientId && !values.patient.name.trim()) {
+			errors.patientId = t("appointments.validation.patientRequired");
+		}
+
+		if (!isEditMode && !values.patientId && values.patient.age === "") {
+			errors["patient.age"] = t("appointments.validation.ageRequired");
+		}
+
+		return errors;
 	};
 
 	const handleFormSubmit = async (values: AppointmentFormValues) => {
+		const errors = validateRequiredFields(values);
+		if (Object.keys(errors).length > 0) {
+			setValidationErrors(errors);
+			scrollToFirstError(errors);
+			return;
+		}
+
+		setValidationErrors({});
+
 		let finalPatientId = values.patientId;
 
 		if (!isEditMode && (!finalPatientId || finalPatientId === "new")) {
@@ -335,16 +415,22 @@ export function AppointmentForm({
 										-translate-y-1/2"
 								/>
 								<Input
+									data-field-path="patientId"
 									placeholder={t("patients.searchPlaceholder")}
 									value={patientSearch}
 									onChange={(e) => {
 										setPatientSearch(e.target.value);
 										setShowPatientResults(true);
+										clearValidationError("patientId");
+										clearValidationError("patient.name");
 									}}
 									onFocus={() => setShowPatientResults(true)}
 									className="pl-10"
 								/>
 							</div>
+							{validationErrors.patientId && (
+								<p className="text-destructive mt-2 text-xs">{validationErrors.patientId}</p>
+							)}
 
 							{showPatientResults && patientSearch.length > 0 && (
 								<div
@@ -444,14 +530,28 @@ export function AppointmentForm({
 								<Label htmlFor="patient-name">{t("patients.nameLabel")} *</Label>
 								<form.Field name="patient.name">
 									{(field) => (
-										<Input
-											id="patient-name"
-											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
-											placeholder={t("patients.namePlaceholder")}
-											className="mt-1.5"
-											disabled={isEditMode || hasSelectedPatient}
-										/>
+										<>
+											<Input
+												id="patient-name"
+												data-field-path="patient.name"
+												value={field.state.value}
+												onChange={(e) => {
+													field.handleChange(e.target.value);
+													clearValidationError("patientId");
+													clearValidationError("patient.name");
+												}}
+												placeholder={t("patients.namePlaceholder")}
+												className="mt-1.5"
+												disabled={isEditMode || hasSelectedPatient}
+											/>
+											{(validationErrors["patient.name"] ||
+												validationErrors.patientId) && (
+												<p className="text-destructive mt-1.5 text-xs">
+													{validationErrors["patient.name"] ??
+														validationErrors.patientId}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -479,30 +579,39 @@ export function AppointmentForm({
 								<Label htmlFor="patient-age">{t("patients.ageLabel")} *</Label>
 								<form.Field name="patient.age">
 									{(field) => (
-										<Input
-											id="patient-age"
-											type="number"
-											min={0}
-											max={150}
-											value={field.state.value || ""}
-											placeholder="0"
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value ? parseInt(e.target.value) : "",
-												)
-											}
-											onBlur={() => {
-												const currentAge = form.getFieldValue("patient.age");
-												if (typeof currentAge === "number") {
-													form.setFieldValue(
-														"patient.dateOfBirth",
-														calculateDateOfBirthFromAge(currentAge),
+										<>
+											<Input
+												id="patient-age"
+												data-field-path="patient.age"
+												type="number"
+												min={0}
+												max={150}
+												value={field.state.value || ""}
+												placeholder="0"
+												onChange={(e) => {
+													field.handleChange(
+														e.target.value ? parseInt(e.target.value) : "",
 													);
-												}
-											}}
-											className="mt-1.5"
-											disabled={isEditMode || hasSelectedPatient}
-										/>
+													clearValidationError("patient.age");
+												}}
+												onBlur={() => {
+													const currentAge = form.getFieldValue("patient.age");
+													if (typeof currentAge === "number") {
+														form.setFieldValue(
+															"patient.dateOfBirth",
+															calculateDateOfBirthFromAge(currentAge),
+														);
+													}
+												}}
+												className="mt-1.5"
+												disabled={isEditMode || hasSelectedPatient}
+											/>
+											{validationErrors["patient.age"] && (
+												<p className="text-destructive mt-1.5 text-xs">
+													{validationErrors["patient.age"]}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -596,13 +705,21 @@ export function AppointmentForm({
 						<div>
 							<form.Field name="scheduledTime">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="space-y-2" data-field-path="scheduledTime">
 										<Label>{t("appointments.scheduledTime")} *</Label>
 										<DateTimePicker
 											value={field.state.value}
-											onChange={(date) => field.handleChange(date)}
+											onChange={(date) => {
+												field.handleChange(date);
+												clearValidationError("scheduledTime");
+											}}
 											className="grid-cols-1"
 										/>
+										{validationErrors.scheduledTime && (
+											<p className="text-destructive text-sm">
+												{validationErrors.scheduledTime}
+											</p>
+										)}
 									</div>
 								)}
 							</form.Field>
@@ -614,9 +731,16 @@ export function AppointmentForm({
 								{(field) => (
 									<Select
 										value={field.state.value.toString()}
-										onValueChange={(v) => field.handleChange(parseInt(v || "30"))}
+										onValueChange={(v) => {
+											field.handleChange(parseInt(v || "30"));
+											clearValidationError("duration");
+										}}
 									>
-										<SelectTrigger id="duration" className="mt-1.5 w-full">
+										<SelectTrigger
+											id="duration"
+											className="mt-1.5 w-full"
+											data-field-path="duration"
+										>
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
@@ -632,17 +756,27 @@ export function AppointmentForm({
 									</Select>
 								)}
 							</form.Field>
+							{validationErrors.duration && (
+								<p className="text-destructive mt-1.5 text-xs">{validationErrors.duration}</p>
+							)}
 						</div>
 
 						<div>
-							<Label htmlFor="visitType">{t("appointments.visitType")}</Label>
+							<Label htmlFor="visitType">{t("appointments.visitType")} *</Label>
 							<form.Field name="visitTypeId">
 								{(field) => (
 									<Select
 										value={field.state.value || "none"}
-										onValueChange={(v) => field.handleChange(v === "none" ? "" : v || "")}
+										onValueChange={(v) => {
+											field.handleChange(v === "none" ? "" : v || "");
+											clearValidationError("visitTypeId");
+										}}
 									>
-										<SelectTrigger id="visitType" className="mt-1.5 w-full">
+										<SelectTrigger
+											id="visitType"
+											className="mt-1.5 w-full"
+											data-field-path="visitTypeId"
+										>
 											<SelectValue placeholder={t("common.select")}>
 												{field.state.value && visitTypes.data
 													? visitTypes.data.find(
@@ -662,6 +796,11 @@ export function AppointmentForm({
 									</Select>
 								)}
 							</form.Field>
+							{validationErrors.visitTypeId && (
+								<p className="text-destructive mt-1.5 text-xs">
+									{validationErrors.visitTypeId}
+								</p>
+							)}
 						</div>
 
 						{isEditMode && (
@@ -748,15 +887,8 @@ export function AppointmentForm({
 					})}
 				>
 					{(subState) => {
-						const hasPatientValue =
-							subState.patientId !== "" || subState.patientName.trim().length > 0;
-						const canSubmit =
-							subState.scheduledTime instanceof Date &&
-							!Number.isNaN(subState.scheduledTime.getTime()) &&
-							(isEditMode ? true : hasPatientValue);
-
 						return (
-							<Button type="submit" disabled={isLoading || subState.isSubmitting || !canSubmit}>
+							<Button type="submit" disabled={isLoading || subState.isSubmitting}>
 								{isLoading || subState.isSubmitting ? (
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 								) : (

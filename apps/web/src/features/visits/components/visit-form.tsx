@@ -16,7 +16,9 @@ import { ToothSelector } from "@/features/tooth-selector/components/tooth-select
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
+import { toFormErrorMessage } from "@/lib/form-error-messages";
 import { toast } from "sonner";
+import { createVisitFormSchema } from "@/features/visits/utils/schemas";
 
 type Sex = "M" | "F";
 
@@ -86,6 +88,14 @@ function calculateDateOfBirthFromAge(age: number): string {
 	return dob.toISOString().split("T")[0] ?? "";
 }
 
+interface VisitFormProps {
+	mode: "create" | "edit";
+	visit?: VisitData;
+	isLoading?: boolean;
+}
+
+type ValidationErrors = Record<string, string>;
+
 const emptyPatientData: PatientFormData = {
 	name: "",
 	sex: "M",
@@ -95,32 +105,6 @@ const emptyPatientData: PatientFormData = {
 	address: "",
 	medicalNotes: "",
 };
-
-const visitFormSchema = z.object({
-	patientId: z.string().min(1, "Patient is required"),
-	visitTime: z.date(),
-	acts: z
-		.array(
-			z.object({
-				id: z.string(),
-				visitTypeId: z.string().min(1, "Procedure type is required"),
-				price: z.number().int().min(1, "Price must be greater than 0"),
-				teeth: z.array(z.string()).min(1, "At least one tooth is required"),
-				notes: z.string().optional(),
-			}),
-		)
-		.min(1, "At least one treatment act is required"),
-});
-
-type VisitFormValues = z.infer<typeof visitFormSchema>;
-
-interface VisitFormProps {
-	mode: "create" | "edit";
-	visit?: VisitData;
-	isLoading?: boolean;
-}
-
-type ValidationErrors = Record<string, string>;
 
 export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const { t } = useTranslation();
@@ -132,6 +116,9 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const [paymentAmount, setPaymentAmount] = useState(0);
 	const [existingPaid, setExistingPaid] = useState(0);
 	const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+
+	const visitFormSchema = createVisitFormSchema(t);
+	type VisitFormValues = z.infer<typeof visitFormSchema>;
 
 	const patients = useQuery({
 		...trpc.patient.search.queryOptions({ query: patientSearch }),
@@ -254,7 +241,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	};
 
 	const scrollToFirstError = (errors: ValidationErrors, values: VisitFormValues) => {
-		const orderedPaths: string[] = ["patientId", "visitTime"];
+		const orderedPaths: string[] = ["patientId", "patient.age", "visitTime"];
 
 		values.acts.forEach((_, index) => {
 			orderedPaths.push(`acts[${index}].visitTypeId`, `acts[${index}].price`, `acts[${index}].teeth`);
@@ -284,15 +271,19 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		if (!schemaResult.success) {
 			for (const issue of schemaResult.error.issues) {
 				const key = issue.path.join(".").replace(/\.(\d+)\./g, "[$1].");
-				if (!errors[key]) {
-					errors[key] = issue.message;
+				const message = toFormErrorMessage(issue);
+				if (!errors[key] && message) {
+					errors[key] = message;
 				}
 			}
 		}
 
 		if (mode === "create" && (values.patientId === "new" || values.patientId === "")) {
 			if (!patientFormData.name.trim()) {
-				errors.patientId = "Patient is required";
+				errors.patientId = t("visits.validation.patientRequired");
+			}
+			if (patientFormData.age === "") {
+				errors["patient.age"] = t("patients.validation.ageRequired");
 			}
 		}
 
@@ -376,6 +367,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		setPatientSearch(patient.name);
 		setShowPatientResults(false);
 		clearValidationError("patientId");
+		clearValidationError("patient.age");
 	};
 
 	const handleCreateNewPatient = () => {
@@ -384,6 +376,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		setPatientSearch("");
 		setShowPatientResults(false);
 		clearValidationError("patientId");
+		clearValidationError("patient.age");
 	};
 
 	const handleClearPatient = () => {
@@ -391,6 +384,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		setPatientSearch("");
 		setPatientFormData(emptyPatientData);
 		clearValidationError("patientId");
+		clearValidationError("patient.age");
 	};
 
 	const cancelForm = () => {
@@ -577,9 +571,10 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									)}
 								</div>
 								<div>
-									<Label htmlFor="patient-age">{t("patients.ageLabel")}</Label>
+									<Label htmlFor="patient-age">{t("patients.ageLabel")} *</Label>
 									<Input
 										id="patient-age"
+										data-field-path="patient.age"
 										type="number"
 										min={0}
 										max={150}
@@ -595,10 +590,16 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 														? calculateDateOfBirthFromAge(ageValue)
 														: prev.dateOfBirth,
 											}));
+											clearValidationError("patient.age");
 										}}
 										className="mt-1.5"
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
+									{validationErrors["patient.age"] && (
+										<p className="text-destructive mt-1.5 text-xs">
+											{validationErrors["patient.age"]}
+										</p>
+									)}
 								</div>
 								<div>
 									<Label htmlFor="patient-dob">{t("patients.dateOfBirth")}</Label>

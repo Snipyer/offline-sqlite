@@ -189,6 +189,13 @@
 		"confirmDelete": "Êtes-vous sûr de vouloir supprimer ce type de visite?"
 	},
 	"patients": {
+		"validation": {
+			"nameMin": "Le nom doit contenir au moins 2 caractières",
+			"ageRequired": "L'age est requis",
+			"ageMin": "L'âge doit être au moins 0",
+			"ageMax": "L'âge ne doit pas dépasser 150",
+			"dateOfBirthInvalid": "Date de naissance invalide"
+		},
 		"title": "Patients",
 		"description": "Gérer les dossiers patients",
 		"addNew": "Ajouter un patient",
@@ -267,6 +274,13 @@
 		"callDialogOpenAria": "Ouvrir la fenetre d'appel pour {{name}} au {{phone}}"
 	},
 	"visits": {
+		"validation": {
+			"patientRequired": "Le patient est requis",
+			"procedureTypeRequired": "Le type de procédure est requis",
+			"priceMin": "Le prix doit être supérieur à 0",
+			"toothRequired": "Au moins une dent est requise",
+			"actRequired": "Au moins un acte de traitement est requis"
+		},
 		"title": "Visites",
 		"description": "Gérer les visites et traitements des patients",
 		"addNew": "Nouvelle visite",
@@ -450,6 +464,13 @@
 		"times": "fois"
 	},
 	"appointments": {
+		"validation": {
+			"patientRequired": "Le patient est requis",
+			"ageRequired": "L'age est requis",
+			"scheduledTimeRequired": "L'heure du rendez-vous est requise",
+			"durationRequired": "La duree doit etre d'au moins 1 minute",
+			"visitTypeRequired": "Le type de visite est requis"
+		},
 		"title": "Rendez-vous",
 		"manageSchedule": "Gerez votre planning",
 		"new": "Nouveau rendez-vous",

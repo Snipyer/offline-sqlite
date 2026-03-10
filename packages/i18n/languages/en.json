@@ -189,6 +189,13 @@
 		"confirmDelete": "Are you sure you want to delete this visit type?"
 	},
 	"patients": {
+		"validation": {
+			"nameMin": "Name must be at least 2 characters",
+			"ageRequired": "Age is required",
+			"ageMin": "Age must be at least 0",
+			"ageMax": "Age must not exceed 150",
+			"dateOfBirthInvalid": "Invalid date of birth"
+		},
 		"title": "Patients",
 		"description": "Manage your patient records",
 		"addNew": "Add Patient",
@@ -266,6 +273,13 @@
 		"callDialogOpenAria": "Open call dialog for {{name}} at {{phone}}"
 	},
 	"visits": {
+		"validation": {
+			"patientRequired": "Patient is required",
+			"procedureTypeRequired": "Procedure type is required",
+			"priceMin": "Price must be greater than 0",
+			"toothRequired": "At least one tooth is required",
+			"actRequired": "At least one treatment act is required"
+		},
 		"title": "Visits",
 		"description": "Manage patient visits and treatments",
 		"addNew": "New Visit",
@@ -451,6 +465,13 @@
 		"times": "times"
 	},
 	"appointments": {
+		"validation": {
+			"patientRequired": "Patient is required",
+			"ageRequired": "Age is required",
+			"scheduledTimeRequired": "Scheduled time is required",
+			"durationRequired": "Duration must be at least 1 minute",
+			"visitTypeRequired": "Visit type is required"
+		},
 		"title": "Appointments",
 		"manageSchedule": "Manage your schedule",
 		"new": "New Appointment",

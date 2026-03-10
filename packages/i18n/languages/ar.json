@@ -189,6 +189,13 @@
 		"confirmDelete": "هل أنت متأكد من حذف نوع الزيارة هذا؟"
 	},
 	"patients": {
+		"validation": {
+			"nameMin": "يجب أن يكون الاسم حرفين على الأقل",
+			"ageRequired": "العمر مطلوب",
+			"ageMin": "يجب أن يكون العمر 0 على الأقل",
+			"ageMax": "يجب ألا يتجاوز العمر 150",
+			"dateOfBirthInvalid": "تاريخ ميلاد غير صحيح"
+		},
 		"title": "المرضى",
 		"description": "إدارة سجلات المرضى",
 		"addNew": "إضافة مريض",
@@ -267,6 +274,13 @@
 		"callDialogOpenAria": "فتح نافذة الاتصال لـ {{name}} على {{phone}}"
 	},
 	"visits": {
+		"validation": {
+			"patientRequired": "المريض مطلوب",
+			"procedureTypeRequired": "نوع الإجراء مطلوب",
+			"priceMin": "يجب أن يكون السعر أكثر من 0",
+			"toothRequired": "يجب تحديد سن واحدة على الأقل",
+			"actRequired": "يجب إضافة عمل علاجي واحد على الأقل"
+		},
 		"title": "الزيارات",
 		"description": "إدارة زيارات المرضى والعلاجات",
 		"addNew": "زيارة جديدة",
@@ -450,6 +464,13 @@
 		"times": "مرات"
 	},
 	"appointments": {
+		"validation": {
+			"patientRequired": "المريض مطلوب",
+			"ageRequired": "العمر مطلوب",
+			"scheduledTimeRequired": "وقت الموعد مطلوب",
+			"durationRequired": "يجب أن تكون المدة دقيقة واحدة على الأقل",
+			"visitTypeRequired": "نوع الزيارة مطلوب"
+		},
 		"title": "المواعيد",
 		"manageSchedule": "إدارة جدولك",
 		"new": "موعد جديد",

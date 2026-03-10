@@ -10,21 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { toFormErrorMessages } from "@/lib/form-error-messages";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { toast } from "sonner";
+import { createPatientEditSchema } from "@/features/patients/utils/schemas";
 
 type Sex = "M" | "F";
-
-const patientEditSchema = z.object({
-	name: z.string().trim().min(2),
-	sex: z.enum(["M", "F"]),
-	age: z.union([z.literal(""), z.number().int().min(0).max(150)]),
-	dateOfBirth: z.string().refine((value) => !value || !Number.isNaN(new Date(value).getTime())),
-	phone: z.string(),
-	address: z.string(),
-	medicalNotes: z.string(),
-});
 
 interface PatientEditFormProps {
 	patientId?: string | null;
@@ -69,6 +61,9 @@ export default function PatientEditForm({
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const resolvedPatientId = patientId ?? id;
+
+	const patientEditSchema = createPatientEditSchema(t);
+	type PatientEditValues = z.infer<typeof patientEditSchema>;
 
 	const patientQuery = useQuery({
 		...trpc.patient.getById.queryOptions({ id: resolvedPatientId! }),
@@ -181,11 +176,14 @@ export default function PatientEditForm({
 											placeholder={t("patients.namePlaceholder")}
 											className="mt-1.5"
 										/>
-										{field.state.meta.errors.length > 0 && (
-											<p className="text-destructive mt-1 text-xs">
-												{t("validation.nameMin")}
+										{toFormErrorMessages(field.state.meta.errors).map((error, index) => (
+											<p
+												key={`${error}-${index}`}
+												className="text-destructive mt-1 text-xs"
+											>
+												{error}
 											</p>
-										)}
+										))}
 									</>
 								)}
 							</form.Field>
@@ -237,11 +235,14 @@ export default function PatientEditForm({
 											}}
 											className="mt-1.5"
 										/>
-										{field.state.meta.errors.length > 0 && (
-											<p className="text-destructive mt-1 text-xs">
-												{t("patients.ageLabel")}
+										{toFormErrorMessages(field.state.meta.errors).map((error, index) => (
+											<p
+												key={`${error}-${index}`}
+												className="text-destructive mt-1 text-xs"
+											>
+												{error}
 											</p>
-										)}
+										))}
 									</>
 								)}
 							</form.Field>
