@@ -21,6 +21,8 @@ import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent } from "
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { Currency, formatCurrencyText } from "@/components/currency";
 import { chartConfig } from "./chart-config";
+import { toSupportedLanguage } from "@offline-sqlite/i18n";
+import { useDirection } from "@base-ui/react";
 
 interface DateRangeParams {
 	startDate: string;
@@ -28,9 +30,11 @@ interface DateRangeParams {
 }
 
 export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
+	const direction = useDirection();
 	const formatAxisCurrency = (value: number) =>
 		formatCurrencyText({ value, showCents: false }).replace(/\s+/g, " ");
+	const currentLanguage = toSupportedLanguage(String(i18n.resolvedLanguage ?? i18n.language ?? "en"));
 
 	const patientStats = useQuery(trpc.reports.getPatientStats.queryOptions(dateRange));
 
@@ -71,15 +75,28 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 		},
 	].filter((item) => item.value > 0);
 
-	const weekdayLabelFormatter = new Intl.DateTimeFormat(undefined, { weekday: "short" });
+	const weekdayLocaleByLanguage = {
+		en: "en-US",
+		fr: "fr-FR",
+		ar: "ar",
+	} as const;
+
+	const weekdayLabelFormatter = new Intl.DateTimeFormat(weekdayLocaleByLanguage[currentLanguage], {
+		weekday: "short",
+	});
 
 	const withWeekdayLabel = (item: { dayIndex: number; count: number }) => {
 		const baseSunday = new Date(Date.UTC(2024, 0, 7));
 		baseSunday.setUTCDate(baseSunday.getUTCDate() + item.dayIndex);
+		const localizedLabel = weekdayLabelFormatter.format(baseSunday);
+		const normalizedLabel =
+			currentLanguage === "ar"
+				? localizedLabel
+				: localizedLabel.replace(/\.$/, "").replace(/^./, (char) => char.toUpperCase());
 
 		return {
 			...item,
-			label: weekdayLabelFormatter.format(baseSunday),
+			label: normalizedLabel,
 		};
 	};
 
@@ -229,12 +246,19 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 									margin={{ top: 5, right: 8, left: -6, bottom: 0 }}
 								>
 									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-									<XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+									<XAxis
+										reversed={direction === "rtl"}
+										dataKey="label"
+										tickLine={false}
+										axisLine={false}
+										tickMargin={8}
+									/>
 									<YAxis
 										allowDecimals={false}
 										tickLine={false}
 										axisLine={false}
 										tickMargin={8}
+										orientation={direction === "rtl" ? "right" : "left"}
 									/>
 									<ChartTooltip content={<ChartTooltipContent />} />
 									<Bar
@@ -327,12 +351,19 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 									margin={{ top: 5, right: 8, left: -6, bottom: 0 }}
 								>
 									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-									<XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+									<XAxis
+										reversed={direction === "rtl"}
+										dataKey="label"
+										tickLine={false}
+										axisLine={false}
+										tickMargin={8}
+									/>
 									<YAxis
 										allowDecimals={false}
 										tickLine={false}
 										axisLine={false}
 										tickMargin={8}
+										orientation={direction === "rtl" ? "right" : "left"}
 									/>
 									<ChartTooltip content={<ChartTooltipContent />} />
 									<Line

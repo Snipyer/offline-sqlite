@@ -10,6 +10,7 @@ import { StatCard } from "@/features/daily-summary/components/stat-card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { chartConfig } from "./chart-config";
+import { useDirection } from "@base-ui/react";
 
 interface DateRangeParams {
 	startDate: string;
@@ -18,6 +19,7 @@ interface DateRangeParams {
 
 export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 	const { t } = useTranslation();
+	const direction = useDirection();
 
 	const formatAxisCurrency = (value: number) =>
 		formatCurrencyText({ value, showCents: false }).replace(/\s+/g, " ");
@@ -106,7 +108,13 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 									margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
 								>
 									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-									<XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+									<XAxis
+										reversed={direction === "rtl"}
+										dataKey="label"
+										tickLine={false}
+										axisLine={false}
+										tickMargin={8}
+									/>
 									<YAxis
 										tickLine={false}
 										axisLine={false}
@@ -114,6 +122,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 										tick={{ fontSize: 10 }}
 										tickMargin={6}
 										tickFormatter={(value) => formatAxisCurrency(Number(value))}
+										orientation={direction === "rtl" ? "right" : "left"}
 									/>
 									<ChartTooltip
 										content={
@@ -151,7 +160,13 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 									margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
 								>
 									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-									<XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+									<XAxis
+										reversed={direction === "rtl"}
+										dataKey="label"
+										tickLine={false}
+										axisLine={false}
+										tickMargin={8}
+									/>
 									<YAxis
 										tickLine={false}
 										axisLine={false}
@@ -159,6 +174,7 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 										tick={{ fontSize: 10 }}
 										tickMargin={6}
 										tickFormatter={(value) => formatAxisCurrency(Number(value))}
+										orientation={direction === "rtl" ? "right" : "left"}
 									/>
 									<ChartTooltip
 										content={

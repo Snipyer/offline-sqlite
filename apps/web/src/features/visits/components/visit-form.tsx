@@ -750,6 +750,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 															<div className="relative mt-1.5">
 																<Input
 																	type="number"
+																	min={0}
 																	value={subField.state.value || ""}
 																	placeholder="0"
 																	onChange={(e) =>
