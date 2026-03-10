@@ -519,27 +519,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									/>
 								</div>
 								<div>
-									<Label htmlFor="patient-sex">{t("patients.sexLabel")} *</Label>
-									<Select
-										value={patientFormData.sex}
-										onValueChange={(value) =>
-											setPatientFormData((prev) => ({
-												...prev,
-												sex: value as Sex,
-											}))
-										}
-										disabled={mode === "edit" || hasSelectedPatient}
-									>
-										<SelectTrigger id="patient-sex" className="mt-1.5 w-full">
-											<SelectValue placeholder={t("patients.sexLabel")} />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="M">{t("patients.sexMale")}</SelectItem>
-											<SelectItem value="F">{t("patients.sexFemale")}</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-								<div>
 									<Label htmlFor="patient-age">{t("patients.ageLabel")}</Label>
 									<Input
 										id="patient-age"
@@ -580,6 +559,27 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 										className="mt-1.5"
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
+								</div>
+								<div>
+									<Label htmlFor="patient-sex">{t("patients.sexLabel")} *</Label>
+									<Select
+										value={patientFormData.sex}
+										onValueChange={(value) =>
+											setPatientFormData((prev) => ({
+												...prev,
+												sex: value as Sex,
+											}))
+										}
+										disabled={mode === "edit" || hasSelectedPatient}
+									>
+										<SelectTrigger id="patient-sex" className="mt-1.5 w-full">
+											<SelectValue placeholder={t("patients.sexLabel")} />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="M">{t("patients.sexMale")}</SelectItem>
+											<SelectItem value="F">{t("patients.sexFemale")}</SelectItem>
+										</SelectContent>
+									</Select>
 								</div>
 								<div>
 									<Label htmlFor="patient-phone">{t("patients.phoneLabel")}</Label>
@@ -768,10 +768,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 																	subField.handleChange(value || "")
 																}
 															>
-																<SelectTrigger
-																	autoFocus={index === 0}
-																	className="mt-1.5 w-full"
-																>
+																<SelectTrigger className="mt-1.5 w-full">
 																	<SelectValue>
 																		{visitTypes.data?.find(
 																			(vt) =>
