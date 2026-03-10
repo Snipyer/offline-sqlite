@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
 import { ToothSelector } from "@/features/tooth-selector/components/tooth-selector";
 import { trpc } from "@/utils/trpc";
-import { formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
 import { toast } from "sonner";
 
@@ -120,6 +120,8 @@ interface VisitFormProps {
 	isLoading?: boolean;
 }
 
+type ValidationErrors = Record<string, string>;
+
 export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -129,6 +131,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const [patientFormData, setPatientFormData] = useState<PatientFormData>(emptyPatientData);
 	const [paymentAmount, setPaymentAmount] = useState(0);
 	const [existingPaid, setExistingPaid] = useState(0);
+	const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
 	const patients = useQuery({
 		...trpc.patient.search.queryOptions({ query: patientSearch }),
@@ -241,11 +244,70 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		}),
 	);
 
+	const clearValidationError = (path: string) => {
+		setValidationErrors((prev) => {
+			if (!prev[path]) return prev;
+			const next = { ...prev };
+			delete next[path];
+			return next;
+		});
+	};
+
+	const scrollToFirstError = (errors: ValidationErrors, values: VisitFormValues) => {
+		const orderedPaths: string[] = ["patientId", "visitTime"];
+
+		values.acts.forEach((_, index) => {
+			orderedPaths.push(`acts[${index}].visitTypeId`, `acts[${index}].price`, `acts[${index}].teeth`);
+		});
+
+		const firstPath = orderedPaths.find((path) => errors[path]) ?? Object.keys(errors)[0];
+		if (!firstPath) return;
+
+		requestAnimationFrame(() => {
+			const target = document.querySelector<HTMLElement>(`[data-field-path="${firstPath}"]`);
+			if (!target) return;
+
+			target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+			const focusTarget = target.matches("input, textarea, button, [role='combobox']")
+				? target
+				: target.querySelector<HTMLElement>("input, textarea, button, [role='combobox'], [tabindex]");
+
+			focusTarget?.focus();
+		});
+	};
+
+	const validateRequiredFields = (values: VisitFormValues) => {
+		const errors: ValidationErrors = {};
+
+		const schemaResult = visitFormSchema.safeParse(values);
+		if (!schemaResult.success) {
+			for (const issue of schemaResult.error.issues) {
+				const key = issue.path.join(".").replace(/\.(\d+)\./g, "[$1].");
+				if (!errors[key]) {
+					errors[key] = issue.message;
+				}
+			}
+		}
+
+		if (mode === "create" && (values.patientId === "new" || values.patientId === "")) {
+			if (!patientFormData.name.trim()) {
+				errors.patientId = "Patient is required";
+			}
+		}
+
+		return errors;
+	};
+
 	const handleFormSubmit = async (values: VisitFormValues) => {
-		const validationResult = visitFormSchema.safeParse(values);
-		if (!validationResult.success) {
+		const errors = validateRequiredFields(values);
+		if (Object.keys(errors).length > 0) {
+			setValidationErrors(errors);
+			scrollToFirstError(errors, values);
 			return;
 		}
+
+		setValidationErrors({});
 
 		let patientId = values.patientId;
 
@@ -313,6 +375,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		});
 		setPatientSearch(patient.name);
 		setShowPatientResults(false);
+		clearValidationError("patientId");
 	};
 
 	const handleCreateNewPatient = () => {
@@ -320,12 +383,14 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		setPatientFormData(emptyPatientData);
 		setPatientSearch("");
 		setShowPatientResults(false);
+		clearValidationError("patientId");
 	};
 
 	const handleClearPatient = () => {
 		form.setFieldValue("patientId", "new");
 		setPatientSearch("");
 		setPatientFormData(emptyPatientData);
+		clearValidationError("patientId");
 	};
 
 	const cancelForm = () => {
@@ -334,16 +399,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 
 	const hasSelectedPatient =
 		form.getFieldValue("patientId") !== "" && form.getFieldValue("patientId") !== "new";
-
-	const actsValue = form.getFieldValue("acts") || [];
-
-	// if (isLoading) {
-	// 	return (
-	// 		<div className="mx-auto flex h-full w-full max-w-4xl items-center justify-center py-20">
-	// 			<Loader2 className="h-8 w-8 animate-spin" />
-	// 		</div>
-	// 	);
-	// }
 
 	return (
 		<div className="mx-auto w-full max-w-4xl py-8">
@@ -386,16 +441,23 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 											-translate-y-1/2"
 									/>
 									<Input
+										data-field-path="patientId"
 										value={patientSearch}
 										onChange={(e) => {
 											setPatientSearch(e.target.value);
 											setShowPatientResults(true);
+											clearValidationError("patientId");
 										}}
 										onFocus={() => setShowPatientResults(true)}
 										placeholder={t("patients.searchPlaceholder")}
 										className="pl-10"
 									/>
 								</div>
+								{validationErrors.patientId && (
+									<p className="text-destructive mt-2 text-xs">
+										{validationErrors.patientId}
+									</p>
+								)}
 
 								{showPatientResults && patientSearch.length > 0 && (
 									<div
@@ -495,6 +557,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 									<Label htmlFor="patient-name">{t("patients.nameLabel")} *</Label>
 									<Input
 										id="patient-name"
+										data-field-path="patientId"
 										value={patientFormData.name}
 										onChange={(e) =>
 											setPatientFormData((prev) => ({
@@ -502,10 +565,16 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 												name: e.target.value,
 											}))
 										}
+										onInput={() => clearValidationError("patientId")}
 										placeholder={t("patients.namePlaceholder")}
 										className="mt-1.5"
 										disabled={mode === "edit" || hasSelectedPatient}
 									/>
+									{validationErrors.patientId && (
+										<p className="text-destructive mt-1.5 text-xs">
+											{validationErrors.patientId}
+										</p>
+									)}
 								</div>
 								<div>
 									<Label htmlFor="patient-age">{t("patients.ageLabel")}</Label>
@@ -665,13 +734,21 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 						<div className="grid grid-cols-2 gap-4">
 							<form.Field name="visitTime">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="space-y-2" data-field-path="visitTime">
 										<Label>{t("visits.visitDateTime")} *</Label>
 										<DateTimePicker
 											value={field.state.value}
-											onChange={(date) => field.handleChange(date)}
+											onChange={(date) => {
+												field.handleChange(date);
+												clearValidationError("visitTime");
+											}}
 											className="grid-cols-1"
 										/>
+										{validationErrors.visitTime && (
+											<p className="text-destructive text-sm">
+												{validationErrors.visitTime}
+											</p>
+										)}
 									</div>
 								)}
 							</form.Field>
@@ -717,11 +794,17 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 														{(subField) => (
 															<Select
 																value={subField.state.value}
-																onValueChange={(value) =>
-																	subField.handleChange(value || "")
-																}
+																onValueChange={(value) => {
+																	subField.handleChange(value || "");
+																	clearValidationError(
+																		`acts[${index}].visitTypeId`,
+																	);
+																}}
 															>
-																<SelectTrigger className="mt-1.5 w-full">
+																<SelectTrigger
+																	className="mt-1.5 w-full"
+																	data-field-path={`acts[${index}].visitTypeId`}
+																>
 																	<SelectValue>
 																		{visitTypes.data?.find(
 																			(vt) =>
@@ -741,6 +824,11 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 															</Select>
 														)}
 													</form.Field>
+													{validationErrors[`acts[${index}].visitTypeId`] && (
+														<p className="text-destructive mt-1.5 text-xs">
+															{validationErrors[`acts[${index}].visitTypeId`]}
+														</p>
+													)}
 												</div>
 
 												<div className="sm:col-span-1">
@@ -749,22 +837,31 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 														{(subField) => (
 															<div className="relative mt-1.5">
 																<Input
+																	data-field-path={`acts[${index}].price`}
 																	type="number"
 																	min={0}
 																	value={subField.state.value || ""}
 																	placeholder="0"
-																	onChange={(e) =>
+																	onChange={(e) => {
 																		subField.handleChange(
 																			e.target.value
 																				? parseInt(e.target.value)
 																				: 0,
-																		)
-																	}
+																		);
+																		clearValidationError(
+																			`acts[${index}].price`,
+																		);
+																	}}
 																	className="pl-7"
 																/>
 															</div>
 														)}
 													</form.Field>
+													{validationErrors[`acts[${index}].price`] && (
+														<p className="text-destructive mt-1.5 text-xs">
+															{validationErrors[`acts[${index}].price`]}
+														</p>
+													)}
 												</div>
 
 												<div className="sm:col-span-1">
@@ -773,12 +870,18 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 													</Label>
 													<form.Field name={`acts[${index}].teeth`}>
 														{(subField) => (
-															<div className="mt-1.5">
+															<div
+																className="mt-1.5"
+																data-field-path={`acts[${index}].teeth`}
+															>
 																<ToothSelector
 																	selectedTeeth={subField.state.value || []}
-																	onChange={(teeth) =>
-																		subField.handleChange(teeth)
-																	}
+																	onChange={(teeth) => {
+																		subField.handleChange(teeth);
+																		clearValidationError(
+																			`acts[${index}].teeth`,
+																		);
+																	}}
 																/>
 																{subField.state.value &&
 																	subField.state.value.length > 0 && (
@@ -799,6 +902,11 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 															</div>
 														)}
 													</form.Field>
+													{validationErrors[`acts[${index}].teeth`] && (
+														<p className="text-destructive mt-1.5 text-xs">
+															{validationErrors[`acts[${index}].teeth`]}
+														</p>
+													)}
 												</div>
 
 												<div className="sm:col-span-3">
@@ -986,28 +1094,8 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 						})}
 					>
 						{(subState) => {
-							const hasSelectedPatient =
-								subState.patientId !== "" && subState.patientId !== "new";
-							const hasPatientValue =
-								hasSelectedPatient ||
-								(subState.patientId === "new" && patientFormData.name.trim() !== "");
-							const hasActsValue =
-								subState.acts.length > 0 &&
-								subState.acts.every(
-									(act) =>
-										act?.visitTypeId &&
-										act?.price > 0 &&
-										act?.teeth &&
-										act.teeth.length > 0,
-								);
-							const canSubmitValue = hasPatientValue && hasActsValue;
-
 							return (
-								<Button
-									type="submit"
-									disabled={!canSubmitValue || subState.isSubmitting}
-									size="lg"
-								>
+								<Button type="submit" disabled={subState.isSubmitting} size="lg">
 									{subState.isSubmitting ? (
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									) : (
