@@ -1,7 +1,17 @@
-import { Calendar, AlertCircle, CheckCircle2, Pencil, Trash2, RotateCcw, User, Syringe } from "lucide-react";
+import {
+	Calendar,
+	AlertCircle,
+	CheckCircle2,
+	Pencil,
+	Trash2,
+	RotateCcw,
+	User,
+	Syringe,
+	Clock4,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
-import { formatDate, useTranslation } from "@offline-sqlite/i18n";
+import { formatDate, formatTime, useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
 import { Button } from "@/components/ui/button";
 import { PaymentForm } from "@/features/payments/components/payment-form";
@@ -123,9 +133,19 @@ export function VisitCard({
 								</div>
 							)}
 
-							<p className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-								<Calendar className="h-3.5 w-3.5 shrink-0" />
-								{formatDate(visit.visitTime)}
+							<p className="text-muted-foreground mb-2 flex items-center gap-3 text-sm">
+								<div className="flex items-center gap-1">
+									<Calendar className="h-3.5 w-3.5 shrink-0" />
+									{formatDate(visit.visitTime)}
+								</div>
+								<div className="flex items-center gap-1">
+									<Clock4 className="h-3.5 w-3.5 shrink-0" />
+									{formatTime(visit.visitTime, {
+										hour: "2-digit",
+										minute: "2-digit",
+										hour12: false,
+									})}
+								</div>
 							</p>
 
 							{visit.acts.length > 0 && (

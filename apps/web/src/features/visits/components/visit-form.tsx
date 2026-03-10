@@ -1,24 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	Loader2,
-	Plus,
-	Trash2,
-	Check,
-	Search,
-	User,
-	Calendar as CalendarIcon,
-	CreditCard,
-} from "lucide-react";
+import { Loader2, Plus, Trash2, Check, Search, User, CreditCard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "react-router";
 import z from "zod";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
@@ -108,7 +98,7 @@ const emptyPatientData: PatientFormData = {
 
 const visitFormSchema = z.object({
 	patientId: z.string().min(1, "Patient is required"),
-	visitTime: z.string().min(1, "Visit time is required"),
+	visitTime: z.date(),
 	acts: z
 		.array(
 			z.object({
@@ -136,7 +126,6 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const queryClient = useQueryClient();
 	const [patientSearch, setPatientSearch] = useState("");
 	const [showPatientResults, setShowPatientResults] = useState(false);
-	const [datePickerOpen, setDatePickerOpen] = useState(false);
 	const [patientFormData, setPatientFormData] = useState<PatientFormData>(emptyPatientData);
 	const [paymentAmount, setPaymentAmount] = useState(0);
 	const [existingPaid, setExistingPaid] = useState(0);
@@ -150,7 +139,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	const form = useForm({
 		defaultValues: {
 			patientId: "new",
-			visitTime: new Date().toISOString().slice(0, 16),
+			visitTime: new Date(),
 			acts: [
 				{
 					id: generateId(),
@@ -169,7 +158,7 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 	useEffect(() => {
 		if (mode === "edit" && visit) {
 			form.setFieldValue("patientId", visit.patientId);
-			form.setFieldValue("visitTime", new Date(visit.visitTime).toISOString().slice(0, 16));
+			form.setFieldValue("visitTime", new Date(visit.visitTime));
 			form.setFieldValue(
 				"acts",
 				visit.acts.map((act) => ({
@@ -290,13 +279,13 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 		if (mode === "create") {
 			createVisitMutation.mutate({
 				patientId,
-				visitTime: new Date(values.visitTime).getTime(),
+				visitTime: values.visitTime.getTime(),
 				acts: actsPayload,
 			});
 		} else if (mode === "edit" && visit) {
 			updateVisitMutation.mutate({
 				id: visit.id,
-				visitTime: new Date(values.visitTime).getTime(),
+				visitTime: values.visitTime.getTime(),
 				acts: actsPayload,
 			});
 		}
@@ -673,55 +662,19 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-4 py-4">
-						<div className="grid gap-4 sm:grid-cols-2">
-							<div>
-								<Label>{t("visits.visitDateTime")} *</Label>
-								<Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-									<PopoverTrigger className="w-full">
-										<div
-											className="border-input bg-background hover:bg-muted
-												hover:text-foreground dark:bg-input/30 dark:border-input
-												dark:hover:bg-input/50 aria-expanded:bg-muted
-												aria-expanded:text-foreground focus-visible:ring-ring/50
-												mt-1.5 flex h-9 w-full cursor-pointer items-center
-												justify-start rounded-none border px-3 text-sm font-normal
-												outline-none focus-visible:ring-1 disabled:pointer-events-none
-												disabled:opacity-50"
-										>
-											<CalendarIcon className="mr-2 h-4 w-4" />
-											{form.getFieldValue("visitTime")
-												? formatDate(new Date(form.getFieldValue("visitTime")))
-												: t("visits.selectDate")}
-										</div>
-									</PopoverTrigger>
-									<PopoverContent className="w-auto p-0" align="start">
-										<Calendar
-											mode="single"
-											selected={
-												form.getFieldValue("visitTime")
-													? new Date(form.getFieldValue("visitTime"))
-													: undefined
-											}
-											onSelect={(date) => {
-												if (date) {
-													const existingTime = form.getFieldValue("visitTime")
-														? new Date(form.getFieldValue("visitTime"))
-														: new Date();
-													date.setHours(
-														existingTime.getHours(),
-														existingTime.getMinutes(),
-													);
-													form.setFieldValue(
-														"visitTime",
-														date.toISOString().slice(0, 16),
-													);
-													setDatePickerOpen(false);
-												}
-											}}
+						<div className="grid grid-cols-2 gap-4">
+							<form.Field name="visitTime">
+								{(field) => (
+									<div className="space-y-2">
+										<Label>{t("visits.visitDateTime")} *</Label>
+										<DateTimePicker
+											value={field.state.value}
+											onChange={(date) => field.handleChange(date)}
+											className="grid-cols-1"
 										/>
-									</PopoverContent>
-								</Popover>
-							</div>
+									</div>
+								)}
+							</form.Field>
 						</div>
 
 						<form.Field name="acts" mode="array">
