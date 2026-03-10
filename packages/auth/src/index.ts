@@ -3,9 +3,13 @@ import * as schema from "@offline-sqlite/db/schema/auth";
 import { env } from "@offline-sqlite/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { emailOTP } from "better-auth/plugins";
 import { localization } from "better-auth-localization";
+import { Resend } from "resend";
 
 const isSecureCookie = env.BETTER_AUTH_URL.startsWith("https://");
+
+const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 // For Tauri desktop apps, we need SameSite="none" for cross-origin between
 // tauri://localhost and the local sidecar server origin to work properly
 const isTauri = process.env.TAURI_ENVIRONMENT === "true";
@@ -34,6 +38,32 @@ export const auth = betterAuth({
 		},
 	},
 	plugins: [
+		emailOTP({
+			otpLength: 6,
+			expiresIn: 600, // 10 minutes
+			async sendVerificationOTP({ email, otp, type }) {
+				if (resend) {
+					const subject =
+						type === "forget-password" ? "Reset your password" : "Your verification code";
+					try {
+						await resend.emails.send({
+							from: "Acme <onboarding@resend.dev>",
+							to: [email],
+							subject,
+							text: `Your verification code is ${otp}. It will expire in 10 minutes.`,
+						});
+						console.log(`[OTP Sent] email=${email}`);
+					} catch (err) {
+						console.error(`[OTP Error] Failed to send email via Resend:`, err);
+					}
+				} else {
+					// Fallback to console if no API key is configured
+					console.log(
+						`[OTP Log] NO RESEND_API_KEY CONFIGURED. type=${type} email=${email} code=${otp}`,
+					);
+				}
+			},
+		}),
 		localization({
 			defaultLocale: "default",
 			fallbackLocale: "default",

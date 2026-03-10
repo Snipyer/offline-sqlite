@@ -16,6 +16,7 @@
 		"better-auth": "catalog:",
 		"better-auth-localization": "^2.2.3",
 		"dotenv": "catalog:",
+		"resend": "^6.9.3",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

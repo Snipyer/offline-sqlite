@@ -1,10 +1,12 @@
 import { env } from "@offline-sqlite/env/web";
 import { createAuthClient } from "better-auth/react";
+import { emailOTPClient } from "better-auth/client/plugins";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { isTauri } from "@/utils/is-tauri";
 
 export const authClient = createAuthClient({
 	baseURL: env.VITE_SERVER_URL,
+	plugins: [emailOTPClient()],
 	fetchOptions: {
 		// Use Tauri's HTTP plugin to handle cookies properly across origins
 		customFetchImpl: async (...params: Parameters<typeof fetch>) => {

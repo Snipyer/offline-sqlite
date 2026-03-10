@@ -10,6 +10,7 @@ export const env = createEnv({
 		CORS_ORIGIN: z.string().min(1),
 		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 		SERVER_PORT: z.number().int().min(1).max(65535).default(3210),
+		RESEND_API_KEY: z.string().optional(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,
