@@ -58,6 +58,7 @@
 	--color-revenue: oklch(72.3% 0.219 149.579);
 	--color-unpaid: oklch(70.5% 0.213 47.604);
 	--color-treatment: oklch(68.5% 0.169 237.323);
+	--color-expenses: oklch(64.5% 0.246 16.439);
 }
 
 .dark {

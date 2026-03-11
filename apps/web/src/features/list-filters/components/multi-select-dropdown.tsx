@@ -10,6 +10,7 @@ import { ChevronDownIcon } from "lucide-react";
 interface MultiSelectDropdownOption {
 	value: string;
 	label: string;
+	color?: string;
 }
 
 interface MultiSelectDropdownProps {
@@ -58,6 +59,14 @@ export function MultiSelectDropdown({
 
 								onValueChange(value.filter((selected) => selected !== option.value));
 							}}
+							style={
+								option.color ? 
+								{
+									borderLeftColor: option.color, 
+									borderLeftStyle: "solid", 
+									borderLeftWidth: "3px"
+								} : {}
+							}
 						>
 							{option.label}
 						</DropdownMenuCheckboxItem>
