@@ -273,29 +273,32 @@ export const reportsRouter = router({
 			);
 
 		const patientIdsInRange = new Set(visitsInRange.map((v) => v.patientId));
+		let returningPatients = 0;
 
-		const patientsWithPriorVisits = new Set<string>();
-
-		for (const patientId of patientIdsInRange) {
-			const priorVisit = await db
-				.select({ id: visit.id })
+		if (patientIdsInRange.size > 0) {
+			const visitsUntilRangeEnd = await db
+				.select({
+					patientId: visit.patientId,
+				})
 				.from(visit)
 				.where(
 					and(
 						eq(visit.userId, ctx.session.user.id),
-						eq(visit.patientId, patientId),
 						eq(visit.isDeleted, false),
-						lte(visit.visitTime, startDate.getTime() - 1),
+						inArray(visit.patientId, Array.from(patientIdsInRange)),
+						lte(visit.visitTime, endDate.getTime()),
 					),
-				)
-				.limit(1);
+				);
 
-			if (priorVisit.length > 0) {
-				patientsWithPriorVisits.add(patientId);
+			const visitsByPatient = new Map<string, number>();
+
+			for (const row of visitsUntilRangeEnd) {
+				visitsByPatient.set(row.patientId, (visitsByPatient.get(row.patientId) ?? 0) + 1);
 			}
+
+			returningPatients = Array.from(visitsByPatient.values()).filter((count) => count > 1).length;
 		}
 
-		const returningPatients = patientsWithPriorVisits.size;
 		const activePatients = patientIdsInRange.size;
 
 		return {
