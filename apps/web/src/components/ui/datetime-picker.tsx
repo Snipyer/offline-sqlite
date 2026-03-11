@@ -84,20 +84,23 @@ export function DateTimePicker({
 
 	return (
 		<Popover>
-			<PopoverTrigger className={"w-full"}>
-				<Button
-					variant="outline"
-					disabled={disabled}
-					className={cn(
-						"w-full pl-3 text-left font-normal",
-						!value && "text-muted-foreground",
-						className,
-					)}
-				>
-					{value ? format(value, "dd/MM/yyyy HH:mm") : placeholder}
-					<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-				</Button>
-			</PopoverTrigger>
+			<PopoverTrigger
+				className={"w-full"}
+				render={
+					<Button
+						variant="outline"
+						disabled={disabled}
+						className={cn(
+							"w-full pl-3 text-left font-normal",
+							!value && "text-muted-foreground",
+							className,
+						)}
+					>
+						{value ? format(value, "dd/MM/yyyy HH:mm") : placeholder}
+						<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+					</Button>
+				}
+			/>
 			<PopoverContent className="w-auto p-0" align="start">
 				<div className="sm:flex">
 					<Calendar mode="single" selected={value} onSelect={handleDateSelect} initialFocus />

@@ -133,7 +133,7 @@ export function VisitCard({
 								</div>
 							)}
 
-							<p className="text-muted-foreground mb-2 flex items-center gap-3 text-sm">
+							<div className="text-muted-foreground mb-2 flex items-center gap-3 text-sm">
 								<div className="flex items-center gap-1">
 									<Calendar className="h-3.5 w-3.5 shrink-0" />
 									{formatDate(visit.visitTime)}
@@ -146,7 +146,7 @@ export function VisitCard({
 										hour12: false,
 									})}
 								</div>
-							</p>
+							</div>
 
 							{visit.acts.length > 0 && (
 								<div className="mb-2 space-y-1.5">

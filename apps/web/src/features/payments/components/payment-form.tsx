@@ -101,7 +101,7 @@ export function PaymentForm({
 
 	return (
 		<AlertDialog open={open} onOpenChange={handleOpenChange}>
-			<AlertDialogTrigger>{children}</AlertDialogTrigger>
+			<AlertDialogTrigger render={children as any} />
 			<AlertDialogContent>
 				<form onSubmit={handleSubmit}>
 					<AlertDialogHeader>

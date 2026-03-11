@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DeleteVisitDialog } from "@/features/visits/components/delete-visit-dialog";
 import { Currency } from "@/components/currency";
 import Loader from "@/components/loader";
 import { trpc } from "@/utils/trpc";
@@ -33,19 +34,12 @@ import { useState } from "react";
 export default function DailySummaryContent() {
 	const { t } = useTranslation();
 	const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
+	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const summary = useQuery(trpc.dailySummary.get.queryOptions());
 
-	const softDeleteMutation = useMutation(
-		trpc.visit.softDelete.mutationOptions({
-			onSuccess: () => summary.refetch(),
-		}),
-	);
-
 	const handleDeleteVisit = (visitId: string) => {
-		if (confirm(t("visits.confirmDelete"))) {
-			softDeleteMutation.mutate({ id: visitId });
-		}
+		setDeleteId(visitId);
 	};
 
 	function formatTimeLeft(minutes: number, t: Function): string {
@@ -354,6 +348,13 @@ export default function DailySummaryContent() {
 					</Card>
 				</motion.div>
 			</div>
+
+			<DeleteVisitDialog
+				visitId={deleteId}
+				open={!!deleteId}
+				onOpenChange={(open) => !open && setDeleteId(null)}
+				onSuccess={() => summary.refetch()}
+			/>
 		</motion.div>
 	);
 }

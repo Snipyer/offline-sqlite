@@ -1,21 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Loader2, Plus, Calendar, Stethoscope } from "lucide-react";
+import { Plus, Calendar, Stethoscope } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Loader from "@/components/loader";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Button } from "@/components/ui/button";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteVisitDialog } from "@/features/visits/components/delete-visit-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -84,12 +75,6 @@ export default function VisitsList() {
 		filters.sortBy,
 	]);
 
-	const softDeleteMutation = useMutation(
-		trpc.visit.softDelete.mutationOptions({
-			onSuccess: () => visits.refetch(),
-		}),
-	);
-
 	const restoreMutation = useMutation(
 		trpc.visit.restore.mutationOptions({
 			onSuccess: () => visits.refetch(),
@@ -98,13 +83,6 @@ export default function VisitsList() {
 
 	const handleSoftDelete = (id: string) => {
 		setDeleteId(id);
-	};
-
-	const confirmSoftDelete = () => {
-		if (deleteId) {
-			softDeleteMutation.mutate({ id: deleteId });
-			setDeleteId(null);
-		}
 	};
 
 	const handleRestore = (id: string) => {
@@ -311,23 +289,12 @@ export default function VisitsList() {
 				</Card>
 			</motion.div>
 
-			<AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-				<AlertDialogContent onOverlayClick={() => setDeleteId(null)}>
-					<AlertDialogHeader>
-						<AlertDialogTitle>{t("visits.confirmDeleteTitle")}</AlertDialogTitle>
-						<AlertDialogDescription>{t("visits.confirmDelete")}</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-						<AlertDialogAction variant="destructive" onClick={confirmSoftDelete}>
-							{softDeleteMutation.isPending ? (
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							) : null}
-							{t("common.delete")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<DeleteVisitDialog
+				visitId={deleteId}
+				open={!!deleteId}
+				onOpenChange={(open) => !open && setDeleteId(null)}
+				onSuccess={() => visits.refetch()}
+			/>
 		</motion.div>
 	);
 }
