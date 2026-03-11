@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import "./index.css";
 import { initAntiDebug } from "./utils/anti-debug";
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, useLocation } from "react-router";
 import type { Route } from "./+types/root";
 import { Titlebar } from "./components/titlebar";
 import { ThemeProvider } from "./components/theme-provider";
@@ -11,7 +11,6 @@ import { queryClient } from "./utils/trpc";
 import { getLanguageDirection, i18n, I18nextProvider, useTranslation } from "@offline-sqlite/i18n";
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { isTauri } from "./utils/is-tauri";
-import { cn } from "./lib/utils";
 import { AppSidebar } from "./components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
 import { authClient } from "./lib/auth-client";
@@ -45,7 +44,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				{children}
-				<ScrollRestoration />
 				<Scripts />
 			</body>
 		</html>
@@ -64,6 +62,22 @@ function DocumentLanguageSync() {
 		document.documentElement.lang = currentLanguage;
 		document.documentElement.dir = direction;
 	}, [currentLanguage, direction]);
+
+	return null;
+}
+
+function ScrollToTopOnNavigation() {
+	const location = useLocation();
+
+	useEffect(() => {
+		// Keep route transitions predictable by starting each page at the top.
+		window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
+		const appContent = document.querySelector<HTMLElement>(".app-content");
+		if (appContent) {
+			appContent.scrollTo({ top: 0, left: 0, behavior: "auto" });
+		}
+	}, [location.pathname]);
 
 	return null;
 }
@@ -93,6 +107,7 @@ export default function App() {
 		<I18nextProvider i18n={i18n}>
 			<DirectionProvider direction={direction}>
 				<DocumentLanguageSync />
+				<ScrollToTopOnNavigation />
 				<QueryClientProvider client={queryClient}>
 					<ThemeProvider
 						attribute="class"
