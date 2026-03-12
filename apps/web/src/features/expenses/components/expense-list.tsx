@@ -5,7 +5,7 @@ import Loader from "@/components/loader";
 import { Currency } from "@/components/currency";
 import { PaginationControls } from "@/components/pagination-controls";
 import { useTranslation } from "@offline-sqlite/i18n";
-import { getExpenseTypeColor } from "@/features/expenses/utils/expense-type-colors";
+import { getEntityColor } from "@/utils/entity-colors";
 import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 
 export interface ExpenseItem {
@@ -70,7 +70,10 @@ export function ExpenseList({
 						className="group border-border/50 hover:border-border bg-muted/30 hover:bg-card flex
 							items-center justify-between rounded-xl border border-l-4 p-4
 							transition-[background-color,border-color,box-shadow] duration-300"
-						style={{ borderLeftColor: getExpenseTypeColor(exp.expenseTypeId), borderLeftStyle: "solid" }}
+						style={{
+							borderLeftColor: getEntityColor(exp.expenseTypeId),
+							borderLeftStyle: "solid",
+						}}
 					>
 						<div className="flex items-center gap-4">
 							<div

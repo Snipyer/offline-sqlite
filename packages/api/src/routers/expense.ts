@@ -16,6 +16,13 @@ const expenseTypeUpdateSchema = expenseTypeCreateSchema.partial().extend({
 	id: z.string(),
 });
 
+const paginationSchema = z.object({
+	query: z.string().optional(),
+	sortBy: z.enum(["createdDesc", "createdAsc", "nameAsc", "nameDesc"]).optional(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(10),
+});
+
 export const expenseTypeRouter = router({
 	list: protectedProcedure.query(async ({ ctx }) => {
 		return await db
@@ -23,6 +30,49 @@ export const expenseTypeRouter = router({
 			.from(expenseType)
 			.where(eq(expenseType.userId, ctx.session.user.id))
 			.orderBy(desc(expenseType.createdAt));
+	}),
+
+	listPaginated: protectedProcedure.input(paginationSchema).query(async ({ ctx, input }) => {
+		const sortBy = input.sortBy ?? "createdDesc";
+		const offset = (input.page - 1) * input.pageSize;
+		const whereCondition = and(
+			eq(expenseType.userId, ctx.session.user.id),
+			input.query && input.query.length > 0 ? like(expenseType.name, `%${input.query}%`) : undefined,
+		);
+
+		const orderByClause =
+			sortBy === "createdAsc"
+				? asc(expenseType.createdAt)
+				: sortBy === "nameAsc"
+					? asc(expenseType.name)
+					: sortBy === "nameDesc"
+						? desc(expenseType.name)
+						: desc(expenseType.createdAt);
+
+		const [items, totalResult] = await Promise.all([
+			db
+				.select()
+				.from(expenseType)
+				.where(whereCondition)
+				.orderBy(orderByClause)
+				.limit(input.pageSize)
+				.offset(offset),
+			db
+				.select({ total: sql<number>`count(*)` })
+				.from(expenseType)
+				.where(whereCondition),
+		]);
+
+		const total = Number(totalResult[0]?.total ?? 0);
+		const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
+
+		return {
+			items,
+			total,
+			page: input.page,
+			pageSize: input.pageSize,
+			totalPages,
+		};
 	}),
 
 	getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {

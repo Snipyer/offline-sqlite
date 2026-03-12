@@ -7,7 +7,7 @@
 		"dashboard": "لوحة التحكم",
 		"dailySummary": "الملخص اليومي",
 		"reports": "التقارير",
-		"visitTypes": "أنواع الزيارات",
+		"types": "إدارة الأنواع",
 		"patients": "المرضى",
 		"visits": "الزيارات",
 		"payments": "المدفوعات",
@@ -188,6 +188,24 @@
 		"confirmDeleteTitle": "حذف نوع الزيارة",
 		"confirmDelete": "هل أنت متأكد من حذف نوع الزيارة هذا؟"
 	},
+	"expenseTypes": {
+		"title": "أنواع المصروفات",
+		"description": "إدارة فئات مصروفاتك",
+		"addNew": "إضافة نوع",
+		"nameLabel": "اسم النوع",
+		"namePlaceholder": "مثال: مستلزمات، معدات، إيجار",
+		"searchLabel": "بحث",
+		"searchPlaceholder": "ابحث في أنواع المصروفات...",
+		"sortNewest": "الأحدث أولاً",
+		"sortOldest": "الأقدم أولاً",
+		"sortNameAsc": "الاسم (أ-ي)",
+		"sortNameDesc": "الاسم (ي-أ)",
+		"empty": "لا توجد أنواع مصروفات بعد. أضف واحداً للبدء!",
+		"editAria": "تعديل نوع المصروف",
+		"deleteAria": "حذف نوع المصروف",
+		"confirmDeleteTitle": "حذف نوع المصروف",
+		"confirmDelete": "هل أنت متأكد من حذف نوع المصروف هذا؟"
+	},
 	"patients": {
 		"validation": {
 			"nameMin": "يجب أن يكون الاسم حرفين على الأقل",
@@ -211,7 +229,6 @@
 		"medicalNotesPlaceholder": "أي حالات طبية أو حساسية، إلخ.",
 		"editPatient": "تعديل المريض",
 		"notFound": "المريض غير موجود",
-
 		"phoneLabel": "رقم الهاتف",
 		"phonePlaceholder": "رقم الاتصال اختياري",
 		"addressLabel": "العنوان",

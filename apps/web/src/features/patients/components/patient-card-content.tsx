@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ToothDisplay } from "@/features/tooth-selector/components/tooth-display";
-import { getVisitColor } from "@/utils/visit-colors";
+import { getEntityColor } from "@/utils/entity-colors";
 import { formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
 import { VisitCard } from "@/features/visits/components/visit-card";
@@ -367,7 +367,7 @@ export function PatientSheetContent({
 														visit={visit}
 														patientId={patient.id}
 														showBorder
-														borderColor={getVisitColor(visit.id)}
+														borderColor={getEntityColor(visit.id)}
 														isRtl={isRtl}
 													/>
 												</div>
@@ -530,7 +530,9 @@ export function PatientSheetContent({
 							highlightedTeeth={
 								hoveredVisitId ? getVisitTeeth(hoveredVisitId) : getAllVisitTeeth()
 							}
-							highlightColor={hoveredVisitId ? getVisitColor(hoveredVisitId) : "var(--primary)"}
+							highlightColor={
+								hoveredVisitId ? getEntityColor(hoveredVisitId) : "var(--primary)"
+							}
 							hovered={!!hoveredVisitId}
 							otherHovered={!!hoveredVisitId}
 						/>

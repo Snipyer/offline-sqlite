@@ -7,7 +7,7 @@
 		"dashboard": "Tableau de bord",
 		"dailySummary": "Resume quotidien",
 		"reports": "Rapports",
-		"visitTypes": "Types de visites",
+		"types": "Gérer les types",
 		"patients": "Patients",
 		"visits": "Visites",
 		"payments": "Paiements",
@@ -188,6 +188,24 @@
 		"confirmDeleteTitle": "Supprimer le type de visite",
 		"confirmDelete": "Êtes-vous sûr de vouloir supprimer ce type de visite?"
 	},
+	"expenseTypes": {
+		"title": "Types de dépenses",
+		"description": "Gérer vos catégories de dépenses",
+		"addNew": "Ajouter un type",
+		"nameLabel": "Nom du type",
+		"namePlaceholder": "ex: Fournitures, Équipement, Loyer",
+		"searchLabel": "Recherche",
+		"searchPlaceholder": "Rechercher des types de dépenses...",
+		"sortNewest": "Plus récent d'abord",
+		"sortOldest": "Plus ancien d'abord",
+		"sortNameAsc": "Nom (A-Z)",
+		"sortNameDesc": "Nom (Z-A)",
+		"empty": "Aucun type de dépense pour l'instant. Ajoutez-en un pour commencer!",
+		"editAria": "Modifier le type de dépense",
+		"deleteAria": "Supprimer le type de dépense",
+		"confirmDeleteTitle": "Supprimer le type de dépense",
+		"confirmDelete": "Êtes-vous sûr de vouloir supprimer ce type de dépense?"
+	},
 	"patients": {
 		"validation": {
 			"nameMin": "Le nom doit contenir au moins 2 caractières",
@@ -211,7 +229,6 @@
 		"medicalNotesPlaceholder": "Conditions medicales, allergies, etc.",
 		"editPatient": "Modifier le patient",
 		"notFound": "Patient introuvable",
-
 		"phoneLabel": "Numéro de téléphone",
 		"phonePlaceholder": "Numéro de contact optionnel",
 		"addressLabel": "Adresse",

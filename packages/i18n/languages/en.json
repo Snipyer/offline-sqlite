@@ -7,7 +7,7 @@
 		"dashboard": "Dashboard",
 		"dailySummary": "Daily Summary",
 		"reports": "Reports",
-		"visitTypes": "Visit Types",
+		"types": "Manage Types",
 		"patients": "Patients",
 		"visits": "Visits",
 		"payments": "Payments",
@@ -188,6 +188,24 @@
 		"deleteAria": "Delete visit type",
 		"confirmDeleteTitle": "Delete Visit Type",
 		"confirmDelete": "Are you sure you want to delete this visit type?"
+	},
+	"expenseTypes": {
+		"title": "Expense Types",
+		"description": "Manage your expense categories",
+		"addNew": "Add Type",
+		"nameLabel": "Type Name",
+		"namePlaceholder": "e.g., Supplies, Equipment, Rent",
+		"searchLabel": "Search",
+		"searchPlaceholder": "Search expense types...",
+		"sortNewest": "Newest first",
+		"sortOldest": "Oldest first",
+		"sortNameAsc": "Name (A-Z)",
+		"sortNameDesc": "Name (Z-A)",
+		"empty": "No expense types yet. Add one to get started!",
+		"editAria": "Edit expense type",
+		"deleteAria": "Delete expense type",
+		"confirmDeleteTitle": "Delete Expense Type",
+		"confirmDelete": "Are you sure you want to delete this expense type?"
 	},
 	"patients": {
 		"validation": {
