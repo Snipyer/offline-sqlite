@@ -471,6 +471,8 @@
 		"average": "Average",
 		"unpaid": "Unpaid amount",
 		"revenueTrend": "Revenue Trend",
+		"revenueVsExpenses": "Revenue vs Expenses",
+		"revenue": "Revenue",
 		"revenueByTreatment": "Revenue by Treatment",
 		"newPatients": "New Patients",
 		"returningPatients": "Returning",

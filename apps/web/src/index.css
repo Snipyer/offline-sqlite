@@ -52,13 +52,13 @@
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.85 0.12 190);
-	--color-female: oklch(63.291% 0.2787 330.8);
-	--color-male: oklch(50.092% 0.25502 263.836);
-	--color-visits: oklch(58.5% 0.233 277.117);
-	--color-revenue: oklch(72.3% 0.219 149.579);
-	--color-unpaid: oklch(70.5% 0.213 47.604);
-	--color-treatment: oklch(68.5% 0.169 237.323);
-	--color-expenses: oklch(64.5% 0.246 16.439);
+	--female: oklch(63.291% 0.2787 330.8);
+	--male: oklch(50.092% 0.25502 263.836);
+	--visits: oklch(58.5% 0.233 277.117);
+	--revenue: oklch(72.3% 0.219 149.579);
+	--unpaid: oklch(70.5% 0.213 47.604);
+	--treatment: oklch(68.5% 0.169 237.323);
+	--expenses: oklch(64.5% 0.246 16.439);
 }
 
 .dark {
@@ -94,6 +94,13 @@
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.85 0.12 190);
+	--female: oklch(63.291% 0.2787 330.8);
+	--male: oklch(50.092% 0.25502 263.836);
+	--visits: oklch(58.5% 0.233 277.117);
+	--revenue: oklch(72.3% 0.219 149.579);
+	--unpaid: oklch(70.5% 0.213 47.604);
+	--treatment: oklch(68.5% 0.169 237.323);
+	--expenses: oklch(64.5% 0.246 16.439);
 }
 
 @theme inline {
@@ -130,6 +137,13 @@
 	--color-card: var(--card);
 	--color-foreground: var(--foreground);
 	--color-background: var(--background);
+	--color-revenue: var(--revenue);
+	--color-expenses: var(--expenses);
+	--color-unpaid: var(--unpaid);
+	--color-treatment: var(--treatment);
+	--color-male: var(--male);
+	--color-female: var(--female);
+	--color-visits: var(--visits);
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
@@ -143,9 +157,11 @@
 	* {
 		@apply border-border outline-ring/50;
 	}
+
 	body {
 		@apply bg-background text-foreground font-sans;
 	}
+
 	html {
 		@apply font-sans;
 	}

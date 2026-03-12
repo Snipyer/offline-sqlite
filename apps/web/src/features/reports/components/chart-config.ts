@@ -19,4 +19,7 @@ export const chartConfig = {
 	unpaid: {
 		label: "Unpaid",
 	},
+	expenses: {
+		label: "Expenses",
+	},
 } satisfies ChartConfig;
