@@ -7,8 +7,14 @@ import Loader from "@/components/loader";
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { StatCard } from "@/features/daily-summary/components/stat-card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+	ChartContainer,
+	ChartLegend,
+	ChartLegendContent,
+	ChartTooltip,
+	ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Area, AreaChart } from "recharts";
 import { chartConfig } from "./chart-config";
 import { useDirection } from "@base-ui/react";
 import { getEntityColor } from "@/utils/entity-colors";
@@ -145,25 +151,186 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 			</div>
 
 			{formattedPeriodData.length > 0 && (
-				<div className="grid gap-6 lg:grid-cols-2">
-					<Card className="border-border/50">
-						<CardHeader className="pb-3">
-							<div className="flex items-center gap-3">
-								<div
-									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-(--color-revenue)/10"
-								>
-									<TrendingUp className="h-5 w-5 text-(--color-revenue)" />
-								</div>
-								<CardTitle className="text-sm font-medium">
-									{t("reports.revenueTrend")}
-								</CardTitle>
+				<Card className="border-border/50">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-3">
+							<div
+								className="flex h-10 w-10 items-center justify-center rounded-xl
+									bg-emerald-500/10"
+							>
+								<TrendingUp className="h-5 w-5 text-emerald-500" />
 							</div>
-						</CardHeader>
-						<CardContent>
-							<ChartContainer config={chartConfig}>
+							<CardTitle className="text-sm font-medium">
+								{t("reports.revenueVsExpenses")}
+							</CardTitle>
+						</div>
+					</CardHeader>
+					<CardContent>
+						<ChartContainer
+							config={{
+								revenue: { label: t("reports.revenue") },
+								expenses: { label: t("expenses.title") },
+							}}
+							className="aspect-auto h-62.5 w-full"
+						>
+							<AreaChart
+								data={formattedPeriodData.map((item, index) => {
+									const expenseItem = expensesByPeriod.data?.[index];
+									return {
+										...item,
+										expenses: expenseItem?.totalAmount ?? 0,
+									};
+								})}
+								margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+							>
+								<defs>
+									<linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+										<stop
+											offset="5%"
+											stopColor="var(--color-revenue)"
+											stopOpacity={0.8}
+										/>
+										<stop
+											offset="95%"
+											stopColor="var(--color-revenue)"
+											stopOpacity={0.1}
+										/>
+									</linearGradient>
+									<linearGradient id="fillExpenses" x1="0" y1="0" x2="0" y2="1">
+										<stop
+											offset="5%"
+											stopColor="var(--color-expenses)"
+											stopOpacity={0.8}
+										/>
+										<stop
+											offset="95%"
+											stopColor="var(--color-expenses)"
+											stopOpacity={0.1}
+										/>
+									</linearGradient>
+								</defs>
+								<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+								<XAxis
+									reversed={direction === "rtl"}
+									dataKey="label"
+									tickLine={false}
+									axisLine={false}
+									tickMargin={8}
+								/>
+								<YAxis
+									tickLine={false}
+									axisLine={false}
+									width={92}
+									tick={{ fontSize: 10 }}
+									tickMargin={6}
+									tickFormatter={(value) => formatAxisCurrency(Number(value))}
+									orientation={direction === "rtl" ? "right" : "left"}
+								/>
+								<ChartTooltip
+									content={<ChartTooltipContent className="p-2" indicator="dot" />}
+								/>
+								<Area
+									type="natural"
+									dataKey="expenses"
+									fill="url(#fillExpenses)"
+									stroke="var(--color-expenses)"
+									strokeWidth={2}
+								/>
+								<Area
+									type="natural"
+									dataKey="revenue"
+									fill="url(#fillRevenue)"
+									stroke="var(--color-revenue)"
+									strokeWidth={2}
+								/>
+								<ChartLegend content={<ChartLegendContent />} />
+							</AreaChart>
+						</ChartContainer>
+					</CardContent>
+				</Card>
+			)}
+
+			<div className="grid gap-6 lg:grid-cols-2">
+				<Card className="border-border/50">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-3">
+							<div
+								className="bg-revenue/10 flex h-10 w-10 items-center justify-center
+									rounded-xl"
+							>
+								<TrendingUp className="h-5 w-5 text-(--color-revenue)" />
+							</div>
+							<CardTitle className="text-sm font-medium">{t("reports.revenueTrend")}</CardTitle>
+						</div>
+					</CardHeader>
+					<CardContent>
+						<ChartContainer config={chartConfig}>
+							<BarChart
+								data={formattedPeriodData}
+								margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+							>
+								<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+								<XAxis
+									reversed={direction === "rtl"}
+									dataKey="label"
+									tickLine={false}
+									axisLine={false}
+									tickMargin={8}
+								/>
+								<YAxis
+									tickLine={false}
+									axisLine={false}
+									width={92}
+									tick={{ fontSize: 10 }}
+									tickMargin={6}
+									tickFormatter={(value) => formatAxisCurrency(Number(value))}
+									orientation={direction === "rtl" ? "right" : "left"}
+								/>
+								<ChartTooltip
+									content={
+										<ChartTooltipContent
+											formatter={(value) => (
+												<span>{formatAxisCurrency(Number(value))}</span>
+											)}
+										/>
+									}
+								/>
+								<Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+							</BarChart>
+						</ChartContainer>
+					</CardContent>
+				</Card>
+
+				<Card className="border-border/50">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-3">
+							<div
+								className="flex h-10 w-10 items-center justify-center rounded-xl
+									bg-rose-500/10"
+							>
+								<Calendar className="h-5 w-5 text-(--color-expenses)" />
+							</div>
+							<CardTitle className="text-sm font-medium">{t("expenses.trend")}</CardTitle>
+						</div>
+					</CardHeader>
+					<CardContent>
+						{(expensesByPeriod.data?.length ?? 0) > 0 ? (
+							<ChartContainer
+								config={{
+									expenses: { label: t("expenses.title") },
+								}}
+							>
 								<BarChart
-									data={formattedPeriodData}
+									data={expensesByPeriod.data?.slice(-14).map((item) => {
+										const date = new Date(item.period);
+										return {
+											...item,
+											label: date.toLocaleDateString(undefined, {
+												month: "short",
+												day: "numeric",
+											}),
+										};
+									})}
 									margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
 								>
 									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
@@ -192,90 +359,23 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 											/>
 										}
 									/>
-									<Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+									<Bar dataKey="totalAmount" fill="var(--color-expenses)" radius={4} />
 								</BarChart>
 							</ChartContainer>
-						</CardContent>
-					</Card>
-
-					<Card className="border-border/50">
-						<CardHeader className="pb-3">
-							<div className="flex items-center gap-3">
-								<div
-									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-rose-500/10"
-								>
-									<Calendar className="h-5 w-5 text-(--color-expenses)" />
-								</div>
-								<CardTitle className="text-sm font-medium">{t("expenses.trend")}</CardTitle>
+						) : (
+							<div className="py-8 text-center">
+								<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
 							</div>
-						</CardHeader>
-						<CardContent>
-							{(expensesByPeriod.data?.length ?? 0) > 0 ? (
-								<ChartContainer
-									config={{
-										expenses: { label: t("expenses.title") },
-									}}
-								>
-									<BarChart
-										data={expensesByPeriod.data?.slice(-14).map((item) => {
-											const date = new Date(item.period);
-											return {
-												...item,
-												label: date.toLocaleDateString(undefined, {
-													month: "short",
-													day: "numeric",
-												}),
-											};
-										})}
-										margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
-									>
-										<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-										<XAxis
-											reversed={direction === "rtl"}
-											dataKey="label"
-											tickLine={false}
-											axisLine={false}
-											tickMargin={8}
-										/>
-										<YAxis
-											tickLine={false}
-											axisLine={false}
-											width={92}
-											tick={{ fontSize: 10 }}
-											tickMargin={6}
-											tickFormatter={(value) => formatAxisCurrency(Number(value))}
-											orientation={direction === "rtl" ? "right" : "left"}
-										/>
-										<ChartTooltip
-											content={
-												<ChartTooltipContent
-													formatter={(value) => (
-														<span>{formatAxisCurrency(Number(value))}</span>
-													)}
-												/>
-											}
-										/>
-										<Bar dataKey="totalAmount" fill="var(--color-expenses)" radius={4} />
-									</BarChart>
-								</ChartContainer>
-							) : (
-								<div className="py-8 text-center">
-									<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-				</div>
-			)}
+						)}
+					</CardContent>
+				</Card>
 
-			<div className="grid gap-6 lg:grid-cols-2">
 				<Card className="border-border/50">
 					<CardHeader className="pb-3">
 						<div className="flex items-center gap-3">
 							<div
-								className="flex h-10 w-10 items-center justify-center rounded-xl
-									bg-(--color-treatment)/10"
+								className="bg-treatment/10 flex h-10 w-10 items-center justify-center
+									rounded-xl"
 							>
 								<DollarSign className="h-5 w-5 text-(--color-treatment)" />
 							</div>

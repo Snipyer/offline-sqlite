@@ -468,6 +468,8 @@
 		"average": "Moyenne",
 		"unpaid": "Montant impaye",
 		"revenueTrend": "Tendance des revenus",
+		"revenueVsExpenses": "Revenus vs Depenses",
+		"revenue": "Revenus",
 		"revenueByTreatment": "Revenu par traitement",
 		"newPatients": "Nouveaux patients",
 		"returningPatients": "Recurrents",
