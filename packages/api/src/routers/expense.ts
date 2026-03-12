@@ -413,4 +413,71 @@ export const expenseRouter = router({
 
 			return Array.from(groupedByMonth.values()).sort((a, b) => a.month.localeCompare(b.month));
 		}),
+
+	getExpensesByPeriod: protectedProcedure
+		.input(
+			z.object({
+				dateFrom: z.number(),
+				dateTo: z.number(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const startDate = new Date(input.dateFrom);
+			const endDate = new Date(input.dateTo);
+			endDate.setHours(23, 59, 59, 999);
+
+			const result = await db
+				.select({
+					expenseDate: expense.expenseDate,
+					amount: expense.amount,
+				})
+				.from(expense)
+				.where(
+					and(
+						eq(expense.userId, ctx.session.user.id),
+						gte(expense.expenseDate, startDate),
+						lte(expense.expenseDate, endDate),
+					),
+				);
+
+			const groupedByDay: Record<string, number> = {};
+
+			for (const item of result) {
+				const date = new Date(item.expenseDate);
+				const dayKey = date.toISOString().split("T")[0]!;
+				groupedByDay[dayKey] = (groupedByDay[dayKey] ?? 0) + item.amount;
+			}
+
+			return Object.entries(groupedByDay)
+				.map(([period, totalAmount]) => ({ period, totalAmount }))
+				.sort((a, b) => a.period.localeCompare(b.period));
+		}),
+
+	getTotalExpenses: protectedProcedure
+		.input(
+			z.object({
+				dateFrom: z.number().optional(),
+				dateTo: z.number().optional(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const whereCondition = and(
+				eq(expense.userId, ctx.session.user.id),
+				input.dateFrom !== undefined ? gte(expense.expenseDate, new Date(input.dateFrom)) : undefined,
+				input.dateTo !== undefined ? lte(expense.expenseDate, new Date(input.dateTo)) : undefined,
+			);
+
+			const result = await db
+				.select({
+					total: sql<number>`coalesce(sum(${expense.amount}), 0)`,
+					count: sql<number>`count(*)`,
+				})
+				.from(expense)
+				.where(whereCondition);
+
+			return {
+				total: Number(result[0]?.total ?? 0),
+				count: Number(result[0]?.count ?? 0),
+			};
+		}),
 });

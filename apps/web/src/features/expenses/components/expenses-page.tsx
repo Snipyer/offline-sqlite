@@ -8,7 +8,6 @@ import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/
 import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { ExpenseSummaryCards } from "./expense-summary-cards";
-import { ExpenseCharts } from "./expense-charts";
 import { ExpenseFilters } from "./expense-filters";
 import { ExpenseForm } from "./expense-form";
 import { ExpenseList } from "./expense-list";
@@ -49,14 +48,6 @@ export default function ExpensesPage() {
 			sortBy,
 			page,
 			pageSize,
-		}),
-	);
-
-	// Chart data queries
-	const expensesByType = useQuery(
-		trpc.expense.getExpensesByType.queryOptions({
-			dateFrom: dateFrom ? new Date(dateFrom).getTime() : undefined,
-			dateTo: dateTo ? new Date(dateTo).getTime() + 86400000 : undefined,
 		}),
 	);
 
@@ -236,12 +227,6 @@ export default function ExpensesPage() {
 				totalExpenses={totalExpenses}
 				totalCount={expenses.data?.total ?? 0}
 				categoriesCount={expenseTypes.data?.length ?? 0}
-			/>
-
-			{/* Charts */}
-			<ExpenseCharts
-				expensesByMonth={expensesByMonth.data ?? []}
-				expensesByType={expensesByType.data ?? []}
 			/>
 
 			{/* Filters & List */}
