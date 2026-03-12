@@ -193,6 +193,7 @@
 		"description": "Gérer vos catégories de dépenses",
 		"addNew": "Ajouter un type",
 		"nameLabel": "Nom du type",
+		"multiCreateNotice": "Utilisez + pour ajouter plusieurs types d'un coup, ex: Fournitures+Équipement",
 		"namePlaceholder": "ex: Fournitures, Équipement, Loyer",
 		"searchLabel": "Recherche",
 		"searchPlaceholder": "Rechercher des types de dépenses...",

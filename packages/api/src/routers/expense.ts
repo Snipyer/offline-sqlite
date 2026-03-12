@@ -86,25 +86,39 @@ export const expenseTypeRouter = router({
 	}),
 
 	create: protectedProcedure.input(expenseTypeCreateSchema).mutation(async ({ ctx, input }) => {
-		// Check if expense type with this name already exists for this user
-		const existing = await db
-			.select()
-			.from(expenseType)
-			.where(and(eq(expenseType.userId, ctx.session.user.id), eq(expenseType.name, input.name)))
-			.limit(1);
+		const names = input.name
+			.split("+")
+			.map((name) => name.trim())
+			.filter((name) => name.length > 0);
 
-		if (existing.length > 0 && existing[0] !== undefined) {
-			return { id: existing[0].id, existing: true };
+		if (names.length === 0) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Expense type name is required",
+			});
 		}
 
-		const id = generateId();
-		await db.insert(expenseType).values({
-			id,
-			name: input.name,
-			userId: ctx.session.user.id,
-		});
+		const existingTypes = await db
+			.select()
+			.from(expenseType)
+			.where(and(eq(expenseType.userId, ctx.session.user.id), inArray(expenseType.name, names)));
 
-		return { id, existing: false };
+		const existingNames = new Set(existingTypes.map((t) => t.name));
+		const newNames = names.filter((name) => !existingNames.has(name));
+
+		const entries = newNames.map((name) => ({
+			id: generateId(),
+			name,
+			userId: ctx.session.user.id,
+		}));
+
+		if (entries.length > 0) {
+			await db.insert(expenseType).values(entries);
+		}
+
+		const allIds = [...existingTypes.map((t) => t.id), ...entries.map((entry) => entry.id)];
+
+		return { ids: allIds, existing: existingTypes.map((t) => t.id), created: entries.map((e) => e.id) };
 	}),
 
 	update: protectedProcedure.input(expenseTypeUpdateSchema).mutation(async ({ ctx, input }) => {

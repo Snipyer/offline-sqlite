@@ -43,10 +43,10 @@ export function TypeCreateForm({
 				>
 					{t(`${type}Types.nameLabel`)}
 				</Label>
-				{type === "visit" && (
+				{(type === "visit" || type === "expense") && (
 					<p className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
 						<Info className="h-3.5 w-3.5" />
-						<span>{t("visitTypes.multiCreateNotice")}</span>
+						<span>{t(`${type}Types.multiCreateNotice`)}</span>
 					</p>
 				)}
 				<Input

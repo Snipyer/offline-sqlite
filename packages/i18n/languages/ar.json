@@ -193,6 +193,7 @@
 		"description": "إدارة فئات مصروفاتك",
 		"addNew": "إضافة نوع",
 		"nameLabel": "اسم النوع",
+		"multiCreateNotice": "استخدم + لإضافة عدة أنواع دفعة واحدة، مثال: مستلزمات+معدات",
 		"namePlaceholder": "مثال: مستلزمات، معدات، إيجار",
 		"searchLabel": "بحث",
 		"searchPlaceholder": "ابحث في أنواع المصروفات...",

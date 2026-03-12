@@ -194,6 +194,7 @@
 		"description": "Manage your expense categories",
 		"addNew": "Add Type",
 		"nameLabel": "Type Name",
+		"multiCreateNotice": "Use + to add multiple types at once, e.g. Supplies+Equipment",
 		"namePlaceholder": "e.g., Supplies, Equipment, Rent",
 		"searchLabel": "Search",
 		"searchPlaceholder": "Search expense types...",
