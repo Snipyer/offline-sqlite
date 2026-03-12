@@ -137,7 +137,7 @@ export default function App() {
 								<>
 									<div className="app-content">
 										{isAuthenticated ? (
-											<SidebarProvider defaultOpen side={sidebarSide}>
+											<SidebarProvider defaultOpen>
 												<AppSidebar />
 												<SidebarInset>
 													<Outlet />

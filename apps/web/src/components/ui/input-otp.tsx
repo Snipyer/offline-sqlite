@@ -1,8 +1,11 @@
+"use client";
+
 import * as React from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 
 import { cn } from "@/lib/utils";
-import { MinusIcon } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { MinusSignIcon } from "@hugeicons/core-free-icons";
 
 function InputOTP({
 	className,
@@ -59,8 +62,8 @@ function InputOTPSlot({
 				data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:border-destructive
 				data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/30
 				dark:data-[active=true]:aria-invalid:ring-destructive/40 relative flex size-8 items-center
-				justify-center border-y border-e text-xs transition-all outline-none first:rounded-none
-				first:border-s last:rounded-none data-[active=true]:z-10 data-[active=true]:ring-1`,
+				justify-center border-y border-r text-xs transition-all outline-none first:rounded-none
+				first:border-l last:rounded-none data-[active=true]:z-10 data-[active=true]:ring-1`,
 				className,
 			)}
 			{...props}
@@ -83,7 +86,7 @@ function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
 			role="separator"
 			{...props}
 		>
-			<MinusIcon />
+			<HugeiconsIcon icon={MinusSignIcon} strokeWidth={2} />
 		</div>
 	);
 }

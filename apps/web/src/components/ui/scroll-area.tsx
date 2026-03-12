@@ -1,60 +1,46 @@
-"use client";
-
 import * as React from "react";
+import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
+
 import { cn } from "@/lib/utils";
 
-interface ScrollAreaProps extends React.HTMLAttributes<HTMLDivElement> {
-	orientation?: "vertical" | "horizontal";
-}
-
-const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
-	({ className, orientation = "vertical", children, ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					"relative overflow-auto",
-					orientation === "vertical" && "h-full",
-					orientation === "horizontal" && "w-full",
-					className,
-				)}
-				{...props}
+function ScrollArea({ className, children, ...props }: ScrollAreaPrimitive.Root.Props) {
+	return (
+		<ScrollAreaPrimitive.Root data-slot="scroll-area" className={cn("relative", className)} {...props}>
+			<ScrollAreaPrimitive.Viewport
+				data-slot="scroll-area-viewport"
+				className="focus-visible:ring-ring/50 size-full rounded-[inherit]
+					transition-[color,box-shadow] outline-none focus-visible:ring-[3px]
+					focus-visible:outline-1"
 			>
 				{children}
-			</div>
-		);
-	},
-);
-ScrollArea.displayName = "ScrollArea";
-
-interface ScrollBarProps extends React.HTMLAttributes<HTMLDivElement> {
-	orientation?: "vertical" | "horizontal";
+			</ScrollAreaPrimitive.Viewport>
+			<ScrollBar />
+			<ScrollAreaPrimitive.Corner />
+		</ScrollAreaPrimitive.Root>
+	);
 }
 
-const ScrollBar = React.forwardRef<HTMLDivElement, ScrollBarProps>(
-	({ className, orientation = "vertical", ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					"flex touch-none transition-colors select-none",
-					orientation === "vertical" && "h-full w-2 border-l border-l-transparent p-px",
-					orientation === "horizontal" && "h-2 border-t border-t-transparent p-px",
-					className,
-				)}
-				{...props}
-			>
-				<div
-					className={cn(
-						"bg-foreground/20 rounded-full",
-						orientation === "vertical" && "w-full",
-						orientation === "horizontal" && "h-full",
-					)}
-				/>
-			</div>
-		);
-	},
-);
-ScrollBar.displayName = "ScrollBar";
+function ScrollBar({ className, orientation = "vertical", ...props }: ScrollAreaPrimitive.Scrollbar.Props) {
+	return (
+		<ScrollAreaPrimitive.Scrollbar
+			data-slot="scroll-area-scrollbar"
+			data-orientation={orientation}
+			orientation={orientation}
+			className={cn(
+				`flex touch-none p-px transition-colors select-none data-horizontal:h-2.5
+				data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent
+				data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l
+				data-vertical:border-l-transparent`,
+				className,
+			)}
+			{...props}
+		>
+			<ScrollAreaPrimitive.Thumb
+				data-slot="scroll-area-thumb"
+				className="bg-border relative flex-1 rounded-none"
+			/>
+		</ScrollAreaPrimitive.Scrollbar>
+	);
+}
 
 export { ScrollArea, ScrollBar };
