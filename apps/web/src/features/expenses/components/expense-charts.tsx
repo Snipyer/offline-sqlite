@@ -6,8 +6,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { useDirection } from "@base-ui/react";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { Currency, formatCurrencyText } from "@/components/currency";
-import { pageItemVariants } from "@/lib/animations";
-import { getExpenseTypeColor } from "../utils/expense-type-colors";
+import { getEntityColor } from "@/utils/entity-colors";
 
 interface ExpenseByMonth {
 	month: string;
@@ -26,7 +25,6 @@ interface ExpenseChartsProps {
 	expensesByMonth: ExpenseByMonth[];
 	expensesByType: ExpenseByType[];
 }
-
 
 export function ExpenseCharts({ expensesByMonth, expensesByType }: ExpenseChartsProps) {
 	const { t } = useTranslation();
@@ -131,7 +129,7 @@ export function ExpenseCharts({ expensesByMonth, expensesByType }: ExpenseCharts
 										<div className="flex items-center gap-2">
 											<div
 												className="h-3 w-3 rounded-full"
-												style={{ backgroundColor: getExpenseTypeColor(item.id) }}
+												style={{ backgroundColor: getEntityColor(item.id) }}
 											/>
 											<span className="font-medium">{item.name}</span>
 											<span className="text-muted-foreground text-xs">
@@ -145,7 +143,7 @@ export function ExpenseCharts({ expensesByMonth, expensesByType }: ExpenseCharts
 									<div className="bg-muted h-2 w-full overflow-hidden rounded-full">
 										<motion.div
 											className="h-full rounded-full"
-											style={{ backgroundColor: getExpenseTypeColor(item.id) }}
+											style={{ backgroundColor: getEntityColor(item.id) }}
 											initial={{ width: 0 }}
 											animate={{
 												width:

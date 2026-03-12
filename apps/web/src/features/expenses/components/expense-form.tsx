@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
-import { getExpenseTypeColor } from "@/features/expenses/utils/expense-type-colors";
+import { getEntityColor } from "@/utils/entity-colors";
 import { Currency } from "@/components/currency";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { toFormErrorMessages } from "@/lib/form-error-messages";
@@ -160,7 +160,7 @@ export function ExpenseForm({
 																	value={type.id}
 																	className="border-l-4"
 																	style={{
-																		borderLeftColor: getExpenseTypeColor(
+																		borderLeftColor: getEntityColor(
 																			type.id,
 																		),
 																		borderLeftStyle: "solid",
@@ -274,7 +274,10 @@ export function ExpenseForm({
 								<Label htmlFor="expense-total" className="text-sm font-medium">
 									{t("expenses.totalLabel")}
 								</Label>
-								<div className="bg-primary/10 mt-1.5 flex h-10 items-center rounded-md border px-3">
+								<div
+									className="bg-primary/10 mt-1.5 flex h-10 items-center rounded-md border
+										px-3"
+								>
 									<span className="text-sm font-semibold">
 										<form.Subscribe
 											selector={(state) => ({

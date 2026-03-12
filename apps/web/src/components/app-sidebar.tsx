@@ -37,7 +37,7 @@ const navItems = [
 	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
 	{ to: "/visits", labelKey: "nav.visits", icon: Stethoscope },
 	{ to: "/patients", labelKey: "nav.patients", icon: Users },
-	{ to: "/visit-types", labelKey: "nav.visitTypes", icon: Syringe },
+	{ to: "/types", labelKey: "nav.types", icon: Syringe },
 	{ to: "/appointments", labelKey: "nav.appointments", icon: CalendarDays },
 	{ to: "/payments", labelKey: "nav.payments", icon: CreditCard },
 	{ to: "/expenses", labelKey: "nav.expenses", icon: Receipt },
@@ -51,7 +51,7 @@ const navGroups = [
 	},
 	{
 		labelKey: "nav.groupClinic",
-		items: [navItems[1], navItems[2], navItems[3], navItems[4]],
+		items: [navItems[1], navItems[2], navItems[4], navItems[3]],
 	},
 	{
 		labelKey: "nav.groupFinance",

@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ListFilters } from "@/features/list-filters/components/list-filters";
 import { MultiSelectDropdown } from "@/features/list-filters/components/multi-select-dropdown";
 import { type DatePreset } from "@/features/list-filters/utils/date-filters";
-import { getExpenseTypeColor } from "@/features/expenses/utils/expense-type-colors";
+import { getEntityColor } from "@/utils/entity-colors";
 import { useTranslation } from "@offline-sqlite/i18n";
 
 interface ExpenseType {
@@ -84,7 +84,7 @@ export function ExpenseFilters({
 	const expenseTypeOptions = expenseTypes.map((type) => ({
 		value: type.id,
 		label: type.name,
-		color: getExpenseTypeColor(type.id),
+		color: getEntityColor(type.id),
 	}));
 
 	const moreFilters = (
