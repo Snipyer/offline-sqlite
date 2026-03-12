@@ -556,6 +556,7 @@
 		"description": "Suivre et gérer vos dépenses",
 		"addNew": "Ajouter une Dépense",
 		"editExpense": "Modifier la Dépense",
+		"expenseDetails": "Détails de la Dépense",
 		"addNewType": "Nouveau Type",
 		"totalExpenses": "Total des Dépenses",
 		"count": "Nombre Total",

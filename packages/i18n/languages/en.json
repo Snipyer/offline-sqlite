@@ -558,6 +558,7 @@
 		"description": "Track and manage your expenses",
 		"addNew": "Add Expense",
 		"editExpense": "Edit Expense",
+		"expenseDetails": "Expense Details",
 		"addNewType": "New Type",
 		"totalExpenses": "Total Expenses",
 		"count": "Total Count",

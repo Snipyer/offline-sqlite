@@ -556,6 +556,7 @@
 		"description": "تتبع وإدارة مصروفاتك",
 		"addNew": "إضافة مصروف",
 		"editExpense": "تعديل المصروف",
+		"expenseDetails": "تفاصيل المصروف",
 		"addNewType": "نوع جديد",
 		"totalExpenses": "إجمالي المصروفات",
 		"count": "العدد الإجمالي",
