@@ -203,12 +203,11 @@ export const reportsRouter = router({
 
 		const visitIds = visitsInRange.map((v) => v.id);
 
-		const revenueByTreatment: Record<string, number> = {};
-
 		if (visitIds.length > 0) {
 			const actsData = await db
 				.select({
 					price: visitAct.price,
+					visitTypeId: visitType.id,
 					visitTypeName: visitType.name,
 				})
 				.from(visitAct)
@@ -219,6 +218,7 @@ export const reportsRouter = router({
 				const moreActs = await db
 					.select({
 						price: visitAct.price,
+						visitTypeId: visitType.id,
 						visitTypeName: visitType.name,
 					})
 					.from(visitAct)
@@ -227,17 +227,27 @@ export const reportsRouter = router({
 				actsData.push(...moreActs);
 			}
 
+			const revenueByTreatment: Record<string, { revenue: number; visitTypeId: string }> = {};
+
 			for (const act of actsData) {
-				revenueByTreatment[act.visitTypeName] =
-					(revenueByTreatment[act.visitTypeName] || 0) + act.price;
+				if (!revenueByTreatment[act.visitTypeName]) {
+					revenueByTreatment[act.visitTypeName] = { revenue: 0, visitTypeId: act.visitTypeId };
+				}
+				revenueByTreatment[act.visitTypeName]!.revenue += act.price;
 			}
+
+			const result = Object.entries(revenueByTreatment)
+				.map(([treatment, data]) => ({
+					treatment,
+					revenue: data.revenue,
+					visitTypeId: data.visitTypeId,
+				}))
+				.sort((a, b) => b.revenue - a.revenue);
+
+			return result;
 		}
 
-		const result = Object.entries(revenueByTreatment)
-			.map(([treatment, revenue]) => ({ treatment, revenue }))
-			.sort((a, b) => b.revenue - a.revenue);
-
-		return result;
+		return [];
 	}),
 
 	getPatientStats: protectedProcedure.input(dateRangeSchema).query(async ({ ctx, input }) => {
@@ -493,11 +503,10 @@ export const reportsRouter = router({
 
 		const visitIds = visitsInRange.map((v) => v.id);
 
-		const treatmentCounts: Record<string, number> = {};
-
 		if (visitIds.length > 0) {
 			const actsData = await db
 				.select({
+					visitTypeId: visitType.id,
 					visitTypeName: visitType.name,
 				})
 				.from(visitAct)
@@ -507,6 +516,7 @@ export const reportsRouter = router({
 			for (let i = 1; i < visitIds.length; i++) {
 				const moreActs = await db
 					.select({
+						visitTypeId: visitType.id,
 						visitTypeName: visitType.name,
 					})
 					.from(visitAct)
@@ -515,18 +525,27 @@ export const reportsRouter = router({
 				actsData.push(...moreActs);
 			}
 
+			const treatmentCounts: Record<string, { count: number; visitTypeId: string }> = {};
+
 			for (const act of actsData) {
-				treatmentCounts[act.visitTypeName] = (treatmentCounts[act.visitTypeName] || 0) + 1;
+				if (!treatmentCounts[act.visitTypeName]) {
+					treatmentCounts[act.visitTypeName] = { count: 0, visitTypeId: act.visitTypeId };
+				}
+				treatmentCounts[act.visitTypeName]!.count++;
 			}
+
+			const topTreatments = Object.entries(treatmentCounts)
+				.map(([treatment, data]) => ({ treatment, count: data.count, visitTypeId: data.visitTypeId }))
+				.sort((a, b) => b.count - a.count)
+				.slice(0, 10);
+
+			return {
+				topTreatments,
+			};
 		}
 
-		const topTreatments = Object.entries(treatmentCounts)
-			.map(([treatment, count]) => ({ treatment, count }))
-			.sort((a, b) => b.count - a.count)
-			.slice(0, 10);
-
 		return {
-			topTreatments,
+			topTreatments: [],
 		};
 	}),
 });

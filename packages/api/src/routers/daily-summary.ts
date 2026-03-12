@@ -52,7 +52,7 @@ export const dailySummaryRouter = router({
 
 		let totalExpected = 0;
 		let totalCollected = 0;
-		const proceduresByType: Record<string, number> = {};
+		const proceduresByType: Record<string, { count: number; visitTypeId: string }> = {};
 
 		if (visitIds.length > 0) {
 			const actsData = await db
@@ -81,7 +81,10 @@ export const dailySummaryRouter = router({
 			totalExpected = actsData.reduce((sum, a) => sum + a.price, 0);
 
 			for (const act of actsData) {
-				proceduresByType[act.visitTypeName] = (proceduresByType[act.visitTypeName] || 0) + 1;
+				if (!proceduresByType[act.visitTypeName]) {
+					proceduresByType[act.visitTypeName] = { count: 0, visitTypeId: act.visitTypeId };
+				}
+				proceduresByType[act.visitTypeName]!.count++;
 			}
 
 			const paymentsData = await db
