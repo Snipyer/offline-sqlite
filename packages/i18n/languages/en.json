@@ -581,10 +581,10 @@
 		"quantityLabel": "Quantity",
 		"quantityPlaceholder": "1",
 		"unitPriceLabel": "Unit Price",
-		"unitPricePlaceholder": "0.00",
+		"unitPricePlaceholder": "0",
 		"totalLabel": "Total",
 		"amountLabel": "Amount",
-		"amountPlaceholder": "0.00",
+		"amountPlaceholder": "0",
 		"dateLabel": "Date",
 		"notesLabel": "Notes",
 		"notesPlaceholder": "Optional notes...",
@@ -596,6 +596,12 @@
 		"editAria": "Edit expense",
 		"deleteAria": "Delete expense",
 		"confirmDeleteTitle": "Delete Expense",
-		"confirmDelete": "Are you sure you want to delete this expense?"
+		"confirmDelete": "Are you sure you want to delete this expense?",
+		"validation": {
+			"typeRequired": "Expense type is required",
+			"quantityMin": "Quantity must be at least 1",
+			"unitPriceMin": "Unit price must be at least 1",
+			"dateRequired": "Date is required"
+		}
 	}
 }

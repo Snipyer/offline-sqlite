@@ -21,6 +21,7 @@
 - default to small, focused components and files. prefer small diffs over repo-wide rewrites
 - use workspace imports like `@offline-sqlite/db`, `@offline-sqlite/api`, `@offline-sqlite/auth`, `@offline-sqlite/env`, `@offline-sqlite/i18n`
 - use shadcn regestries to find existing components before building new ones. see `apps/web/src/components/ui/` and registeries are in `apps/web/components.json/`
+- use **Tanstack form** for all forms.
 
 ## Don't
 
