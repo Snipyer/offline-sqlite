@@ -390,7 +390,9 @@
 		"paymentWillBeRecorded": "Payment will be recorded",
 		"paymentWillBeRegistered": "Payment will be registered upon {{action}}",
 		"actionCreate": "creation",
-		"actionEdit": "update"
+		"actionEdit": "update",
+		"addNewType": "New Type",
+		"addNewTypeDesc": "Create a new visit type"
 	},
 	"teeth": {
 		"upper": "Upper",

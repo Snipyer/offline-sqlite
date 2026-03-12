@@ -388,7 +388,9 @@
 		"paymentWillBeRecorded": "سيتم تسجيل الدفعة",
 		"paymentWillBeRegistered": "سيتم تسجيل الدفعة عند {{action}}",
 		"actionCreate": "الإنشاء",
-		"actionEdit": "التعديل"
+		"actionEdit": "التعديل",
+		"addNewType": "نوع جديد",
+		"addNewTypeDesc": "إنشاء نوع زيارة جديد"
 	},
 	"teeth": {
 		"upper": "العلوي",

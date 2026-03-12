@@ -388,7 +388,9 @@
 		"paymentWillBeRecorded": "Le paiement sera enregistré",
 		"paymentWillBeRegistered": "Le paiement sera enregistré lors de {{action}}",
 		"actionCreate": "la création",
-		"actionEdit": "la modification"
+		"actionEdit": "la modification",
+		"addNewType": "Nouveau Type",
+		"addNewTypeDesc": "Créer un nouveau type de visite"
 	},
 	"teeth": {
 		"upper": "Haut",
