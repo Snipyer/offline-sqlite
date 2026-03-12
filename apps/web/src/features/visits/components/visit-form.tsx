@@ -93,6 +93,7 @@ interface VisitFormProps {
 	mode: "create" | "edit";
 	visit?: VisitData;
 	isLoading?: boolean;
+	onAddNewType?: () => void;
 }
 
 type ValidationErrors = Record<string, string>;
@@ -107,7 +108,7 @@ const emptyPatientData: PatientFormData = {
 	medicalNotes: "",
 };
 
-export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
+export default function VisitForm({ mode, visit, isLoading, onAddNewType }: VisitFormProps) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -792,55 +793,71 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 													<Label className="text-sm">
 														{t("visits.procedureType")} *
 													</Label>
-													<form.Field name={`acts[${index}].visitTypeId`}>
-														{(subField) => (
-															<Select
-																value={subField.state.value}
-																onValueChange={(value) => {
-																	subField.handleChange(value || "");
-																	clearValidationError(
-																		`acts[${index}].visitTypeId`,
-																	);
-																}}
-															>
-																<SelectTrigger
-																	className="mt-1.5 w-full"
-																	data-field-path={`acts[${index}].visitTypeId`}
+													<div className="mt-1.5 flex gap-2">
+														<form.Field name={`acts[${index}].visitTypeId`}>
+															{(subField) => (
+																<Select
+																	value={subField.state.value}
+																	onValueChange={(value) => {
+																		subField.handleChange(value || "");
+																		clearValidationError(
+																			`acts[${index}].visitTypeId`,
+																		);
+																	}}
 																>
-																	<SelectValue>
-																		{visitTypes.data?.find(
-																			(vt) =>
-																				vt.id ===
-																				subField.state.value,
-																		)?.name ??
-																			t("visits.selectProcedure")}
-																	</SelectValue>
-																</SelectTrigger>
-																<SelectContent>
-																	{visitTypes.data?.map((vt) => (
-																		<SelectItem key={vt.id} value={vt.id}>
-																			<div
-																				className="flex items-center
-																					gap-2"
+																	<SelectTrigger
+																		className="w-full flex-1"
+																		data-field-path={`acts[${index}].visitTypeId`}
+																	>
+																		<SelectValue>
+																			{visitTypes.data?.find(
+																				(vt) =>
+																					vt.id ===
+																					subField.state.value,
+																			)?.name ??
+																				t("visits.selectProcedure")}
+																		</SelectValue>
+																	</SelectTrigger>
+																	<SelectContent>
+																		{visitTypes.data?.map((vt) => (
+																			<SelectItem
+																				key={vt.id}
+																				value={vt.id}
 																			>
 																				<div
-																					className="h-2 w-2
-																						rounded-full"
-																					style={{
-																						backgroundColor:
-																							getEntityColor(
-																								vt.id,
-																							),
-																					}}
-																				/>
-																				{vt.name}
-																			</div>
-																		</SelectItem>
-																	))}
-																</SelectContent>
-															</Select>
+																					className="flex
+																						items-center gap-2"
+																				>
+																					<div
+																						className="h-2 w-2
+																							rounded-full"
+																						style={{
+																							backgroundColor:
+																								getEntityColor(
+																									vt.id,
+																								),
+																						}}
+																					/>
+																					{vt.name}
+																				</div>
+																			</SelectItem>
+																		))}
+																	</SelectContent>
+																</Select>
+															)}
+														</form.Field>
+														{onAddNewType && (
+															<Button
+																type="button"
+																variant="outline"
+																size="icon"
+																onClick={onAddNewType}
+																title={t("visits.addNewType")}
+															>
+																<Plus className="h-4 w-4" />
+															</Button>
 														)}
-													</form.Field>
+													</div>
 													{validationErrors[`acts[${index}].visitTypeId`] && (
 														<p className="text-destructive mt-1.5 text-xs">
 															{validationErrors[`acts[${index}].visitTypeId`]}
