@@ -579,10 +579,10 @@
 		"quantityLabel": "الكمية",
 		"quantityPlaceholder": "1",
 		"unitPriceLabel": "سعر الوحدة",
-		"unitPricePlaceholder": "0.00",
+		"unitPricePlaceholder": "0",
 		"totalLabel": "المجموع",
 		"amountLabel": "المبلغ",
-		"amountPlaceholder": "0.00",
+		"amountPlaceholder": "0",
 		"dateLabel": "التاريخ",
 		"notesLabel": "ملاحظات",
 		"notesPlaceholder": "ملاحظات اختيارية...",
@@ -594,6 +594,12 @@
 		"editAria": "تعديل المصروف",
 		"deleteAria": "حذف المصروف",
 		"confirmDeleteTitle": "حذف المصروف",
-		"confirmDelete": "هل أنت متأكد أنك تريد حذف هذا المصروف؟"
+		"confirmDelete": "هل أنت متأكد أنك تريد حذف هذا المصروف؟",
+		"validation": {
+			"typeRequired": "نوع المصروف مطلوب",
+			"quantityMin": "يجب أن تكون الكمية 1 على الأقل",
+			"unitPriceMin": "يجب أن يكون سعر الوحدة 1 على الأقل",
+			"dateRequired": "التاريخ مطلوب"
+		}
 	}
 }

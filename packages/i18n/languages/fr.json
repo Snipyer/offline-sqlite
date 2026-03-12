@@ -579,10 +579,10 @@
 		"quantityLabel": "Quantité",
 		"quantityPlaceholder": "1",
 		"unitPriceLabel": "Prix Unitaire",
-		"unitPricePlaceholder": "0,00",
+		"unitPricePlaceholder": "0",
 		"totalLabel": "Total",
 		"amountLabel": "Montant",
-		"amountPlaceholder": "0,00",
+		"amountPlaceholder": "0",
 		"dateLabel": "Date",
 		"notesLabel": "Notes",
 		"notesPlaceholder": "Notes optionnelles...",
@@ -594,6 +594,12 @@
 		"editAria": "Modifier la dépense",
 		"deleteAria": "Supprimer la dépense",
 		"confirmDeleteTitle": "Supprimer la Dépense",
-		"confirmDelete": "Êtes-vous sûr de vouloir supprimer cette dépense ?"
+		"confirmDelete": "Êtes-vous sûr de vouloir supprimer cette dépense ?",
+		"validation": {
+			"typeRequired": "Le type de dépense est requis",
+			"quantityMin": "La quantité doit être d'au moins 1",
+			"unitPriceMin": "Le prix unitaire doit être d'au moins 1",
+			"dateRequired": "La date est requise"
+		}
 	}
 }

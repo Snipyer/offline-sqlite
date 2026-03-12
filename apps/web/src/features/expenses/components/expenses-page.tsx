@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Plus, Receipt } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -18,20 +18,14 @@ import type { ExpenseItem } from "./expense-list";
 
 export default function ExpensesPage() {
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
 
 	// State
 	const [isCreating, setIsCreating] = useState(false);
 	const [isCreatingType, setIsCreatingType] = useState(false);
-	const [editingId, setEditingId] = useState<string | null>(null);
+	const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [newTypeName, setNewTypeName] = useState("");
-
-	// Form state
-	const [selectedTypeId, setSelectedTypeId] = useState<string>("");
-	const [quantity, setQuantity] = useState("1");
-	const [unitPrice, setUnitPrice] = useState("");
-	const [notes, setNotes] = useState("");
-	const [expenseDate, setExpenseDate] = useState<string>(new Date().toISOString().split("T")[0] ?? "");
 
 	// Filter state
 	const [query, setQuery] = useState("");
@@ -93,12 +87,9 @@ export default function ExpensesPage() {
 	const createTypeMutation = useMutation(
 		trpc.expenseType.create.mutationOptions({
 			onSuccess: (data) => {
-				expenseTypes.refetch();
+				queryClient.invalidateQueries({ queryKey: trpc.expenseType.list.queryKey() });
 				setIsCreatingType(false);
 				setNewTypeName("");
-				if (data.id) {
-					setSelectedTypeId(data.id);
-				}
 			},
 		}),
 	);
@@ -108,7 +99,6 @@ export default function ExpensesPage() {
 			onSuccess: () => {
 				refetchAll();
 				setIsCreating(false);
-				resetForm();
 			},
 		}),
 	);
@@ -117,8 +107,7 @@ export default function ExpensesPage() {
 		trpc.expense.update.mutationOptions({
 			onSuccess: () => {
 				refetchAll();
-				setEditingId(null);
-				resetForm();
+				setEditingExpense(null);
 			},
 		}),
 	);
@@ -136,52 +125,47 @@ export default function ExpensesPage() {
 	);
 
 	const refetchAll = () => {
-		expenses.refetch();
-		expensesByType.refetch();
-		expensesByMonth.refetch();
+		queryClient.invalidateQueries({ queryKey: trpc.expense.list.queryKey() });
+		queryClient.invalidateQueries({ queryKey: trpc.expense.getExpensesByType.queryKey() });
+		queryClient.invalidateQueries({ queryKey: trpc.expense.getExpensesByMonth.queryKey() });
 	};
 
-	const resetForm = () => {
-		setSelectedTypeId("");
-		setQuantity("1");
-		setUnitPrice("");
-		setNotes("");
-		setExpenseDate(new Date().toISOString().split("T")[0] ?? "");
+	const handleCreate = (values: {
+		expenseTypeId: string;
+		quantity: number;
+		unitPrice: number;
+		amount: number;
+		notes: string | undefined;
+		expenseDate: number;
+	}) => {
+		createMutation.mutate({
+			expenseTypeId: values.expenseTypeId,
+			quantity: values.quantity,
+			unitPrice: values.unitPrice,
+			amount: values.amount,
+			notes: values.notes,
+			expenseDate: values.expenseDate,
+		});
 	};
 
-	const handleCreate = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (selectedTypeId && quantity && unitPrice && expenseDate) {
-			const qty = parseInt(quantity);
-			const price = parseInt(unitPrice);
-			const totalAmount = qty * price;
-			createMutation.mutate({
-				expenseTypeId: selectedTypeId,
-				quantity: qty,
-				unitPrice: price,
-				amount: totalAmount,
-				notes: notes || undefined,
-				expenseDate: new Date(expenseDate).getTime(),
-			});
-		}
-	};
-
-	const handleUpdate = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (editingId && selectedTypeId && quantity && unitPrice && expenseDate) {
-			const qty = parseInt(quantity);
-			const price = parseInt(unitPrice);
-			const totalAmount = qty * price;
-			updateMutation.mutate({
-				id: editingId,
-				expenseTypeId: selectedTypeId,
-				quantity: qty,
-				unitPrice: price,
-				amount: totalAmount,
-				notes: notes || undefined,
-				expenseDate: new Date(expenseDate).getTime(),
-			});
-		}
+	const handleUpdate = (values: {
+		expenseTypeId: string;
+		quantity: number;
+		unitPrice: number;
+		amount: number;
+		notes: string | undefined;
+		expenseDate: number;
+	}) => {
+		if (!editingExpense) return;
+		updateMutation.mutate({
+			id: editingExpense.id,
+			expenseTypeId: values.expenseTypeId,
+			quantity: values.quantity,
+			unitPrice: values.unitPrice,
+			amount: values.amount,
+			notes: values.notes,
+			expenseDate: values.expenseDate,
+		});
 	};
 
 	const handleCreateType = (e: React.FormEvent) => {
@@ -189,15 +173,6 @@ export default function ExpensesPage() {
 		if (newTypeName.trim()) {
 			createTypeMutation.mutate({ name: newTypeName.trim() });
 		}
-	};
-
-	const startEdit = (expense: ExpenseItem) => {
-		setEditingId(expense.id);
-		setSelectedTypeId(expense.expenseTypeId);
-		setQuantity(expense.quantity.toString());
-		setUnitPrice(expense.unitPrice.toFixed(2));
-		setNotes(expense.notes ?? "");
-		setExpenseDate(new Date(expense.expenseDate).toISOString().split("T")[0] ?? "");
 	};
 
 	const clearFilters = () => {
@@ -247,7 +222,7 @@ export default function ExpensesPage() {
 							<p className="text-muted-foreground mt-1">{t("expenses.description")}</p>
 						</div>
 					</div>
-					{!isCreating && !editingId && (
+					{!isCreating && !editingExpense && (
 						<Button onClick={() => setIsCreating(true)} className="gap-2">
 							<Plus className="h-4 w-4" />
 							{t("expenses.addNew")}
@@ -292,28 +267,18 @@ export default function ExpensesPage() {
 
 						{/* Create/Edit Form Sheet */}
 						<ExpenseForm
-							isOpen={isCreating || !!editingId}
-							isEditing={!!editingId}
-							selectedTypeId={selectedTypeId}
-							setSelectedTypeId={setSelectedTypeId}
-							quantity={quantity}
-							setQuantity={setQuantity}
-							unitPrice={unitPrice}
-							setUnitPrice={setUnitPrice}
-							notes={notes}
-							setNotes={setNotes}
-							expenseDate={expenseDate}
-							setExpenseDate={setExpenseDate}
+							isOpen={isCreating || !!editingExpense}
+							isEditing={!!editingExpense}
+							expense={editingExpense ?? undefined}
 							expenseTypes={expenseTypes.data ?? []}
 							isPending={createMutation.isPending || updateMutation.isPending}
 							onOpenChange={(open) => {
 								if (!open) {
 									setIsCreating(false);
-									setEditingId(null);
-									resetForm();
+									setEditingExpense(null);
 								}
 							}}
-							onSubmit={editingId ? handleUpdate : handleCreate}
+							onSubmit={editingExpense ? handleUpdate : handleCreate}
 							onAddNewType={() => setIsCreatingType(true)}
 						/>
 
@@ -325,7 +290,7 @@ export default function ExpensesPage() {
 							totalPages={expenses.data?.totalPages ?? 1}
 							deleteMutationPending={deleteMutation.isPending}
 							onPageChange={setPage}
-							onEdit={startEdit}
+							onEdit={setEditingExpense}
 							onDelete={setDeleteId}
 						/>
 					</CardContent>
