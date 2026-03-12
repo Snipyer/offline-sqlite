@@ -21,6 +21,7 @@ import {
 import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { trpc } from "@/utils/trpc";
+import { getEntityColor } from "@/utils/entity-colors";
 
 interface VisitFilters {
 	dateFrom?: number;
@@ -117,6 +118,7 @@ export default function VisitsList() {
 		visitTypes.data?.map((visitType) => ({
 			value: visitType.id,
 			label: visitType.name,
+			color: getEntityColor(visitType.id),
 		})) ?? [];
 
 	return (

@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
 import { ToothSelector } from "@/features/tooth-selector/components/tooth-selector";
 import { trpc } from "@/utils/trpc";
+import { getEntityColor } from "@/utils/entity-colors";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { Currency } from "@/components/currency";
 import { toFormErrorMessage } from "@/lib/form-error-messages";
@@ -818,7 +819,22 @@ export default function VisitForm({ mode, visit, isLoading }: VisitFormProps) {
 																<SelectContent>
 																	{visitTypes.data?.map((vt) => (
 																		<SelectItem key={vt.id} value={vt.id}>
-																			{vt.name}
+																			<div
+																				className="flex items-center
+																					gap-2"
+																			>
+																				<div
+																					className="h-2 w-2
+																						rounded-full"
+																					style={{
+																						backgroundColor:
+																							getEntityColor(
+																								vt.id,
+																							),
+																					}}
+																				/>
+																				{vt.name}
+																			</div>
 																		</SelectItem>
 																	))}
 																</SelectContent>

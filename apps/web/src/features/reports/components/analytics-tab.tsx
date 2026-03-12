@@ -23,6 +23,7 @@ import { Currency, formatCurrencyText } from "@/components/currency";
 import { chartConfig } from "./chart-config";
 import { toSupportedLanguage } from "@offline-sqlite/i18n";
 import { useDirection } from "@base-ui/react";
+import { getEntityColor } from "@/utils/entity-colors";
 
 interface DateRangeParams {
 	startDate: string;
@@ -277,8 +278,8 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 					<CardHeader className="pb-3">
 						<div className="flex items-center gap-3">
 							<div
-								className="flex h-10 w-10 items-center justify-center rounded-xl
-									bg-(--color-treatment)/10"
+								className="bg-treatment/10 flex h-10 w-10 items-center justify-center
+									rounded-xl"
 							>
 								<Syringe className="h-5 w-5 text-(--color-treatment)" />
 							</div>
@@ -296,21 +297,32 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 							<div className="space-y-3">
 								{topTreatments.map((item, index) => (
 									<motion.div
-										key={item.treatment}
+										key={item.visitTypeId}
 										initial={{ opacity: 0, x: -10 }}
 										animate={{ opacity: 1, x: 0 }}
 										transition={{ delay: index * 0.05 }}
 										className="group"
 									>
 										<div className="mb-1 flex items-center justify-between text-sm">
-											<span className="font-medium">{item.treatment}</span>
+											<div className="flex items-center gap-2">
+												<div
+													className="h-3 w-3 rounded-full"
+													style={{
+														backgroundColor: getEntityColor(item.visitTypeId),
+													}}
+												/>
+												<span className="font-medium">{item.treatment}</span>
+											</div>
 											<span className="text-muted-foreground">
 												{item.count} {t("reports.times")}
 											</span>
 										</div>
 										<div className="bg-muted h-2 w-full overflow-hidden rounded-full">
 											<motion.div
-												className="h-full rounded-full bg-(--color-treatment)"
+												className="h-full rounded-full"
+												style={{
+													backgroundColor: getEntityColor(item.visitTypeId),
+												}}
 												initial={{ width: 0 }}
 												animate={{
 													width:

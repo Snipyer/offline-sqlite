@@ -16,6 +16,7 @@ import { DeleteVisitDialog } from "@/features/visits/components/delete-visit-dia
 import { Currency } from "@/components/currency";
 import Loader from "@/components/loader";
 import { trpc } from "@/utils/trpc";
+import { getEntityColor } from "@/utils/entity-colors";
 import { formatDate, useTranslation } from "@offline-sqlite/i18n";
 import { VisitCard } from "@/features/visits/components/visit-card";
 import {
@@ -71,7 +72,7 @@ export default function DailySummaryContent() {
 		upcomingSchedules,
 		visits,
 	} = summary.data;
-	const proceduresTotal = Object.values(proceduresByType).reduce((sum, count) => sum + count, 0);
+	const proceduresTotal = Object.values(proceduresByType).reduce((sum, item) => sum + item.count, 0);
 
 	const now = Date.now();
 
@@ -155,9 +156,9 @@ export default function DailySummaryContent() {
 									</div>
 								) : (
 									<div className="space-y-2">
-										{Object.entries(proceduresByType).map(([type, count], index) => (
+										{Object.entries(proceduresByType).map(([type, data], index) => (
 											<motion.div
-												key={type}
+												key={data.visitTypeId}
 												initial={subtleListItemInitial}
 												animate={subtleListItemAnimate}
 												transition={getSubtleListItemTransition(index, 0.3, 0.05)}
@@ -166,14 +167,19 @@ export default function DailySummaryContent() {
 													border-transparent p-3 transition-colors"
 											>
 												<div className="flex items-center gap-2">
-													<Syringe className="text-muted-foreground h-4 w-4" />
+													<div
+														className="h-3 w-3 rounded-full"
+														style={{
+															backgroundColor: getEntityColor(data.visitTypeId),
+														}}
+													/>
 													<span className="text-sm">{type}</span>
 												</div>
 												<span
 													className="rounded-full bg-violet-500/10 px-2.5 py-0.5
 														text-xs font-semibold text-violet-600"
 												>
-													{count}
+													{data.count}
 												</span>
 											</motion.div>
 										))}

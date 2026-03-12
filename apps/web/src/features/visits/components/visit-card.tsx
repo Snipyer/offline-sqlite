@@ -5,7 +5,6 @@ import {
 	Pencil,
 	Trash2,
 	RotateCcw,
-	Syringe,
 	Clock4,
 	Stethoscope,
 } from "lucide-react";
@@ -18,6 +17,7 @@ import { PaymentForm } from "@/features/payments/components/payment-form";
 import { getSubtleListItemTransition, subtleListItemAnimate, subtleListItemInitial } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import { ToothBadge } from "@/features/tooth-selector/components/tooth-badge";
+import { getEntityColor } from "@/utils/entity-colors";
 
 export interface Visit {
 	id: string;
@@ -156,7 +156,10 @@ export function VisitCard({
 											className="flex w-fit items-center justify-start gap-3 rounded-lg
 												py-1.5"
 										>
-											<Syringe className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+											<div
+												className="h-2 w-2 shrink-0 rounded-full"
+												style={{ backgroundColor: getEntityColor(act.visitTypeId) }}
+											/>
 											<p className="text-muted-foreground shrink-0 text-xs font-medium">
 												{act.visitType.name}
 											</p>
