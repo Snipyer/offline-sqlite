@@ -2,7 +2,8 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, ArrowRight01Icon, MoreHorizontalCircle01Icon } from "@hugeicons/core-free-icons";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
 	return (
@@ -38,14 +39,9 @@ type PaginationLinkProps = {
 function PaginationLink({ className, isActive, size = "icon", ...props }: PaginationLinkProps) {
 	return (
 		<Button
-			variant={isActive ? "default" : "outline"}
+			variant={isActive ? "outline" : "ghost"}
 			size={size}
-			className={cn(
-				isActive
-					? "text-primary-foreground hover:text-primary-foreground font-semibold"
-					: "text-muted-foreground hover:text-foreground",
-				className,
-			)}
+			className={cn(className)}
 			nativeButton={false}
 			render={
 				<a
@@ -68,10 +64,10 @@ function PaginationPrevious({
 		<PaginationLink
 			aria-label="Go to previous page"
 			size="default"
-			className={cn("ps-1.5!", className)}
+			className={cn("pl-1.5!", className)}
 			{...props}
 		>
-			<ChevronLeftIcon data-icon="inline-start" className="rtl:rotate-180" />
+			<HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} data-icon="inline-start" />
 			<span className="hidden sm:block">{text}</span>
 		</PaginationLink>
 	);
@@ -86,11 +82,11 @@ function PaginationNext({
 		<PaginationLink
 			aria-label="Go to next page"
 			size="default"
-			className={cn("pe-1.5!", className)}
+			className={cn("pr-1.5!", className)}
 			{...props}
 		>
 			<span className="hidden sm:block">{text}</span>
-			<ChevronRightIcon data-icon="inline-end" className="rtl:rotate-180" />
+			<HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} data-icon="inline-end" />
 		</PaginationLink>
 	);
 }
@@ -106,7 +102,7 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
 			)}
 			{...props}
 		>
-			<MoreHorizontalIcon />
+			<HugeiconsIcon icon={MoreHorizontalCircle01Icon} strokeWidth={2} />
 			<span className="sr-only">More pages</span>
 		</span>
 	);

@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { env } from "@offline-sqlite/env/web";
 import TrialBanner from "@/features/licensing/components/trial-banner";
 import { useLicense } from "@/features/licensing/hooks/use-license";
+import { useDirection } from "@base-ui/react";
 
 const navItems = [
 	{ to: "/daily-summary", labelKey: "nav.dailySummary", icon: Calendar },
@@ -75,8 +76,8 @@ const itemVariants = {
 export function AppSidebar() {
 	const { t } = useTranslation();
 	const location = useLocation();
-	const { state, side } = useSidebar();
-	const isRtl = side === "right";
+	const { state } = useSidebar();
+	const direction = useDirection();
 	const isCollapsed = state === "collapsed";
 
 	const isTauriEnv = isTauri();
@@ -87,8 +88,8 @@ export function AppSidebar() {
 	return (
 		<Sidebar
 			collapsible="icon"
-			side={side}
-			dir={isRtl ? "rtl" : "ltr"}
+			side={direction === "rtl" ? "right" : "left"}
+			dir={direction}
 			className={cn(
 				"border-border/50 from-background to-muted/20 border-r bg-linear-to-b",
 				isTauri() && "pt-9",
@@ -194,7 +195,7 @@ export function AppSidebar() {
 															className={cn(
 																`bg-primary absolute top-1/2 h-6 w-1
 																-translate-y-1/2 rounded-full`,
-																isRtl ? "right-0" : "left-0",
+																direction === "rtl" ? "right-0" : "left-0",
 															)}
 															transition={{
 																type: "spring",
