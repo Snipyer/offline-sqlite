@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { DollarSign, CreditCard, TrendingUp, Calendar } from "lucide-react";
+import { DollarSign, CreditCard, TrendingUp, TrendingDown, Calendar, PieChart } from "lucide-react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Currency, formatCurrencyText } from "@/components/currency";
@@ -8,9 +8,10 @@ import { trpc } from "@/utils/trpc";
 import { useTranslation } from "@offline-sqlite/i18n";
 import { StatCard } from "@/features/daily-summary/components/stat-card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { chartConfig } from "./chart-config";
 import { useDirection } from "@base-ui/react";
+import { getEntityColor } from "@/utils/entity-colors";
 
 interface DateRangeParams {
 	startDate: string;
@@ -28,11 +29,41 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 	const revenueByTreatment = useQuery(trpc.reports.getRevenueByTreatment.queryOptions(dateRange));
 	const revenueByPeriod = useQuery(trpc.reports.getRevenueByPeriod.queryOptions(dateRange));
 
-	const isLoading = summary.isLoading || revenueByTreatment.isLoading || revenueByPeriod.isLoading;
+	const totalExpenses = useQuery(
+		trpc.expense.getTotalExpenses.queryOptions({
+			dateFrom: new Date(dateRange.startDate).getTime(),
+			dateTo: new Date(dateRange.endDate).getTime(),
+		}),
+	);
+	const expensesByPeriod = useQuery(
+		trpc.expense.getExpensesByPeriod.queryOptions({
+			dateFrom: new Date(dateRange.startDate).getTime(),
+			dateTo: new Date(dateRange.endDate).getTime(),
+		}),
+	);
+	const expensesByType = useQuery(
+		trpc.expense.getExpensesByType.queryOptions({
+			dateFrom: new Date(dateRange.startDate).getTime(),
+			dateTo: new Date(dateRange.endDate).getTime(),
+		}),
+	);
+
+	const isLoading =
+		summary.isLoading ||
+		revenueByTreatment.isLoading ||
+		revenueByPeriod.isLoading ||
+		totalExpenses.isLoading ||
+		expensesByPeriod.isLoading ||
+		expensesByType.isLoading;
 
 	const summaryData = summary.data;
 	const treatmentData = revenueByTreatment.data || [];
 	const periodData = revenueByPeriod.data || [];
+	const expensesData = totalExpenses.data;
+
+	const totalRevenue = summaryData?.totalRevenue ?? 0;
+	const totalExpensesAmount = expensesData?.total ?? 0;
+	const netIncome = totalRevenue - totalExpensesAmount;
 
 	const maxRevenue = Math.max(...treatmentData.map((t) => t.revenue), 0);
 
@@ -45,21 +76,49 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 		};
 	});
 
+	const expensesByTypeData = expensesByType?.data ?? [];
+	const maxTypeExpense = Math.max(
+		...expensesByTypeData.map((t: { totalAmount: number }) => t.totalAmount),
+		0,
+	);
+
 	if (isLoading) {
 		return <Loader />;
 	}
 
 	return (
 		<div className="space-y-6">
-			<div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+			<div className="grid gap-5 sm:grid-cols-3">
 				<StatCard
 					icon={DollarSign}
 					title={t("reports.totalRevenue")}
-					value={<Currency fontSize={30} value={summaryData?.totalRevenue ?? 0} />}
+					value={<Currency fontSize={30} value={totalRevenue} />}
 					subtitle={<span className="text-muted-foreground">{t("reports.collected")}</span>}
 					color="emerald"
 				/>
 
+				<StatCard
+					icon={TrendingDown}
+					title={t("reports.totalExpenses")}
+					value={<Currency fontSize={30} value={totalExpensesAmount} />}
+					subtitle={<span className="text-muted-foreground">{t("reports.inPeriod")}</span>}
+					color="amber"
+				/>
+
+				<StatCard
+					icon={netIncome >= 0 ? TrendingUp : TrendingDown}
+					title={t("reports.netIncome")}
+					value={<Currency fontSize={30} value={netIncome} />}
+					subtitle={
+						<span className="text-muted-foreground">
+							{netIncome >= 0 ? t("reports.profit") : t("reports.loss")}
+						</span>
+					}
+					color={netIncome >= 0 ? "emerald" : "amber"}
+				/>
+			</div>
+
+			<div className="grid gap-5 sm:grid-cols-3">
 				<StatCard
 					icon={Calendar}
 					title={t("reports.totalVisits")}
@@ -144,115 +203,195 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 							<div className="flex items-center gap-3">
 								<div
 									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-(--color-unpaid)/10"
+										bg-rose-500/10"
 								>
-									<CreditCard className="h-5 w-5 text-(--color-unpaid)" />
+									<Calendar className="h-5 w-5 text-(--color-expenses)" />
 								</div>
-								<CardTitle className="text-sm font-medium">
-									{t("reports.outstanding")}
-								</CardTitle>
+								<CardTitle className="text-sm font-medium">{t("expenses.trend")}</CardTitle>
 							</div>
 						</CardHeader>
 						<CardContent>
-							<ChartContainer config={chartConfig}>
-								<LineChart
-									data={formattedPeriodData}
-									margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+							{(expensesByPeriod.data?.length ?? 0) > 0 ? (
+								<ChartContainer
+									config={{
+										expenses: { label: t("expenses.title") },
+									}}
 								>
-									<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-									<XAxis
-										reversed={direction === "rtl"}
-										dataKey="label"
-										tickLine={false}
-										axisLine={false}
-										tickMargin={8}
-									/>
-									<YAxis
-										tickLine={false}
-										axisLine={false}
-										width={92}
-										tick={{ fontSize: 10 }}
-										tickMargin={6}
-										tickFormatter={(value) => formatAxisCurrency(Number(value))}
-										orientation={direction === "rtl" ? "right" : "left"}
-									/>
-									<ChartTooltip
-										content={
-											<ChartTooltipContent
-												formatter={(value) => (
-													<span>{formatAxisCurrency(Number(value))}</span>
-												)}
-											/>
-										}
-									/>
-									<Line
-										type="linear"
-										dataKey="unpaid"
-										stroke="var(--color-unpaid)"
-										strokeWidth={2}
-										dot={true}
-									/>
-								</LineChart>
-							</ChartContainer>
+									<BarChart
+										data={expensesByPeriod.data?.slice(-14).map((item) => {
+											const date = new Date(item.period);
+											return {
+												...item,
+												label: date.toLocaleDateString(undefined, {
+													month: "short",
+													day: "numeric",
+												}),
+											};
+										})}
+										margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+									>
+										<CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+										<XAxis
+											reversed={direction === "rtl"}
+											dataKey="label"
+											tickLine={false}
+											axisLine={false}
+											tickMargin={8}
+										/>
+										<YAxis
+											tickLine={false}
+											axisLine={false}
+											width={92}
+											tick={{ fontSize: 10 }}
+											tickMargin={6}
+											tickFormatter={(value) => formatAxisCurrency(Number(value))}
+											orientation={direction === "rtl" ? "right" : "left"}
+										/>
+										<ChartTooltip
+											content={
+												<ChartTooltipContent
+													formatter={(value) => (
+														<span>{formatAxisCurrency(Number(value))}</span>
+													)}
+												/>
+											}
+										/>
+										<Bar dataKey="totalAmount" fill="var(--color-expenses)" radius={4} />
+									</BarChart>
+								</ChartContainer>
+							) : (
+								<div className="py-8 text-center">
+									<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
+								</div>
+							)}
 						</CardContent>
 					</Card>
 				</div>
 			)}
 
-			<Card className="border-border/50">
-				<CardHeader className="pb-3">
-					<div className="flex items-center gap-3">
-						<div
-							className="flex h-10 w-10 items-center justify-center rounded-xl
-								bg-(--color-treatment)/10"
-						>
-							<DollarSign className="h-5 w-5 text-(--color-treatment)" />
+			<div className="grid gap-6 lg:grid-cols-2">
+				<Card className="border-border/50">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-3">
+							<div
+								className="flex h-10 w-10 items-center justify-center rounded-xl
+									bg-(--color-treatment)/10"
+							>
+								<DollarSign className="h-5 w-5 text-(--color-treatment)" />
+							</div>
+							<CardTitle className="text-sm font-medium">
+								{t("reports.revenueByTreatment")}
+							</CardTitle>
 						</div>
-						<CardTitle className="text-sm font-medium">
-							{t("reports.revenueByTreatment")}
-						</CardTitle>
-					</div>
-				</CardHeader>
-				<CardContent>
-					{treatmentData.length === 0 ? (
-						<div className="py-8 text-center">
-							<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
+					</CardHeader>
+					<CardContent>
+						{treatmentData.length === 0 ? (
+							<div className="py-8 text-center">
+								<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
+							</div>
+						) : (
+							<div className="space-y-3">
+								{treatmentData.map((item, index) => (
+									<motion.div
+										key={item.treatment}
+										initial={{ opacity: 0, x: -10 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: index * 0.05 }}
+										className="group"
+									>
+										<div className="mb-1 flex items-center justify-between text-sm">
+											<span className="font-medium">{item.treatment}</span>
+											<span className="text-muted-foreground">
+												<Currency value={item.revenue} />
+											</span>
+										</div>
+										<div className="bg-muted h-2 w-full overflow-hidden rounded-full">
+											<motion.div
+												className="h-full rounded-full bg-(--color-treatment)"
+												initial={{ width: 0 }}
+												animate={{
+													width:
+														maxRevenue > 0
+															? `${(item.revenue / maxRevenue) * 100}%`
+															: "0%",
+												}}
+												transition={{ delay: index * 0.05 + 0.1, duration: 0.3 }}
+											/>
+										</div>
+									</motion.div>
+								))}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+
+				<Card className="border-border/50">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-3">
+							<div
+								className="flex h-10 w-10 items-center justify-center rounded-xl
+									bg-emerald-500/10"
+							>
+								<PieChart className="h-5 w-5 text-emerald-500" />
+							</div>
+							<CardTitle className="text-sm font-medium">{t("expenses.byType")}</CardTitle>
 						</div>
-					) : (
-						<div className="space-y-3">
-							{treatmentData.map((item, index) => (
-								<motion.div
-									key={item.treatment}
-									initial={{ opacity: 0, x: -10 }}
-									animate={{ opacity: 1, x: 0 }}
-									transition={{ delay: index * 0.05 }}
-									className="group"
-								>
-									<div className="mb-1 flex items-center justify-between text-sm">
-										<span className="font-medium">{item.treatment}</span>
-										<span className="text-muted-foreground">
-											<Currency value={item.revenue} />
-										</span>
-									</div>
-									<div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-										<motion.div
-											className="h-full rounded-full bg-(--color-treatment)"
-											initial={{ width: 0 }}
-											animate={{
-												width:
-													maxRevenue > 0
-														? `${(item.revenue / maxRevenue) * 100}%`
-														: "0%",
-											}}
-											transition={{ delay: index * 0.05 + 0.1, duration: 0.3 }}
-										/>
-									</div>
-								</motion.div>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
+					</CardHeader>
+					<CardContent>
+						{expensesByTypeData.length === 0 ? (
+							<div className="py-8 text-center">
+								<p className="text-muted-foreground text-sm">{t("common.empty")}</p>
+							</div>
+						) : (
+							<div className="space-y-3">
+								{expensesByTypeData.map((item, index) => (
+									<motion.div
+										key={item.expenseTypeId}
+										initial={{ opacity: 0, x: -10 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: index * 0.05 }}
+										className="group"
+									>
+										<div className="mb-1 flex items-center justify-between text-sm">
+											<div className="flex items-center gap-2">
+												<div
+													className="h-3 w-3 rounded-full"
+													style={{
+														backgroundColor: getEntityColor(item.expenseTypeId),
+													}}
+												/>
+												<span className="font-medium">{item.expenseTypeName}</span>
+												<span className="text-muted-foreground text-xs">
+													({item.count})
+												</span>
+											</div>
+											<span className="text-muted-foreground">
+												<Currency value={item.totalAmount} />
+											</span>
+										</div>
+										<div className="bg-muted h-2 w-full overflow-hidden rounded-full">
+											<motion.div
+												className="h-full rounded-full"
+												style={{
+													backgroundColor: getEntityColor(item.expenseTypeId),
+												}}
+												initial={{ width: 0 }}
+												animate={{
+													width:
+														maxTypeExpense > 0
+															? `${(item.totalAmount / maxTypeExpense) * 100}%`
+															: "0%",
+												}}
+												transition={{ delay: index * 0.05 + 0.1, duration: 0.3 }}
+											/>
+										</div>
+									</motion.div>
+								))}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			</div>
 		</div>
 	);
 }
