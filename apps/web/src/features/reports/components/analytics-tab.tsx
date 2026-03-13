@@ -50,7 +50,7 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 	const treatmentData = treatmentStats.data;
 	const analyticsData = patientAnalytics.data;
 
-	const topTreatments = treatmentData?.topTreatments ?? [];
+	const topTreatments = (treatmentData?.topTreatments ?? []).slice(0, 7);
 	const topPatientsByVisits = analyticsData?.topPatientsByVisits ?? [];
 	const topPatientsByPaid = analyticsData?.topPatientsByPaid ?? [];
 	const topPatientsByDebt = analyticsData?.topPatientsByDebt ?? [];
