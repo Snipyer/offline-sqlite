@@ -41,7 +41,7 @@ export function DeleteVisitDialog({ visitId, open, onOpenChange, onSuccess }: De
 
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
-			<AlertDialogContent onOverlayClick={() => onOpenChange(false)}>
+			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{t("visits.confirmDeleteTitle")}</AlertDialogTitle>
 					<AlertDialogDescription>{t("visits.confirmDelete")}</AlertDialogDescription>

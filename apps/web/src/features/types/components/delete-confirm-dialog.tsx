@@ -30,7 +30,7 @@ export function DeleteConfirmDialog({
 
 	return (
 		<AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-			<AlertDialogContent onOverlayClick={() => onOpenChange(false)}>
+			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{t(`${type}Types.confirmDeleteTitle`)}</AlertDialogTitle>
 					<AlertDialogDescription>{t(`${type}Types.confirmDelete`)}</AlertDialogDescription>

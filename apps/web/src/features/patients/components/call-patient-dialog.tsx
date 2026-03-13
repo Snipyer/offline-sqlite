@@ -50,11 +50,7 @@ export function CallPatientDialog({ open, onOpenChange, patientName, patientPhon
 
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
-			<AlertDialogContent
-				ref={contentRef}
-				onOverlayClick={() => onOpenChange(false)}
-				className="max-w-sm rounded-2xl border p-0 shadow-2xl"
-			>
+			<AlertDialogContent ref={contentRef} className="max-w-sm rounded-2xl border p-0 shadow-2xl">
 				<div
 					className="to-background rounded-t-2xl bg-linear-to-br from-zinc-100 via-zinc-50 px-6 py-6
 						dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-950"
