@@ -6,7 +6,7 @@ interface StatCardProps {
 	icon: ElementType;
 	title: string;
 	value: ReactNode;
-	subtitle: ReactNode;
+	subtitle?: ReactNode;
 	color: "emerald" | "blue" | "violet" | "amber";
 }
 
@@ -51,7 +51,7 @@ export function StatCard({ icon: Icon, title, value, subtitle, color }: StatCard
 			</CardHeader>
 			<CardContent className="relative">
 				<div className="text-3xl font-bold tracking-tight">{value}</div>
-				<div className="text-muted-foreground mt-1 text-xs">{subtitle}</div>
+				{subtitle && <div className="text-muted-foreground mt-1 text-xs">{subtitle}</div>}
 			</CardContent>
 		</Card>
 	);

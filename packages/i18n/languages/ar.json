@@ -446,6 +446,7 @@
 	"dailySummary": {
 		"title": "الملخص اليومي",
 		"todayVisits": "زيارات اليوم",
+		"todayPayments": "مدفوعات اليوم",
 		"patients": "مرضى",
 		"todayPatients": "مرضى اليوم",
 		"dailyIncome": "دخل اليوم",
@@ -463,6 +464,8 @@
 		"timeHoursMinutes": "{{hours}}س {{minutes}}د",
 		"noUpcomingSchedules": "لا توجد مواعيد متبقية اليوم",
 		"todayVisitsList": "زيارات اليوم",
+		"todayPaymentsList": "مدفوعات اليوم",
+		"noPaymentsToday": "لا توجد مدفوعات اليوم",
 		"noVisitsToday": "لا توجد زيارات اليوم"
 	},
 	"reports": {

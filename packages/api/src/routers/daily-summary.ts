@@ -8,6 +8,7 @@ import {
 	visitType,
 	appointment,
 } from "@offline-sqlite/db/schema/dental";
+import { expense } from "@offline-sqlite/db/schema/expense";
 import { eq, and, desc, gte, lte, sql, asc } from "drizzle-orm";
 
 import { router, protectedProcedure } from "../index";
@@ -52,6 +53,7 @@ export const dailySummaryRouter = router({
 
 		let totalExpected = 0;
 		let totalCollected = 0;
+		let totalExpensesToday = 0;
 		const proceduresByType: Record<string, { count: number; visitTypeId: string }> = {};
 
 		if (visitIds.length > 0) {
@@ -87,20 +89,19 @@ export const dailySummaryRouter = router({
 				proceduresByType[act.visitTypeName]!.count++;
 			}
 
-			const paymentsData = await db
+			const todayPayments = await db
 				.select({ amount: payment.amount })
 				.from(payment)
-				.where(eq(payment.visitId, visitIds[0]!));
+				.innerJoin(visit, eq(payment.visitId, visit.id))
+				.where(
+					and(
+						eq(visit.userId, ctx.session.user.id),
+						gte(payment.recordedAt, startOfDay),
+						lte(payment.recordedAt, endOfDay),
+					),
+				);
 
-			for (let i = 1; i < visitIds.length; i++) {
-				const morePayments = await db
-					.select({ amount: payment.amount })
-					.from(payment)
-					.where(eq(payment.visitId, visitIds[i]!));
-				paymentsData.push(...morePayments);
-			}
-
-			totalCollected = paymentsData.reduce((sum, p) => sum + p.amount, 0);
+			totalCollected = todayPayments.reduce((sum, p) => sum + p.amount, 0);
 		}
 
 		const visitsWithDetails = await Promise.all(
@@ -178,6 +179,19 @@ export const dailySummaryRouter = router({
 			}
 		}
 
+		const expensesToday = await db
+			.select({ amount: expense.amount })
+			.from(expense)
+			.where(
+				and(
+					eq(expense.userId, ctx.session.user.id),
+					gte(expense.expenseDate, startOfDay),
+					lte(expense.expenseDate, endOfDay),
+				),
+			);
+
+		totalExpensesToday = expensesToday.reduce((sum, e) => sum + e.amount, 0);
+
 		const upcomingSchedulesResult = await db
 			.select({
 				appointment,
@@ -203,6 +217,28 @@ export const dailySummaryRouter = router({
 			visitType: item.visitType,
 		}));
 
+		const todayPaymentsList = await db
+			.select({
+				payment: payment,
+				patientName: patient.name,
+			})
+			.from(payment)
+			.innerJoin(visit, eq(payment.visitId, visit.id))
+			.innerJoin(patient, eq(visit.patientId, patient.id))
+			.where(
+				and(
+					eq(visit.userId, ctx.session.user.id),
+					gte(payment.recordedAt, startOfDay),
+					lte(payment.recordedAt, endOfDay),
+				),
+			)
+			.orderBy(desc(payment.recordedAt));
+
+		const payments = todayPaymentsList.map((item) => ({
+			...item.payment,
+			patientName: item.patientName,
+		}));
+
 		return {
 			date: today.toISOString(),
 			totalVisits: todayVisits.length,
@@ -210,11 +246,13 @@ export const dailySummaryRouter = router({
 			newPatientsToday,
 			totalExpected,
 			totalCollected,
+			totalExpenses: totalExpensesToday,
 			totalRemaining: Math.max(0, totalExpected - totalCollected),
 			totalUnpaidAmount,
 			proceduresByType,
 			upcomingSchedules,
 			visits: visitsWithDetails,
+			payments,
 		};
 	}),
 });

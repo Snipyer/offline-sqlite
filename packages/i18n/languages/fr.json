@@ -446,6 +446,7 @@
 	"dailySummary": {
 		"title": "Resume quotidien",
 		"todayVisits": "Visites du jour",
+		"todayPayments": "Paiements du jour",
 		"patients": "patients",
 		"todayPatients": "Patients du jour",
 		"dailyIncome": "Revenus du jour",
@@ -463,6 +464,8 @@
 		"timeHoursMinutes": "{{hours}}h{{minutes}}m",
 		"noUpcomingSchedules": "Aucun rendez-vous restant aujourd'hui",
 		"todayVisitsList": "Visites du jour",
+		"todayPaymentsList": "Paiements du jour",
+		"noPaymentsToday": "Aucun paiement aujourd'hui",
 		"noVisitsToday": "Aucune visite aujourd'hui"
 	},
 	"reports": {

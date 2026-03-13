@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
 	Calendar,
 	DollarSign,
@@ -68,9 +68,11 @@ export default function DailySummaryContent() {
 		totalCollected,
 		totalExpected,
 		totalUnpaidAmount,
+		totalExpenses,
 		proceduresByType,
 		upcomingSchedules,
 		visits,
+		payments,
 	} = summary.data;
 	const proceduresTotal = Object.values(proceduresByType).reduce((sum, item) => sum + item.count, 0);
 
@@ -114,10 +116,12 @@ export default function DailySummaryContent() {
 					<StatCard
 						icon={DollarSign}
 						title={t("dailySummary.dailyIncome")}
-						value={<Currency fontSize={30} value={totalCollected} />}
+						value={<Currency fontSize={30} value={Math.max(0, totalCollected - totalExpenses)} />}
 						subtitle={
 							<span className="text-muted-foreground inline-flex items-center gap-1">
 								{t("dailySummary.expected")}: <Currency value={totalExpected} size="sm" />
+								<span className="mx-2">|</span>
+								{t("expenses.totalExpenses")}: <Currency value={totalExpenses} size="sm" />
 								<span className="mx-2">|</span>
 								{t("dailySummary.unpaid")}: <Currency value={totalUnpaidAmount} size="sm" />
 							</span>
@@ -134,10 +138,10 @@ export default function DailySummaryContent() {
 							<CardHeader className="pb-3">
 								<div className="flex items-center gap-3">
 									<div
-										className="flex h-10 w-10 items-center justify-center rounded-xl
-											bg-violet-500/10"
+										className="bg-muted flex h-10 w-10 items-center justify-center
+											rounded-xl"
 									>
-										<Syringe className="h-5 w-5 text-violet-500" />
+										<Syringe className="h-5 w-5 text-(--color-treatment)" />
 									</div>
 									<CardTitle className="text-sm font-medium">
 										{t("dailySummary.proceduresBreakdown")}
@@ -173,11 +177,11 @@ export default function DailySummaryContent() {
 															backgroundColor: getEntityColor(data.visitTypeId),
 														}}
 													/>
-													<span className="text-sm">{type}</span>
+													<span className="text-sm capitalize">{type}</span>
 												</div>
 												<span
-													className="rounded-full bg-violet-500/10 px-2.5 py-0.5
-														text-xs font-semibold text-violet-600"
+													className="bg-muted rounded-full px-2.5 py-0.5 text-xs
+														font-semibold text-(--color-treatment)"
 												>
 													{data.count}
 												</span>
@@ -258,7 +262,7 @@ export default function DailySummaryContent() {
 															text-xs"
 													>
 														<Stethoscope className="mr-1 inline h-3 w-3" />
-														{visitTypeLabel}
+														<span className="capitalize">{visitTypeLabel}</span>
 													</p>
 													<div
 														className="text-muted-foreground bg-muted inline-flex
@@ -306,53 +310,123 @@ export default function DailySummaryContent() {
 					</motion.div>
 				</div>
 
-				<motion.div variants={sectionFadeVariants}>
-					<Card className="border-border/50 h-full overflow-hidden">
-						<CardHeader className="pb-3">
-							<div className="flex items-center gap-3">
-								<div
-									className="flex h-10 w-10 items-center justify-center rounded-xl
-										bg-blue-500/10"
-								>
-									<Users className="h-5 w-5 text-blue-500" />
-								</div>
-								<CardTitle className="text-sm font-medium">
-									{t("dailySummary.todayVisitsList")}
-								</CardTitle>
-							</div>
-						</CardHeader>
-						<CardContent>
-							{visits.length === 0 ? (
-								<div className="flex flex-col items-center justify-center py-12 text-center">
+				<div className="grid gap-6 lg:grid-cols-2">
+					<motion.div variants={sectionFadeVariants}>
+						<Card className="border-border/50 h-full overflow-hidden">
+							<CardHeader className="pb-3">
+								<div className="flex items-center gap-3">
 									<div
-										className="bg-muted/50 mb-3 flex h-16 w-16 items-center justify-center
-											rounded-2xl"
+										className="flex h-10 w-10 items-center justify-center rounded-xl
+											bg-blue-500/10"
 									>
-										<Clock className="text-muted-foreground/50 h-8 w-8" />
+										<Users className="h-5 w-5 text-blue-500" />
 									</div>
-									<p className="text-muted-foreground text-sm">
-										{t("dailySummary.noVisitsToday")}
-									</p>
+									<CardTitle className="text-sm font-medium">
+										{t("dailySummary.todayVisitsList")}
+									</CardTitle>
 								</div>
-							) : (
-								<div className="space-y-3">
-									{visits.map((visit, index) => (
-										<VisitCard
-											key={visit.id}
-											visit={visit}
-											index={index}
-											showPatient
-											editLink={`/visits/${visit.id}/edit`}
-											onDelete={() => handleDeleteVisit(visit.id)}
-											onPaymentSuccess={() => summary.refetch()}
-											className="rounded-xl p-4"
+							</CardHeader>
+							<CardContent>
+								{visits.length === 0 ? (
+									<div
+										className="flex flex-col items-center justify-center py-12
+											text-center"
+									>
+										<div
+											className="bg-muted/50 mb-3 flex h-16 w-16 items-center
+												justify-center rounded-2xl"
+										>
+											<Clock className="text-muted-foreground/50 h-8 w-8" />
+										</div>
+										<p className="text-muted-foreground text-sm">
+											{t("dailySummary.noVisitsToday")}
+										</p>
+									</div>
+								) : (
+									<div className="space-y-3">
+										{visits.map((visit, index) => (
+											<VisitCard
+												key={visit.id}
+												visit={visit}
+												index={index}
+												showPatient
+												editLink={`/visits/${visit.id}/edit`}
+												onDelete={() => handleDeleteVisit(visit.id)}
+												onPaymentSuccess={() => summary.refetch()}
+												className="rounded-xl p-4"
+											/>
+										))}
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					</motion.div>
+
+					<motion.div variants={sectionFadeVariants}>
+						<Card className="border-border/50 h-full overflow-hidden">
+							<CardHeader className="pb-3">
+								<div className="flex items-center gap-3">
+									<div
+										className="flex h-10 w-10 items-center justify-center rounded-xl"
+										style={{
+											backgroundColor:
+												"color-mix(in srgb, var(--color-revenue) 10%, transparent)",
+										}}
+									>
+										<DollarSign
+											className="h-5 w-5"
+											style={{ color: "var(--color-revenue)" }}
 										/>
-									))}
+									</div>
+									<CardTitle className="text-sm font-medium">
+										{t("dailySummary.todayPaymentsList")}
+									</CardTitle>
 								</div>
-							)}
-						</CardContent>
-					</Card>
-				</motion.div>
+							</CardHeader>
+							<CardContent>
+								{payments.length === 0 ? (
+									<div
+										className="flex flex-col items-center justify-center py-12
+											text-center"
+									>
+										<div
+											className="bg-muted/50 mb-3 flex h-16 w-16 items-center
+												justify-center rounded-2xl"
+										>
+											<Clock className="text-muted-foreground/50 h-8 w-8" />
+										</div>
+										<p className="text-muted-foreground text-sm">
+											{t("dailySummary.noPaymentsToday")}
+										</p>
+									</div>
+								) : (
+									<div className="space-y-3">
+										{payments.map((payment) => (
+											<div
+												key={payment.id}
+												className="border-border/60 bg-card hover:border-border flex
+													items-center justify-between rounded-xl border border-l-2
+													px-3 py-2.5 transition-[border-color]"
+												style={{ borderLeftColor: "var(--color-revenue)" }}
+											>
+												<div className="flex items-center gap-2">
+													<User className="text-muted-foreground h-4 w-4" />
+													<span className="truncate text-sm font-semibold">
+														{payment.patientName}
+													</span>
+												</div>
+												<Currency
+													value={payment.amount}
+													className="font-semibold text-(--color-revenue)"
+												/>
+											</div>
+										))}
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					</motion.div>
+				</div>
 			</div>
 
 			<DeleteVisitDialog
