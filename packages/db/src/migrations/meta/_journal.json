@@ -1,34 +1,41 @@
 {
-  "version": "7",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "6",
-      "when": 1770730265452,
-      "tag": "0000_jittery_valeria_richards",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1772467332022,
-      "tag": "0001_careless_forgotten_one",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1772889421751,
-      "tag": "0002_tidy_the_watchers",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1772982259154,
-      "tag": "0003_lowly_puff_adder",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "sqlite",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "6",
+			"when": 1770730265452,
+			"tag": "0000_jittery_valeria_richards",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "6",
+			"when": 1772467332022,
+			"tag": "0001_careless_forgotten_one",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "6",
+			"when": 1772889421751,
+			"tag": "0002_tidy_the_watchers",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "6",
+			"when": 1772982259154,
+			"tag": "0003_lowly_puff_adder",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "6",
+			"when": 1773342144933,
+			"tag": "0004_empty_electro",
+			"breakpoints": true
+		}
+	]
 }
