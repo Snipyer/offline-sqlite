@@ -149,6 +149,7 @@ export function ExpenseForm({
 														>
 															<SelectValue
 																placeholder={t("expenses.selectType")}
+																className="capitalize"
 															>
 																{selectedTypeName}
 															</SelectValue>
@@ -166,7 +167,9 @@ export function ExpenseForm({
 																		borderLeftStyle: "solid",
 																	}}
 																>
-																	{type.name}
+																	<span className="capitalize">
+																		{type.name}
+																	</span>
 																</SelectItem>
 															))}
 														</SelectContent>

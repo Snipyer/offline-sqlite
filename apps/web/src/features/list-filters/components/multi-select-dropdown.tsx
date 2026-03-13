@@ -11,6 +11,7 @@ interface MultiSelectDropdownOption {
 	value: string;
 	label: string;
 	color?: string;
+	labelClassName?: string;
 }
 
 interface MultiSelectDropdownProps {
@@ -39,7 +40,7 @@ export function MultiSelectDropdown({
 					variant="outline"
 					className="mt-1.5 w-full justify-between px-3 text-left font-normal"
 				>
-					<span className="line-clamp-1">{triggerLabel}</span>
+					<span className="line-clamp-1 capitalize">{triggerLabel}</span>
 					<ChevronDownIcon />
 				</Button>
 			</DropdownMenuTrigger>
@@ -60,15 +61,16 @@ export function MultiSelectDropdown({
 								onValueChange(value.filter((selected) => selected !== option.value));
 							}}
 							style={
-								option.color ? 
-								{
-									borderLeftColor: option.color, 
-									borderLeftStyle: "solid", 
-									borderLeftWidth: "3px"
-								} : {}
+								option.color
+									? {
+											borderLeftColor: option.color,
+											borderLeftStyle: "solid",
+											borderLeftWidth: "3px",
+										}
+									: {}
 							}
 						>
-							{option.label}
+							<span className={option.labelClassName}>{option.label}</span>
 						</DropdownMenuCheckboxItem>
 					);
 				})}

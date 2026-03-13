@@ -13,6 +13,7 @@ import z from "zod";
 import { router, protectedProcedure } from "../index";
 import { getVisitTotalPaid } from "../utils/payment";
 import { ageFromDateOfBirth, capitalizePatientName, dateOfBirthFromAge } from "../utils/patient";
+import { capitalizeTypeName } from "../utils/type-name";
 
 const generateId = () => crypto.randomUUID();
 
@@ -427,7 +428,18 @@ export const patientRouter = router({
 				.from(appointment)
 				.leftJoin(visitType, eq(appointment.visitTypeId, visitType.id))
 				.where(and(eq(appointment.patientId, p.id), eq(appointment.userId, ctx.session.user.id)))
-				.orderBy(desc(appointment.scheduledTime));
+				.orderBy(desc(appointment.scheduledTime))
+				.then((rows) =>
+					rows.map((row) => ({
+						...row,
+						visitType: row.visitType
+							? {
+									...row.visitType,
+									name: capitalizeTypeName(row.visitType.name),
+								}
+							: null,
+					})),
+				);
 
 			return {
 				patient: normalizedPatient,

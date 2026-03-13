@@ -160,7 +160,7 @@ export function AppointmentCard({
 							{appointment.visitType && (
 								<div className="flex items-center gap-2 text-sm">
 									<Stethoscope className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-									<span className="text-muted-foreground">
+									<span className="text-muted-foreground capitalize">
 										{appointment.visitType.name}
 									</span>
 								</div>

@@ -436,7 +436,7 @@ export function PatientSheetContent({
 																{scheduledAppointment.visitType?.name && (
 																	<p
 																		className="text-muted-foreground
-																			text-xs"
+																			text-xs capitalize"
 																	>
 																		{scheduledAppointment.visitType.name}
 																	</p>

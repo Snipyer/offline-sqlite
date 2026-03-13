@@ -85,6 +85,7 @@ export function ExpenseFilters({
 		value: type.id,
 		label: type.name,
 		color: getEntityColor(type.id),
+		labelClassName: "capitalize",
 	}));
 
 	const moreFilters = (

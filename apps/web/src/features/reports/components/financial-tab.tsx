@@ -407,7 +407,9 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 														backgroundColor: getEntityColor(item.visitTypeId),
 													}}
 												/>
-												<span className="font-medium">{item.treatment}</span>
+												<span className="font-medium capitalize">
+													{item.treatment}
+												</span>
 											</div>
 											<span className="text-muted-foreground">
 												<Currency value={item.revenue} />
@@ -471,7 +473,9 @@ export function FinancialTab({ dateRange }: { dateRange: DateRangeParams }) {
 														backgroundColor: getEntityColor(item.expenseTypeId),
 													}}
 												/>
-												<span className="font-medium">{item.expenseTypeName}</span>
+												<span className="font-medium capitalize">
+													{item.expenseTypeName}
+												</span>
 												<span className="text-muted-foreground text-xs">
 													({item.count})
 												</span>

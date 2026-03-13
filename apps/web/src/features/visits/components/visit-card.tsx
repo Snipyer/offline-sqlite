@@ -160,7 +160,10 @@ export function VisitCard({
 												className="h-2 w-2 shrink-0 rounded-full"
 												style={{ backgroundColor: getEntityColor(act.visitTypeId) }}
 											/>
-											<p className="text-muted-foreground shrink-0 text-xs font-medium">
+											<p
+												className="text-muted-foreground shrink-0 text-xs font-medium
+													capitalize"
+											>
 												{act.visitType.name}
 											</p>
 											<div className="[&>div]:flex-nowrap [&>div]:justify-end">

@@ -120,6 +120,7 @@ export function PatientsList() {
 			value: visitType.id,
 			label: visitType.name,
 			color: getEntityColor(visitType.id),
+			labelClassName: "capitalize",
 		})) ?? [];
 
 	return (

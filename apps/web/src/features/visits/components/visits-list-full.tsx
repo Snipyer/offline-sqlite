@@ -118,6 +118,7 @@ export default function VisitsList() {
 		visitTypes.data?.map((visitType) => ({
 			value: visitType.id,
 			label: visitType.name,
+			labelClassName: "capitalize",
 			color: getEntityColor(visitType.id),
 		})) ?? [];
 

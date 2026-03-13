@@ -83,7 +83,7 @@ export function ExpenseList({
 								<Receipt className="h-5 w-5 text-rose-500" />
 							</div>
 							<div>
-								<p className="font-medium">{exp.expenseTypeName}</p>
+								<p className="font-medium capitalize">{exp.expenseTypeName}</p>
 								<p className="text-muted-foreground text-xs">
 									{new Date(exp.expenseDate).toLocaleDateString() +
 										`${exp.notes ? ` • ${exp.notes}` : ""}`}

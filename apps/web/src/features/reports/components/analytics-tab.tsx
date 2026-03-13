@@ -311,7 +311,9 @@ export function AnalyticsTab({ dateRange }: { dateRange: DateRangeParams }) {
 														backgroundColor: getEntityColor(item.visitTypeId),
 													}}
 												/>
-												<span className="font-medium">{item.treatment}</span>
+												<span className="font-medium capitalize">
+													{item.treatment}
+												</span>
 											</div>
 											<span className="text-muted-foreground">
 												{item.count} {t("reports.times")}

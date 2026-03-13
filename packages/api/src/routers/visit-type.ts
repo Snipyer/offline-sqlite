@@ -5,6 +5,7 @@ import { eq, and, asc, desc, like, sql } from "drizzle-orm";
 import z from "zod";
 
 import { router, protectedProcedure } from "../index";
+import { capitalizeTypeName, normalizeTypeNames } from "../utils/type-name";
 
 const generateId = () => crypto.randomUUID();
 
@@ -29,7 +30,8 @@ export const visitTypeRouter = router({
 			.select()
 			.from(visitType)
 			.where(eq(visitType.userId, ctx.session.user.id))
-			.orderBy(desc(visitType.createdAt));
+			.orderBy(desc(visitType.createdAt))
+			.then((items) => items.map((item) => ({ ...item, name: capitalizeTypeName(item.name) })));
 	}),
 
 	listPaginated: protectedProcedure.input(paginationSchema).query(async ({ ctx, input }) => {
@@ -67,7 +69,7 @@ export const visitTypeRouter = router({
 		const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
 
 		return {
-			items,
+			items: items.map((item) => ({ ...item, name: capitalizeTypeName(item.name) })),
 			total,
 			page: input.page,
 			pageSize: input.pageSize,
@@ -82,14 +84,19 @@ export const visitTypeRouter = router({
 			.where(and(eq(visitType.id, input.id), eq(visitType.userId, ctx.session.user.id)))
 			.limit(1);
 
-		return result[0] ?? null;
+		const item = result[0];
+		if (!item) {
+			return null;
+		}
+
+		return {
+			...item,
+			name: capitalizeTypeName(item.name),
+		};
 	}),
 
 	create: protectedProcedure.input(visitTypeCreateSchema).mutation(async ({ ctx, input }) => {
-		const names = input.name
-			.split("+")
-			.map((name) => name.trim())
-			.filter((name) => name.length > 0);
+		const names = normalizeTypeNames(input.name);
 
 		if (names.length === 0) {
 			throw new TRPCError({
@@ -119,9 +126,14 @@ export const visitTypeRouter = router({
 
 	update: protectedProcedure.input(visitTypeUpdateSchema).mutation(async ({ ctx, input }) => {
 		const { id, ...data } = input;
+		const normalizedData = {
+			...data,
+			...(data.name !== undefined ? { name: capitalizeTypeName(data.name) } : {}),
+		};
+
 		await db
 			.update(visitType)
-			.set(data)
+			.set(normalizedData)
 			.where(and(eq(visitType.id, id), eq(visitType.userId, ctx.session.user.id)));
 		return { id };
 	}),

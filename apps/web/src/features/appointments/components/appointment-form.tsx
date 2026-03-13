@@ -778,18 +778,22 @@ export function AppointmentForm({
 											data-field-path="visitTypeId"
 										>
 											<SelectValue placeholder={t("common.select")}>
-												{field.state.value && visitTypes.data
-													? visitTypes.data.find(
+												{field.state.value && visitTypes.data ? (
+													<span className="capitalize">
+														{visitTypes.data.find(
 															(vt) => vt.id === field.state.value,
-														)?.name
-													: t("common.select")}
+														)?.name ?? t("common.select")}
+													</span>
+												) : (
+													t("common.select")
+												)}
 											</SelectValue>
 										</SelectTrigger>
 										<SelectContent>
 											<SelectItem value="none">{t("common.select")}</SelectItem>
 											{visitTypes.data?.map((vt) => (
 												<SelectItem key={vt.id} value={vt.id}>
-													{vt.name}
+													<span className="capitalize">{vt.name}</span>
 												</SelectItem>
 											))}
 										</SelectContent>

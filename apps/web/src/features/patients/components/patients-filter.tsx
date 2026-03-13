@@ -95,7 +95,7 @@ export function PatientsFilter({
 					>
 						<option value="">{t("patients.allTypes")}</option>
 						{visitTypes.map((vt) => (
-							<option key={vt.id} value={vt.id}>
+							<option key={vt.id} value={vt.id} className="capitalize">
 								{vt.name}
 							</option>
 						))}

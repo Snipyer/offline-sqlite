@@ -5,6 +5,7 @@ import z from "zod";
 
 import { router, protectedProcedure } from "../index";
 import { capitalizePatientName } from "../utils/patient";
+import { capitalizeTypeName } from "../utils/type-name";
 
 const generateId = () => crypto.randomUUID();
 
@@ -73,7 +74,12 @@ export const appointmentRouter = router({
 				...row.patient,
 				name: capitalizePatientName(row.patient.name),
 			},
-			visitType: row.visitType,
+			visitType: row.visitType
+				? {
+						...row.visitType,
+						name: capitalizeTypeName(row.visitType.name),
+					}
+				: null,
 		}));
 	}),
 
@@ -104,7 +110,12 @@ export const appointmentRouter = router({
 				...row.patient,
 				name: capitalizePatientName(row.patient.name),
 			},
-			visitType: row.visitType,
+			visitType: row.visitType
+				? {
+						...row.visitType,
+						name: capitalizeTypeName(row.visitType.name),
+					}
+				: null,
 		}));
 	}),
 
@@ -131,7 +142,12 @@ export const appointmentRouter = router({
 				...result[0].patient,
 				name: capitalizePatientName(result[0].patient.name),
 			},
-			visitType: result[0].visitType,
+			visitType: result[0].visitType
+				? {
+						...result[0].visitType,
+						name: capitalizeTypeName(result[0].visitType.name),
+					}
+				: null,
 		};
 	}),
 
