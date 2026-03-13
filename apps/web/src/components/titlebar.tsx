@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { ArrowLeft, ArrowRight, Minus, RefreshCw, Square, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Minus, RotateCw, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useNavigationType } from "react-router";
 import { authClient } from "@/lib/auth-client";
@@ -107,7 +107,7 @@ export function Titlebar() {
 					aria-label="Refresh"
 					disabled={isRefreshing}
 				>
-					<RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+					<RotateCw size={16} className={isRefreshing ? "animate-spin" : ""} />
 				</button>
 			</div>
 
