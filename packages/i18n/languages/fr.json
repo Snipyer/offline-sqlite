@@ -403,6 +403,12 @@
 	"payments": {
 		"pay": "Payer",
 		"paymentRecorded": "Paiement enregistre avec succes",
+		"paymentUpdated": "Paiement mis a jour avec succes",
+		"paymentDeleted": "Paiement supprime avec succes",
+		"editPayment": "Modifier le paiement",
+		"deletePayment": "Supprimer le paiement",
+		"deletePaymentTitle": "Supprimer le paiement",
+		"deletePaymentConfirm": "Voulez-vous vraiment supprimer ce paiement ?",
 		"addPayment": "Ajouter un paiement",
 		"remainingBalance": "Solde restant",
 		"amount": "Montant",
@@ -429,7 +435,13 @@
 		"patient": "Patient",
 		"date": "Date",
 		"method": "Methode",
-		"cash": "Especes"
+		"cash": "Especes",
+		"validation": {
+			"amountInteger": "Le montant doit etre un nombre entier",
+			"amountMin": "Le montant doit etre superieur a 0",
+			"amountMax": "Le montant ne peut pas depasser {{max}}",
+			"recordedAtRequired": "La date de paiement est requise"
+		}
 	},
 	"dailySummary": {
 		"title": "Resume quotidien",

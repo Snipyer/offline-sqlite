@@ -17,6 +17,18 @@ const paymentCreateSchema = z.object({
 	recordedAt: z.number().optional(),
 });
 
+const paymentUpdateSchema = z.object({
+	id: z.string(),
+	amount: z.number().int().min(1, "Amount must be greater than 0").optional(),
+	paymentMethod: z.enum(paymentMethodEnum).optional(),
+	notes: z.string().optional(),
+	recordedAt: z.number().optional(),
+});
+
+const paymentDeleteSchema = z.object({
+	id: z.string(),
+});
+
 async function getVisitTotalAmount(visitId: string): Promise<number> {
 	const acts = await db
 		.select({ price: visitAct.price })
@@ -79,6 +91,84 @@ export const paymentRouter = router({
 			paymentMethod: input.paymentMethod,
 			recordedAt: input.recordedAt ?? now.getTime(),
 		};
+	}),
+
+	update: protectedProcedure.input(paymentUpdateSchema).mutation(async ({ ctx, input }) => {
+		const existingPayment = await db
+			.select({
+				payment: payment,
+				visit: visit,
+			})
+			.from(payment)
+			.innerJoin(visit, eq(payment.visitId, visit.id))
+			.where(and(eq(payment.id, input.id), eq(visit.userId, ctx.session.user.id)))
+			.limit(1);
+
+		if (existingPayment.length === 0 || existingPayment[0] === undefined) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Payment not found",
+			});
+		}
+
+		const currentPayment = existingPayment[0].payment;
+		const targetVisitId = currentPayment.visitId;
+
+		const totalAmount = await getVisitTotalAmount(targetVisitId);
+		const totalPaid = await getVisitTotalPaid(targetVisitId);
+		const paidExcludingCurrent = totalPaid - currentPayment.amount;
+		const nextAmount = input.amount ?? currentPayment.amount;
+		const remainingBalance = totalAmount - paidExcludingCurrent;
+
+		if (nextAmount > remainingBalance) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `Payment amount exceeds remaining balance of ${remainingBalance}`,
+			});
+		}
+
+		const updateData: Partial<typeof payment.$inferInsert> = {};
+		if (input.amount !== undefined) updateData.amount = input.amount;
+		if (input.paymentMethod !== undefined) updateData.paymentMethod = input.paymentMethod;
+		if (input.notes !== undefined) updateData.notes = input.notes || null;
+		if (input.recordedAt !== undefined) updateData.recordedAt = new Date(input.recordedAt);
+
+		if (Object.keys(updateData).length > 0) {
+			await db.update(payment).set(updateData).where(eq(payment.id, input.id));
+		}
+
+		const refreshed = await db.select().from(payment).where(eq(payment.id, input.id)).limit(1);
+
+		if (refreshed.length === 0 || refreshed[0] === undefined) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Payment not found after update",
+			});
+		}
+
+		return refreshed[0];
+	}),
+
+	delete: protectedProcedure.input(paymentDeleteSchema).mutation(async ({ ctx, input }) => {
+		const existingPayment = await db
+			.select({
+				id: payment.id,
+			})
+			.from(payment)
+			.innerJoin(visit, eq(payment.visitId, visit.id))
+			.where(and(eq(payment.id, input.id), eq(visit.userId, ctx.session.user.id)))
+			.limit(1);
+
+		if (existingPayment.length === 0 || existingPayment[0] === undefined) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Payment not found",
+			});
+		}
+
+		await db.delete(payment).where(eq(payment.id, input.id));
+
+		return { id: input.id };
 	}),
 
 	listByVisit: protectedProcedure.input(z.object({ visitId: z.string() })).query(async ({ ctx, input }) => {

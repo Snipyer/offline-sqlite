@@ -405,7 +405,13 @@
 	"payments": {
 		"pay": "Pay",
 		"paymentRecorded": "Payment recorded successfully",
+		"paymentUpdated": "Payment updated successfully",
+		"paymentDeleted": "Payment deleted successfully",
 		"addPayment": "Add Payment",
+		"editPayment": "Edit Payment",
+		"deletePayment": "Delete Payment",
+		"deletePaymentTitle": "Delete Payment",
+		"deletePaymentConfirm": "Are you sure you want to delete this payment?",
 		"remainingBalance": "Remaining Balance",
 		"amount": "Amount",
 		"notes": "Notes",
@@ -431,7 +437,13 @@
 		"patient": "Patient",
 		"date": "Date",
 		"method": "Method",
-		"cash": "Cash"
+		"cash": "Cash",
+		"validation": {
+			"amountInteger": "Amount must be a whole number",
+			"amountMin": "Amount must be greater than 0",
+			"amountMax": "Amount must be less than or equal to {{max}}",
+			"recordedAtRequired": "Payment date is required"
+		}
 	},
 	"dailySummary": {
 		"title": "Daily Summary",

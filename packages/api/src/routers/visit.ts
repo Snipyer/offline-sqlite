@@ -15,6 +15,7 @@ import z from "zod";
 import { router, protectedProcedure } from "../index";
 import { getVisitTotalPaid } from "../utils/payment";
 import { capitalizePatientName } from "../utils/patient";
+import { capitalizeTypeName } from "../utils/type-name";
 
 const generateId = () => crypto.randomUUID();
 
@@ -79,7 +80,10 @@ async function getVisitWithPaymentData(
 		amountLeft: Math.max(0, totalAmount - totalPaid),
 		acts: acts.map((a) => ({
 			...a.act,
-			visitType: a.visitType,
+			visitType: {
+				...a.visitType,
+				name: capitalizeTypeName(a.visitType.name),
+			},
 			teeth: JSON.parse(a.teeth) as string[],
 		})),
 	};
@@ -347,6 +351,10 @@ export const visitRouter = router({
 	}),
 
 	softDelete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+		await db
+			.delete(payment)
+			.where(and(eq(payment.visitId, input.id), eq(payment.userId, ctx.session.user.id)));
+
 		await db
 			.update(visit)
 			.set({ isDeleted: true })

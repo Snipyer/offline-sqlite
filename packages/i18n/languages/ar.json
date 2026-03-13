@@ -429,7 +429,19 @@
 		"patient": "المريض",
 		"date": "التاريخ",
 		"method": "الطريقة",
-		"cash": "نقدي"
+		"cash": "نقدي",
+		"editPayment": "تعديل الدفعة",
+		"deletePayment": "حذف الدفعة",
+		"deletePaymentTitle": "حذف الدفعة",
+		"deletePaymentConfirm": "هل أنت متأكد أنك تريد حذف هذه الدفعة؟",
+		"paymentUpdated": "تم تحديث الدفعة بنجاح",
+		"paymentDeleted": "تم حذف الدفعة بنجاح",
+		"validation": {
+			"amountInteger": "يجب أن يكون المبلغ رقمًا صحيحًا",
+			"amountMin": "يجب أن يكون المبلغ أكبر من 0",
+			"amountMax": "يجب ألا يتجاوز المبلغ {{max}}",
+			"recordedAtRequired": "تاريخ الدفع مطلوب"
+		}
 	},
 	"dailySummary": {
 		"title": "الملخص اليومي",

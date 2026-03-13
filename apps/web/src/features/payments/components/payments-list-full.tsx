@@ -1,11 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { CreditCard, Calendar } from "lucide-react";
-import { useEffect, useState } from "react";
+import { CreditCard, Calendar, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import Loader from "@/components/loader";
 import { Currency } from "@/components/currency";
 import { pageContainerVariants, pageItemVariants, sectionFadeVariants } from "@/lib/animations";
@@ -18,6 +29,8 @@ import {
 	toTimestampRange,
 	type DatePreset,
 } from "@/features/list-filters/utils/date-filters";
+import { toast } from "sonner";
+import { PaymentEditDialog } from "@/features/payments/components/payment-edit-dialog";
 
 interface PaymentFilters {
 	query: string;
@@ -27,6 +40,19 @@ interface PaymentFilters {
 	maxAmount: string;
 	sortBy: "dateDesc" | "dateAsc" | "amountDesc" | "amountAsc" | "patientNameAsc" | "patientNameDesc";
 }
+
+type PaymentItem = {
+	id: string;
+	visitId: string;
+	amount: number;
+	paymentMethod: "cash";
+	notes: string | null;
+	recordedAt: string | Date;
+	createdAt: string | Date;
+	patientId: string;
+	patientName: string;
+	visitTime: number;
+};
 
 const emptyFilters: PaymentFilters = {
 	query: "",
@@ -39,10 +65,15 @@ const emptyFilters: PaymentFilters = {
 
 export default function PaymentsList() {
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+
 	const [filters, setFilters] = useState<PaymentFilters>(emptyFilters);
 	const [datePreset, setDatePreset] = useState<DatePreset | null>(null);
 	const [page, setPage] = useState(1);
 	const pageSize = 10;
+
+	const [editPayment, setEditPayment] = useState<PaymentItem | null>(null);
+	const [deletePaymentId, setDeletePaymentId] = useState<string | null>(null);
 
 	const payments = useQuery({
 		...trpc.payment.list.queryOptions({
@@ -87,6 +118,7 @@ export default function PaymentsList() {
 		filters.minAmount ||
 		filters.maxAmount ||
 		filters.sortBy !== "dateDesc";
+
 	const dateRange = fromTimestampsToDateRange(filters.dateFrom, filters.dateTo);
 	const listRenderKey = `${filters.query}:${filters.minAmount}:${filters.maxAmount}:${filters.sortBy}:${payments.data?.page ?? page}`;
 
@@ -99,6 +131,74 @@ export default function PaymentsList() {
 		patientNameDesc: t("payments.sortPatientNameDesc"),
 	};
 
+	const selectedPaymentSummary = useQuery({
+		...trpc.payment.getVisitSummary.queryOptions(
+			{ visitId: editPayment?.visitId ?? "" },
+			{ enabled: Boolean(editPayment?.visitId) },
+		),
+	});
+
+	const selectedPaymentRemainingBalance = useMemo(() => {
+		if (!editPayment) {
+			return 1;
+		}
+
+		const remainingFromServer = selectedPaymentSummary.data?.remainingBalance;
+		if (typeof remainingFromServer === "number" && Number.isFinite(remainingFromServer)) {
+			return Math.max(1, editPayment.amount + Math.max(0, remainingFromServer));
+		}
+
+		return Math.max(1, editPayment.amount);
+	}, [editPayment, selectedPaymentSummary.data?.remainingBalance]);
+
+	const invalidatePaymentQueries = () => {
+		const queryKeys = [
+			trpc.payment.list.queryKey(),
+			trpc.patient.getByIdWithVisits.queryKey(),
+			trpc.patient.listWithFilters.queryKey(),
+			trpc.visit.list.queryKey(),
+			trpc.dailySummary.get.queryKey(),
+			trpc.reports.getSummary.queryKey(),
+			trpc.reports.getRevenueByTreatment.queryKey(),
+			trpc.reports.getRevenueByPeriod.queryKey(),
+		] as const;
+
+		queryKeys.forEach((queryKey) => {
+			queryClient.invalidateQueries({ queryKey });
+		});
+	};
+
+	const updatePaymentMutation = useMutation(
+		trpc.payment.update.mutationOptions({
+			onSuccess: () => {
+				toast.success(t("payments.paymentUpdated"));
+				setEditPayment(null);
+				invalidatePaymentQueries();
+			},
+			onError: (error: { message: string }) => {
+				toast.error(error.message);
+			},
+		}),
+	);
+
+	const deletePaymentMutation = useMutation(
+		trpc.payment.delete.mutationOptions({
+			onSuccess: () => {
+				toast.success(t("payments.paymentDeleted"));
+				setDeletePaymentId(null);
+				invalidatePaymentQueries();
+			},
+			onError: (error: { message: string }) => {
+				toast.error(error.message);
+			},
+		}),
+	);
+
+	const handleConfirmDelete = () => {
+		if (!deletePaymentId) return;
+		deletePaymentMutation.mutate({ id: deletePaymentId });
+	};
+
 	return (
 		<motion.div
 			id="payments-list-top"
@@ -107,7 +207,6 @@ export default function PaymentsList() {
 			animate="visible"
 			className="container mx-auto max-w-5xl px-4 py-8"
 		>
-			{/* Header */}
 			<motion.div variants={pageItemVariants} className="mb-8">
 				<div className="flex items-center gap-4">
 					<div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl">
@@ -252,7 +351,6 @@ export default function PaymentsList() {
 												transition-[background-color,border-color,box-shadow]
 												duration-300"
 										>
-											{/* Hover gradient */}
 											<div
 												className="from-primary/5 pointer-events-none absolute inset-0
 													bg-linear-to-br via-transparent to-transparent opacity-0
@@ -261,7 +359,6 @@ export default function PaymentsList() {
 
 											<div className="relative">
 												<div className="flex items-start gap-4">
-													{/* Avatar */}
 													<div
 														className="flex h-14 w-14 shrink-0 items-center
 															justify-center rounded-2xl bg-emerald-500/10"
@@ -269,7 +366,6 @@ export default function PaymentsList() {
 														<CreditCard className="h-6 w-6 text-emerald-500" />
 													</div>
 
-													{/* Main Content */}
 													<div className="min-w-0 flex-1">
 														<h3 className="truncate text-lg font-semibold">
 															{payment.patientName}
@@ -298,36 +394,41 @@ export default function PaymentsList() {
 														)}
 													</div>
 
-													{/* Right Side - Payment Amount */}
-													<div className="flex shrink-0 flex-col items-end gap-1">
-														{/* Icon and label on same line */}
-														<div className="mb-1 flex items-center gap-1.5">
-															<div
-																className="flex h-6 w-6 items-center
-																	justify-center rounded-lg
-																	bg-emerald-500/10"
-															>
-																<CreditCard
-																	className="h-3.5 w-3.5 text-emerald-600"
-																/>
-															</div>
-															<span
-																className="text-xs font-medium
-																	text-emerald-600/70"
-															>
-																{t("payments.cash")}
-															</span>
-														</div>
-														{/* Amount underneath */}
+													<div className="flex shrink-0 flex-col items-end gap-2">
 														<span className="text-xl font-bold text-emerald-600">
 															<Currency value={payment.amount} />
 														</span>
+
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="icon"
+																className="h-8 w-8 rounded-lg"
+																onClick={() => setEditPayment(payment)}
+																aria-label={t("payments.editPayment")}
+															>
+																<Pencil className="h-4 w-4" />
+															</Button>
+															<Button
+																type="button"
+																variant="ghost"
+																size="icon"
+																className="text-destructive
+																	hover:text-destructive h-8 w-8 rounded-lg"
+																onClick={() => setDeletePaymentId(payment.id)}
+																aria-label={t("payments.deletePayment")}
+															>
+																<Trash2 className="h-4 w-4" />
+															</Button>
+														</div>
 													</div>
 												</div>
 											</div>
 										</div>
 									))}
 								</div>
+
 								<PaginationControls
 									page={payments.data?.page ?? 1}
 									totalPages={payments.data?.totalPages ?? 1}
@@ -339,6 +440,39 @@ export default function PaymentsList() {
 					</CardContent>
 				</Card>
 			</motion.div>
+
+			<PaymentEditDialog
+				isOpen={Boolean(editPayment)}
+				payment={editPayment}
+				remainingBalance={selectedPaymentRemainingBalance}
+				isPending={updatePaymentMutation.isPending || selectedPaymentSummary.isLoading}
+				onOpenChange={(open) => {
+					if (!open) setEditPayment(null);
+				}}
+				onSubmit={(values) => updatePaymentMutation.mutate(values)}
+			/>
+
+			<AlertDialog
+				open={Boolean(deletePaymentId)}
+				onOpenChange={(open) => !open && setDeletePaymentId(null)}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t("payments.deletePaymentTitle")}</AlertDialogTitle>
+						<AlertDialogDescription>{t("payments.deletePaymentConfirm")}</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+						<AlertDialogAction
+							variant="destructive"
+							onClick={handleConfirmDelete}
+							disabled={deletePaymentMutation.isPending}
+						>
+							{t("common.delete")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</motion.div>
 	);
 }
