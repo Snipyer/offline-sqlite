@@ -63,7 +63,7 @@ export default function ActivationScreen() {
 
 	return (
 		<div
-			className="from-background via-background to-primary/5 flex min-h-full items-center justify-center
+			className="from-background via-background to-primary/5 flex h-full items-center justify-center
 				bg-linear-to-br p-4"
 		>
 			<div className="w-full max-w-md">

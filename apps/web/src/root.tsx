@@ -123,13 +123,13 @@ export default function App() {
 
 							{/* License gate — show activation or trial-expired screen */}
 							{showLicenseGate && (
-								<>
+								<div className="app-content">
 									{licenseState.state === "trial_expired" ? (
 										<TrialExpired />
 									) : (
 										<ActivationScreen />
 									)}
-								</>
+								</div>
 							)}
 
 							{/* Main app — shown only when license is OK (or not Tauri) */}

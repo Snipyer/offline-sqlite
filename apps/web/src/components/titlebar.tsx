@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { ArrowLeft, ArrowRight, Minus, Square, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Minus, RefreshCw, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useNavigationType } from "react-router";
 import { authClient } from "@/lib/auth-client";
@@ -23,6 +23,14 @@ export function Titlebar() {
 			index: 0,
 		};
 	});
+	const [isRefreshing, setIsRefreshing] = useState(false);
+
+	useEffect(() => {
+		if (isRefreshing) {
+			const timer = setTimeout(() => setIsRefreshing(false), 1000);
+			return () => clearTimeout(timer);
+		}
+	}, [isRefreshing]);
 
 	useEffect(() => {
 		const currentKey = location.key || "initial";
@@ -88,6 +96,18 @@ export function Titlebar() {
 					disabled={!canGoForward}
 				>
 					<ArrowRight size={16} />
+				</button>
+				<button
+					onClick={() => {
+						setIsRefreshing(true);
+						window.location.reload();
+					}}
+					className="titlebar-button disabled:pointer-events-none disabled:opacity-40"
+					type="button"
+					aria-label="Refresh"
+					disabled={isRefreshing}
+				>
+					<RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
 				</button>
 			</div>
 
