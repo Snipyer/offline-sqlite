@@ -118,6 +118,19 @@ pub async fn start_server(app: tauri::AppHandle) -> Result<(), String> {
         .env("NODE_ENV", &env_mode)
         .env("TAURI_ENVIRONMENT", "true");
 
+    if let Some(value) = &env_vars.google_client_id {
+        sidecar = sidecar.env("GOOGLE_CLIENT_ID", value);
+    }
+    if let Some(value) = &env_vars.google_client_secret {
+        sidecar = sidecar.env("GOOGLE_CLIENT_SECRET", value);
+    }
+    if let Some(value) = &env_vars.dropbox_client_id {
+        sidecar = sidecar.env("DROPBOX_CLIENT_ID", value);
+    }
+    if let Some(value) = &env_vars.dropbox_client_secret {
+        sidecar = sidecar.env("DROPBOX_CLIENT_SECRET", value);
+    }
+
     let launch_token = hex::encode(rand::random::<[u8; 32]>());
     let embedded_secret = "offline-sqlite-sidecar-secret-v1";
     let mut hasher = Sha256::new();

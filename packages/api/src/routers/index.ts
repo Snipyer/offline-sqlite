@@ -7,6 +7,7 @@ import { dailySummaryRouter } from "./daily-summary";
 import { reportsRouter } from "./reports";
 import { appointmentRouter } from "./appointment";
 import { expenseTypeRouter, expenseRouter } from "./expense";
+import { cloudBackupRouter } from "./cloud-backup";
 
 export const appRouter = router({
 	patient: patientRouter,
@@ -18,5 +19,6 @@ export const appRouter = router({
 	appointment: appointmentRouter,
 	expenseType: expenseTypeRouter,
 	expense: expenseRouter,
+	cloudBackup: cloudBackupRouter,
 });
 export type AppRouter = typeof appRouter;

@@ -22,6 +22,9 @@
 			]
 		},
 		"http:default",
+		"deep-link:default",
+		"opener:default",
+		"os:default",
 		{
 			"identifier": "http:allow-fetch",
 			"allow": [

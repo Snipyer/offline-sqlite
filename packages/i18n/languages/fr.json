@@ -88,6 +88,24 @@
 		"arabic": "العربية",
 		"french": "Français"
 	},
+	"cloudBackup": {
+		"openDialogAria": "Ouvrir la sauvegarde cloud",
+		"dialogTitle": "Sauvegarde cloud",
+		"dialogDescription": "Connectez Google Drive ou Dropbox et envoyez une sauvegarde de votre base locale.",
+		"providers": {
+			"google": "Google Drive",
+			"dropbox": "Dropbox"
+		},
+		"connected": "Connecté",
+		"notConnected": "Non connecté",
+		"connect": "Connecter",
+		"backupNow": "Sauvegarder maintenant",
+		"note": "Les sauvegardes incluent votre fichier local.db actuel.",
+		"backupSuccess": "Sauvegarde envoyée vers {{provider}} sous {{fileName}}",
+		"connectedSuccess": "{{provider}} connecté avec succès",
+		"connectedError": "Impossible de connecter {{provider}}",
+		"connectFailed": "Échec du démarrage de la connexion au fournisseur"
+	},
 	"common": {
 		"save": "Enregistrer",
 		"saved": "Enregistre",

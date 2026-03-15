@@ -1,5 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { setupBetterAuthTauri } from "@daveyplate/better-auth-tauri";
 import "./index.css";
 import { initAntiDebug } from "./utils/anti-debug";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, useLocation } from "react-router";
@@ -93,6 +94,22 @@ export default function App() {
 	// Initialize anti-debug measures in production Tauri builds
 	useEffect(() => {
 		if (isTauri()) initAntiDebug();
+	}, []);
+
+	useEffect(() => {
+		if (!isTauri()) {
+			return;
+		}
+
+		return setupBetterAuthTauri({
+			authClient,
+			debugLogs: true,
+			scheme: "offline-sqlite",
+			onSuccess: () => {
+				void authClient.getSession();
+				void queryClient.invalidateQueries();
+			},
+		});
 	}, []);
 
 	// License gate — only active inside Tauri (desktop) builds

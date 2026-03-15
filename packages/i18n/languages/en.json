@@ -88,6 +88,24 @@
 		"arabic": "العربية",
 		"french": "Français"
 	},
+	"cloudBackup": {
+		"openDialogAria": "Open cloud backup",
+		"dialogTitle": "Cloud Backup",
+		"dialogDescription": "Connect Google Drive or Dropbox and upload your local database backup.",
+		"providers": {
+			"google": "Google Drive",
+			"dropbox": "Dropbox"
+		},
+		"connected": "Connected",
+		"notConnected": "Not connected",
+		"connect": "Connect",
+		"backupNow": "Backup now",
+		"note": "Backups include your current local.db file.",
+		"backupSuccess": "Backup uploaded to {{provider}} as {{fileName}}",
+		"connectedSuccess": "{{provider}} connected successfully",
+		"connectedError": "Could not connect {{provider}}",
+		"connectFailed": "Failed to start provider connection"
+	},
 	"common": {
 		"save": "Save",
 		"saved": "Saved",

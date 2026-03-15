@@ -88,6 +88,24 @@
 		"arabic": "العربية",
 		"french": "Français"
 	},
+	"cloudBackup": {
+		"openDialogAria": "فتح النسخ الاحتياطي السحابي",
+		"dialogTitle": "نسخ احتياطي سحابي",
+		"dialogDescription": "اربط Google Drive أو Dropbox ثم ارفع نسخة احتياطية من قاعدة البيانات المحلية.",
+		"providers": {
+			"google": "Google Drive",
+			"dropbox": "Dropbox"
+		},
+		"connected": "متصل",
+		"notConnected": "غير متصل",
+		"connect": "ربط",
+		"backupNow": "نسخ احتياطي الآن",
+		"note": "تتضمن النسخ الاحتياطية ملف local.db الحالي.",
+		"backupSuccess": "تم رفع النسخة الاحتياطية إلى {{provider}} باسم {{fileName}}",
+		"connectedSuccess": "تم ربط {{provider}} بنجاح",
+		"connectedError": "تعذر ربط {{provider}}",
+		"connectFailed": "فشل بدء ربط المزود"
+	},
 	"common": {
 		"save": "حفظ",
 		"saved": "تم الحفظ",

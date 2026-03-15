@@ -49,6 +49,9 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_os::init())
         .manage(AppState::new())
         .invoke_handler(tauri::generate_handler![
             commands::health::check_server_health,
@@ -62,6 +65,15 @@ pub fn run() {
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();
+
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+
+                if let Err(error) = app.deep_link().register_all() {
+                    log::warn!("Failed to register deep links at runtime: {}", error);
+                }
+            }
 
             licensing::anti_debug::check_debugger();
 

@@ -52,6 +52,39 @@ app.use(
 	}),
 );
 
+app.get("/api/auth/oauth-complete", (c) => {
+	const providerParam = c.req.query("provider");
+	const errorParam = c.req.query("error");
+	const provider = providerParam === "google" || providerParam === "dropbox" ? providerParam : null;
+	const searchParams = new URLSearchParams();
+
+	if (provider) {
+		searchParams.set("provider", provider);
+	}
+	if (errorParam) {
+		searchParams.set("error", errorParam);
+	}
+
+	const search = searchParams.toString();
+	const deepLink = `offline-sqlite://cloud-backup/oauth-complete${search ? `?${search}` : ""}`;
+
+	return c.html(`<!doctype html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8" />
+  			<meta name="viewport" content="width=device-width, initial-scale=1" />
+  			<title>Return to offline-sqlite</title>
+		</head>
+		<body style="font-family: system-ui, sans-serif; margin: 24px; line-height: 1.5;">
+  			<p>Authentication completed. Returning to offline-sqlite...</p>
+  			<p><a href="${deepLink}">Open offline-sqlite</a></p>
+  			<script>
+    			window.location.replace(${JSON.stringify(deepLink)});
+  			</script>
+		</body>
+	</html>`);
+});
+
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 app.use(

@@ -22,6 +22,7 @@
 - use workspace imports like `@offline-sqlite/db`, `@offline-sqlite/api`, `@offline-sqlite/auth`, `@offline-sqlite/env`, `@offline-sqlite/i18n`
 - use shadcn regestries to find existing components before building new ones. see `apps/web/src/components/ui/` and registeries are in `apps/web/components.json/`
 - use **Tanstack form** for all forms.
+- use ctx7 CLI (use skill in /home/yasser/.config/agents/skills) when you need informations on how to implement/use a feature with a third-party library
 
 ## Don't
 
@@ -36,6 +37,7 @@
 - do not create new env variables without adding them to the Zod schema in `packages/env/`
 - do not use class-based React components. use functional components with hooks
 - do not bypass the monorepo package boundaries. respect the `packages/` → `apps/` dependency flow
+- do not use grep when trying to know how to implement/use a feature with a third-party library
 
 ## Commands
 

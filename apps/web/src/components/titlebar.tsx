@@ -1,14 +1,17 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { ArrowLeft, ArrowRight, Minus, RotateCw, Square, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Cloud, Minus, RotateCw, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useNavigationType } from "react-router";
 import { authClient } from "@/lib/auth-client";
 import { LicenseStatusDialog } from "@/features/licensing/components/license-status-dialog";
+import { CloudBackupDialog } from "@/features/cloud-backup/components/cloud-backup-dialog";
 import LanguageSwitcher from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { env } from "@offline-sqlite/env/web";
+import { useTranslation } from "@offline-sqlite/i18n";
 
 export function Titlebar() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const navigationType = useNavigationType();
@@ -24,6 +27,7 @@ export function Titlebar() {
 		};
 	});
 	const [isRefreshing, setIsRefreshing] = useState(false);
+	const [isCloudDialogOpen, setIsCloudDialogOpen] = useState(false);
 
 	useEffect(() => {
 		if (isRefreshing) {
@@ -121,6 +125,16 @@ export function Titlebar() {
 			</div>
 
 			<div className="flex items-center">
+				{isAuthenticated && (
+					<button
+						type="button"
+						className="titlebar-button"
+						onClick={() => setIsCloudDialogOpen(true)}
+						aria-label={t("cloudBackup.openDialogAria")}
+					>
+						<Cloud size={16} />
+					</button>
+				)}
 				{!isAuthenticated && (
 					<>
 						<LanguageSwitcher
@@ -161,6 +175,7 @@ export function Titlebar() {
 					<X size={16} />
 				</button>
 			</div>
+			<CloudBackupDialog open={isCloudDialogOpen} onOpenChange={setIsCloudDialogOpen} />
 		</div>
 	);
 }
